@@ -89,7 +89,7 @@ export default function Footer() {
         }}
       >
         <span>© 2025 SR Akila Silks. All rights reserved.</span>
-        <span>Designed with ❤ for Indian Textile Heritage</span>
+        <span>Designed & Developed by Sai Techno Solutions</span>
       </div>
     </footer>
 

@@ -104,32 +104,140 @@ export function CollectionBanner() {
 
 /* ── Features Strip ───────────────────────────────── */
 export function FeaturesStrip() {
-  const items = [
-    { icon: <Truck size={26} strokeWidth={1.6} color="var(--burgundy)" />, title: 'Free Shipping in India', sub: 'On all orders above ₹999' },
-    { icon: <Clock size={26} strokeWidth={1.6} color="var(--burgundy)" />, title: '10–15 Day Delivery', sub: 'Working days across India' },
-    { icon: <Globe size={26} strokeWidth={1.6} color="var(--burgundy)" />, title: 'Worldwide Shipping', sub: 'Delivered to 50+ countries' },
-    { icon: <Shield size={26} strokeWidth={1.6} color="var(--burgundy)" />, title: '100% Authentic Weaves', sub: 'Direct from master weavers' },
-  ]
-  return (
-    <div className="py-5" style={{ background: 'white', borderBottom: '1px solid var(--ivory-dark)' }}>
-      <div
-        className="max-w-[1400px] mx-auto px-4 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0"
-      >
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-3.5 px-2 lg:px-6 ${i < 3 ? 'lg:border-r lg:border-[var(--ivory-dark)]' : ''}`}
+  const features = [
+    {
+      id: 'shipping',
+      title: "Free Shipping in India",
+      description: "On all orders above ₹999",
+      icon: (
+        <div className="relative flex items-center justify-center">
+          {/* Smoke particles for the truck */}
+          <div className="absolute -left-2 bottom-1 flex gap-1">
+            <div className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-smoke delay-0"></div>
+            <div className="w-2 h-2 bg-stone-300 rounded-full animate-smoke delay-300"></div>
+            <div className="w-1 h-1 bg-stone-400 rounded-full animate-smoke delay-700"></div>
+          </div>
+          <Truck size={24} className="text-[#5e171b] animate-truck-drive" />
+        </div>
+      )
+    },
+    {
+      id: 'delivery',
+      title: "10–15 Day Delivery",
+      description: "Working days across India",
+      icon: <Clock size={24} className="text-[#5e171b] animate-clock-spin" />
+    },
+    {
+      id: 'worldwide',
+      title: "Worldwide Shipping",
+      description: "Delivered to 50+ countries",
+      icon: <Globe size={24} className="text-[#5e171b] animate-globe-spin" />
+    },
+    {
+      id: 'authentic',
+      title: "100% Authentic Weaves",
+      description: "Direct from master weavers",
+      icon: (
+        <div className="relative flex items-center justify-center">
+          <Shield size={24} className="text-[#5e171b]" />
+          {/* Custom SVG Tick for drawing animation */}
+          <svg 
+            className="absolute w-4 h-4 text-[#5e171b]" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="4" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
           >
-            <div className="flex-shrink-0">{item.icon}</div>
-            <div>
-              <strong className="block text-[13px] font-semibold" style={{ color: 'var(--charcoal)' }}>{item.title}</strong>
-              <span className="text-[11.5px]" style={{ color: 'var(--muted)' }}>{item.sub}</span>
+            <polyline points="20 6 9 17 4 12" className="animate-tick-draw" />
+          </svg>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="w-full bg-[#faf7f2] py-8 px-4 md:px-8 border-y border-stone-200 overflow-hidden">
+      <style>{`
+        /* Truck driving vibration */
+        @keyframes truckDrive {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          25% { transform: translateY(-1px) translateX(2px); }
+          50% { transform: translateY(0) translateX(4px); }
+          75% { transform: translateY(-1px) translateX(2px); }
+        }
+
+        /* Smoke puff animation */
+        @keyframes smokePuff {
+          0% { transform: scale(0.5) translateX(0); opacity: 0; }
+          20% { opacity: 0.8; }
+          100% { transform: scale(1.5) translateX(-20px) translateY(-5px); opacity: 0; }
+        }
+
+        /* Clock rotation */
+        @keyframes clockSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        /* Globe rotation */
+        @keyframes globeSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        /* Drawing the tick mark */
+        @keyframes tickDraw {
+          0% { stroke-dashoffset: 30; }
+          40% { stroke-dashoffset: 0; }
+          80% { opacity: 1; }
+          100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+
+        .animate-truck-drive { animation: truckDrive 0.6s ease-in-out infinite; }
+        .animate-smoke { animation: smokePuff 1.5s linear infinite; }
+        .animate-clock-spin { animation: clockSpin 4s linear infinite; }
+        .animate-globe-spin { animation: globeSpin 10s linear infinite; }
+        
+        .animate-tick-draw { 
+          stroke-dasharray: 30; 
+          stroke-dashoffset: 30; 
+          animation: tickDraw 3s ease-in-out infinite;
+        }
+
+        .delay-0 { animation-delay: 0s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-700 { animation-delay: 0.7s; }
+      `}</style>
+
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0">
+        {features.map((feature, index) => (
+          <div 
+            key={feature.id} 
+            className={`flex items-center gap-4 px-6 relative ${
+              index !== features.length - 1 ? 'lg:border-r border-stone-300' : ''
+            }`}
+          >
+            {/* Icon Container with White Circle */}
+            <div className="flex-shrink-0 w-14 h-14 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
+              {feature.icon}
+            </div>
+
+            {/* Text Information */}
+            <div className="flex flex-col">
+              <h3 className="text-[#5e171b] font-bold text-[13.5px] md:text-base leading-tight uppercase tracking-wide">
+                {feature.title}
+              </h3>
+              <p className="text-gray-500 text-[11px] md:text-sm mt-1 font-medium">
+                {feature.description}
+              </p>
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 /* ── Subcategory Scroll Bar ────────────────────────── */

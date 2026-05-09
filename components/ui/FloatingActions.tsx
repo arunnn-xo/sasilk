@@ -9,9 +9,9 @@ export default function FloatingActions() {
       <Link
         href="/reviews"
         className="floating-review-tab"
-        aria-label="Open reviews"
+        aria-label="Click to open Judge.me floating reviews"
       >
-        <Star size={17} fill="#FACC15" strokeWidth={1.5} />
+        <Star size={16} fill="#FACC15" strokeWidth={0} />
         <span>Reviews</span>
       </Link>
 
@@ -21,10 +21,10 @@ export default function FloatingActions() {
           className="floating-bag-btn"
           aria-label="Open shopping bag"
         >
-          <ShoppingBag size={30} strokeWidth={2.2} />
+          <ShoppingBag size={22} strokeWidth={2.2} />
           <Star
             className="floating-bag-star"
-            size={16}
+            size={12}
             fill="currentColor"
             strokeWidth={1.6}
           />
@@ -38,8 +38,8 @@ export default function FloatingActions() {
           rel="noreferrer"
         >
           <svg
-            width="31"
-            height="31"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="currentColor"
             aria-hidden="true"

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -203,34 +203,38 @@ body {
 
 .floating-review-tab {
   position: fixed;
-  right: 0;
-  top: 43%;
+  right: -30px;
+  top: 50%;
   z-index: 95;
   display: inline-flex;
-  width: 43px;
-  height: 118px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: #050505;
+  gap: 6px;
+  background: #000000;
   color: #ffffff;
   text-decoration: none;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
-  transform: translateY(-50%);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center;
+  transition: right 0.25s ease;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .floating-review-tab span {
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .floating-review-tab:hover {
-  transform: translateY(-50%) translateX(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  right: -28px;
 }
 
 .floating-action-stack {
@@ -244,6 +248,11 @@ body {
   gap: 12px;
 }
 
+@keyframes floating-icon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 .floating-bag-btn,
 .floating-whatsapp-btn {
   display: inline-flex;
@@ -251,13 +260,18 @@ body {
   justify-content: center;
   text-decoration: none;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  animation: floating-icon 3s ease-in-out infinite;
+}
+
+.floating-whatsapp-btn {
+  animation-delay: 0.6s;
 }
 
 .floating-bag-btn {
   position: relative;
-  width: 62px;
-  height: 62px;
+  width: 44.8px;
+  height: 45px;
   border-radius: 999px;
   background: #ffffff;
   color: #1685ff;
@@ -266,11 +280,11 @@ body {
 .floating-bag-btn::before {
   content: '';
   position: absolute;
-  inset: 13px 11px 10px;
-  border-radius: 4px 4px 12px 12px;
-  border-right: 4px solid #ef4444;
-  border-bottom: 4px solid #ef4444;
-  border-left: 4px solid #22c55e;
+  inset: 10px 8px 8px;
+  border-radius: 4px 4px 10px 10px;
+  border-right: 3px solid #ef4444;
+  border-bottom: 3px solid #ef4444;
+  border-left: 3px solid #22c55e;
   pointer-events: none;
   transform: rotate(8deg);
 }
@@ -282,24 +296,23 @@ body {
 }
 
 .floating-whatsapp-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 7px;
+  width: 44.8px;
+  height: 45px;
+  border-radius: 8px;
   background: #119c4b;
   color: #ffffff;
 }
 
 .floating-bag-btn:hover,
 .floating-whatsapp-btn:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+  animation-play-state: paused;
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
 }
 
 @media (min-width: 640px) {
   .floating-review-tab {
-    top: 44%;
-    width: 46px;
-    height: 124px;
+    top: 50%;
   }
 
   .floating-action-stack {
@@ -309,13 +322,13 @@ body {
   }
 
   .floating-bag-btn {
-    width: 66px;
-    height: 66px;
+    width: 44.8px;
+    height: 45px;
   }
 
   .floating-whatsapp-btn {
-    width: 58px;
-    height: 58px;
+    width: 44.8px;
+    height: 45px;
   }
 }
 
