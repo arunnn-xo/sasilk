@@ -3,6 +3,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import HeroSection from '@/components/home/HeroSection'
 import CouponPopup from '@/components/ui/CouponPopup'
+import FloatingActions from '@/components/ui/FloatingActions'
 import {
   CollectionBanner,
   FeaturesStrip,
@@ -32,6 +33,7 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      <FloatingActions />
       <CouponPopup />
     </>
   )
