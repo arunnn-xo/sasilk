@@ -29,6 +29,8 @@ const footerLinks = {
 export default function Footer() {
   return (
     <>
+    {/* Red Traditional Border Divider */}
+    <div className="w-full h-8 md:h-12 bg-repeat-x" style={{ backgroundImage: "url('/borderdesign/red-banner.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
     <footer className="pb-24 md:pb-6" style={{ background: 'var(--charcoal)', paddingTop: '56px' }}>
       <div
         className="max-w-[1400px] mx-auto px-8 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12"

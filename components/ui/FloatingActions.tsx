@@ -16,7 +16,7 @@ export default function FloatingActions() {
       </Link>
 
       <div className="floating-action-stack" aria-label="Quick actions">
-        <Link
+        {/* <Link
           href="/cart"
           className="floating-bag-btn"
           aria-label="Open shopping bag"
@@ -28,7 +28,7 @@ export default function FloatingActions() {
             fill="currentColor"
             strokeWidth={1.6}
           />
-        </Link>
+        </Link> */}
 
         <a
           href="https://wa.me/"
