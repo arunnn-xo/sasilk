@@ -278,142 +278,108 @@ export function SubcatBar() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap');
         .font-playfair { font-family: 'Playfair Display', serif; }
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
-
+        
         /* Scrollbar-ai maraikka */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ── Section entrance animation ── */
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .anim-fade-up {
-          opacity: 0;
-          animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        .delay-1 { animation-delay: 0.10s; }
-        .delay-2 { animation-delay: 0.22s; }
-        .delay-3 { animation-delay: 0.34s; }
-        .delay-4 { animation-delay: 0.46s; }
-
-        /* ── Card border ring animation ── */
-        @keyframes ring-spin {
+        /* Rotating Border Animation Effects */
+        @keyframes spin-border {
           100% { transform: rotate(360deg); }
         }
-
-        .card-ring {
+        
+        .border-spin-wrapper {
           position: relative;
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          padding: 3px;
-          background: linear-gradient(135deg, #e8d5b7, #c29b57, #e8d5b7, #f0d89a, #c29b57);
-          background-size: 300% 300%;
-          transition: transform 0.4s ease, box-shadow 0.4s ease;
-          box-shadow: 0 4px 14px rgba(194,155,87,0.18);
-          flex-shrink: 0;
+          border-radius: 40px 0px 40px 0px;
+          overflow: hidden;
+          padding: 4px; /* Thicker border for better visibility */
+          background-color: #fdf6f0; /* Default solid track color */
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        
+        /* Impressive hover state */
+        .group:hover .border-spin-wrapper {
+          background-color: #fcf0e3; 
+          transform: translateY(-6px);
+          box-shadow: 0 15px 35px rgba(194, 155, 87, 0.25); /* Beautiful gold glow */
+        }
+        
+        .border-spin-wrapper.active {
+          background-color: #f7e6ea;
+          box-shadow: 0 10px 25px rgba(115, 34, 51, 0.25); /* Burgundy glow */
         }
 
-        .card-ring::before {
+        /* The spinning highlight (Constantly visible on all cards) */
+        .border-spin-wrapper::before {
           content: '';
           position: absolute;
-          inset: -2px;
-          border-radius: 50%;
-          background: conic-gradient(from 0deg, #e8d5b7, #c29b57, #f0d89a, #d4af37, #e8d5b7);
-          animation: ring-spin 4s linear infinite;
-          z-index: 0;
-          opacity: 0.6;
-        }
-
-        .group:hover .card-ring {
-          transform: translateY(-5px) scale(1.05);
-          box-shadow: 0 10px 28px rgba(194,155,87,0.40);
-        }
-
-        .group:hover .card-ring::before {
-          opacity: 1;
-          animation-duration: 1.5s;
-        }
-
-        .card-ring.active {
-          box-shadow: 0 8px 24px rgba(115,34,51,0.30);
-        }
-
-        .card-ring.active::before {
-          background: conic-gradient(from 0deg, #b5435a, #732233, #a03048, #732233, #b5435a);
+          top: -50%; left: -50%; width: 200%; height: 200%;
+          /* Stronger, more visible gold gradient with a longer tail */
+          background: conic-gradient(from 0deg, transparent 40%, rgba(194,155,87,0.3) 75%, #c29b57 100%);
+          animation: spin-border 5s linear infinite;
           opacity: 0.85;
-          animation-duration: 2.5s;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+        }
+        
+        /* Make the spinning light much more dramatic on hover */
+        .group:hover .border-spin-wrapper::before {
+          opacity: 1;
+          background: conic-gradient(from 0deg, transparent 30%, rgba(194,155,87,0.6) 70%, #d4af37 100%);
         }
 
-        .card-ring-inner {
+        /* Active state highlight color matches burgundy */
+        .border-spin-wrapper.active::before {
+          background: conic-gradient(from 0deg, transparent 30%, rgba(115,34,51,0.5) 70%, #732233 100%);
+          opacity: 1;
+        }
+
+        /* Inner image container */
+        .border-spin-inner {
           position: relative;
           width: 100%;
           height: 100%;
-          border-radius: 50%;
+          border-radius: 36px 0px 36px 0px; /* Adjusted for thicker padding */
           overflow: hidden;
+          z-index: 10;
           background: white;
-          z-index: 1;
-        }
-
-        .card-ring-inner img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.6s ease;
-        }
-
-        .group:hover .card-ring-inner img {
-          transform: scale(1.10);
-        }
-
-        /* ── Card stagger entrance ── */
-        @keyframes card-pop {
-          from { opacity: 0; transform: translateY(20px) scale(0.95); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .card-anim {
-          opacity: 0;
-          animation: card-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
       `}} />
 
       {/* Siriya thalaippu (Small Header) */}
-      <h3 className="font-montserrat text-[#c29b57] text-[11px] font-semibold tracking-[0.25em] uppercase mb-4 text-center anim-fade-up delay-1">
+      <h3 className="font-montserrat text-[#c29b57] text-[11px] font-semibold tracking-[0.25em] uppercase mb-4 text-center">
         Organic Sarees
       </h3>
 
       {/* Mukkiya thalaippu (Main Title) */}
-      <h1 className="font-playfair text-[#5a1827] text-4xl md:text-5xl font-bold mb-5 tracking-wide text-center anim-fade-up delay-2">
+      <h1 className="font-playfair text-[#5a1827] text-4xl md:text-5xl font-bold mb-5 tracking-wide text-center">
         Shop by Fabric
       </h1>
 
-      {/* Winding Floral Divider */}
-      <div className="mb-12 anim-fade-up delay-3" style={{ width: '280px', height: '28px' }}>
-        <img
-          src="/borderdesign/winding-border.jpg"
-          alt=""
-          className="w-full h-full object-contain opacity-90"
-          draggable={false}
-        />
-      </div>
+      {/* Winding Floral Divider Line */}
+      <div className="w-64 md:w-96 h-6 mb-12 bg-repeat-x opacity-80" style={{ backgroundImage: "url('/borderdesign/winding-border.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
 
       {/* Image Categories Container */}
-      <div className="w-full max-w-7xl overflow-x-auto hide-scrollbar anim-fade-up delay-4">
+      <div className="w-full max-w-7xl overflow-x-auto hide-scrollbar">
         <div className="flex gap-6 md:gap-10 lg:justify-center px-4 pb-10 min-w-max items-center">
           {categories.map((category, index) => (
             <button
               key={category.name}
               onClick={() => setActiveTab(category.name)}
-              className="flex flex-col items-center group transition-all duration-300 outline-none card-anim"
-              style={{ animationDelay: `${0.55 + index * 0.07}s` }}
+              className="flex flex-col items-center group transition-all duration-300 outline-none"
             >
-              {/* Image with animated ring border */}
-              <div className={`card-ring mb-3 ${activeTab === category.name ? 'active' : ''}`}>
-                <div className="card-ring-inner">
+              {/* Image Container with Animated Rotating Border */}
+              <div
+                className={`border-spin-wrapper mb-4 aspect-square ${activeTab === category.name ? 'active scale-110 shadow-[0_10px_25px_rgba(115,34,51,0.15)]' : 'group-hover:scale-105 shadow-sm'
+                  }`}
+                style={{ width: '110px' }}
+              >
+                <div className="border-spin-inner">
                   <img
                     src={category.img}
                     alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                 </div>
               </div>
