@@ -1,34 +1,98 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Sparkles } from 'lucide-react'
 import { searchSuggestions, organicSareeSubcats } from '@/lib/data'
+
+const placeholders = [
+  'Search by color - E.g. red color sarees...',
+  'Search by Occasions - Marriage, bridal...',
+  'Search by item code (e.g. SAS-KS-0324)...',
+  'Search Saree Types - Kanchipuram, Mysore...',
+  'Search relevant product names...'
+]
 
 export default function SearchBar() {
   const [focused, setFocused] = useState(false)
   const [query, setQuery]     = useState('')
+  const [placeholderText, setPlaceholderText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loopNum, setLoopNum] = useState(0)
+  const [typingSpeed, setTypingSpeed] = useState(100)
+
+  useEffect(() => {
+    const handleType = () => {
+      const i = loopNum % placeholders.length
+      const fullText = placeholders[i]
+
+      if (isDeleting) {
+        setPlaceholderText(fullText.substring(0, placeholderText.length - 1))
+        setTypingSpeed(30) // fast delete
+      } else {
+        setPlaceholderText(fullText.substring(0, placeholderText.length + 1))
+        setTypingSpeed(70) // normal type
+      }
+
+      if (!isDeleting && placeholderText === fullText) {
+        // Wait at the end of typing
+        setTimeout(() => setIsDeleting(true), 2000)
+      } else if (isDeleting && placeholderText === '') {
+        setIsDeleting(false)
+        setLoopNum(loopNum + 1)
+        setTypingSpeed(400) // pause before typing next
+      }
+    }
+
+    const timer = setTimeout(handleType, typingSpeed)
+    return () => clearTimeout(timer)
+  }, [placeholderText, isDeleting, loopNum, typingSpeed])
 
   const chips = organicSareeSubcats.slice(0, 5)
   const filtered = query
-    ? searchSuggestions.filter(s =>
-        s.name.toLowerCase().includes(query.toLowerCase()) ||
-        s.code.toLowerCase().includes(query.toLowerCase())
-      )
+    ? searchSuggestions.filter(s => {
+        const q = query.toLowerCase()
+        return (
+          s.name.toLowerCase().includes(q) ||
+          s.code.toLowerCase().includes(q) ||
+          s.color?.toLowerCase().includes(q) ||
+          s.occasion?.toLowerCase().includes(q) ||
+          s.category?.toLowerCase().includes(q)
+        )
+      })
     : searchSuggestions
 
   return (
     <div className="relative w-full max-w-3xl">
       {/* Animated gradient border wrapper */}
       <div className="creative-border w-full relative">
-        <div className="flex items-center w-full bg-[#FDFBF7] rounded-[47px] overflow-hidden pr-1 pl-4">
+        <div className="flex items-center w-full bg-[#FDFBF7] rounded-[47px] overflow-hidden pr-1 pl-4 relative">
+          
+          {/* Custom Animated Placeholder that Shines */}
+          {!query && (
+            <div 
+              className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[17px] font-['Cormorant_Garamond'] italic tracking-wide font-bold whitespace-nowrap"
+              style={{
+                background: 'linear-gradient(90deg, #6B1A2A 0%, #B8860B 25%, #8B3A2B 50%, #B8860B 75%, #6B1A2A 100%)',
+                backgroundSize: '200% auto',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                animation: 'textShine 3.5s linear infinite',
+                filter: 'drop-shadow(0px 1px 1px rgba(107, 26, 42, 0.15))'
+              }}
+            >
+              {placeholderText}
+            </div>
+          )}
+
           <input
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setTimeout(() => setFocused(false), 180)}
-            placeholder="Porul code allathu peyarai thedavum..."
-            className="w-full bg-transparent py-2.5 outline-none text-sm text-[#2C241B]"
+            className="w-full bg-transparent py-2.5 outline-none text-[15px] text-[var(--burgundy-dark)] transition-all duration-300"
+            style={{ fontFamily: query ? '"DM Sans", sans-serif' : '"Cormorant Garamond", serif', fontWeight: query ? 500 : 600, fontSize: query ? '14px' : '17px' }}
           />
 
           {/* Creative animated search button */}

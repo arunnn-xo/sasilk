@@ -105,7 +105,9 @@ export const loyaltyTiers = [
 
 // ── Search mock data ──────────────────────────────────
 export const searchSuggestions = [
-  { code: 'SAS-KS-0324', name: 'Kanchipuram Bridal Silk', price: 18500, emoji: '🥻' },
-  { code: 'SAS-MS-0108', name: 'Mysore Crepe Silk',        price: 6200,  emoji: '🌸' },
-  { code: 'SAS-OC-0012', name: 'Chettinad Cotton',         price: 1350,  emoji: '🍃' },
+  { code: 'SAS-KS-0324', name: 'Kanchipuram Bridal Silk', price: 18500, emoji: '🥻', color: 'Red', occasion: 'Marriage, Bridal, Wedding Anniversary', category: 'Kanchipuram Silk' },
+  { code: 'SAS-MS-0108', name: 'Mysore Crepe Silk',        price: 6200,  emoji: '🌸', color: 'Gold, Mustard', occasion: 'Festive, Diwali, Birthday', category: 'Mysore Silk' },
+  { code: 'SAS-OC-0012', name: 'Chettinad Cotton',         price: 1350,  emoji: '🍃', color: 'Green, Maroon', occasion: 'Daily Wear, Casual', category: 'Cotton' },
+  { code: 'SAS-KS-0450', name: 'Kanchipuram Baby Shower',  price: 14500, emoji: '👶', color: 'Yellow, Pink', occasion: 'Baby Shower', category: 'Kanchipuram Silk' },
+  { code: 'SAS-TS-0120', name: 'Tussar Silk Gift',         price: 4800,  emoji: '🎁', color: 'Blue, Beige', occasion: 'Mothers Day Sale, Womens Day Sale', category: 'Tussar Silk' },
 ]

@@ -1,11 +1,11 @@
 'use client'
 
 const messages = [
-  'Free Shipping across India',
-  'Delivery: 10–15 Working Days',
-  'Worldwide Shipping Available',
-  'Authentic Handloom Weaves',
-  'First Order: Use Code SAS15OFF',
+  'Shipping Worldwide',
+  'Easy Return & Exchange*',
+  'EMI Option Available*',
+  'Saving Scheme available*',
+  'Delivery Time: 1 - 3 Weeks',
 ]
 
 export default function AnnouncementBar() {

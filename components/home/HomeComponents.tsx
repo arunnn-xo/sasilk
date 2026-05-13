@@ -358,7 +358,12 @@ export function SubcatBar() {
       </h1>
 
       {/* Winding Floral Divider Line */}
-      <div className="w-64 md:w-96 h-6 mb-12 bg-repeat-x opacity-80" style={{ backgroundImage: "url('/borderdesign/winding-border.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
+      <img
+        src="/borderdesign/winding-border.jpg"
+        alt=""
+        aria-hidden="true"
+        className="w-80 max-w-[86vw] sm:w-[26rem] md:w-[34rem] h-auto mb-12 opacity-80 object-contain"
+      />
 
       {/* Image Categories Container */}
       <div className="w-full max-w-7xl overflow-x-auto hide-scrollbar">
@@ -471,38 +476,31 @@ const categoryStyles = `
   .collection-card {
     position: relative;
     width: 210px;
-    height: 310px;
-    overflow: hidden;
+    aspect-ratio: 210 / 310;
     cursor: pointer;
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    clip-path: path("M102 0 C135 0 145 35 175 35 C205 35 210 75 190 95 C220 125 205 165 175 168 C190 205 158 235 130 220 C110 255 70 250 65 220 C30 235 5 205 25 170 C-5 160 -2 115 25 98 C5 65 30 35 62 38 C70 15 82 0 102 0 Z");
   }
 
   .collection-card:hover {
     transform: translateY(-8px);
   }
 
-  .collection-card img {
+  .card-svg {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.7s ease;
+    overflow: visible;
   }
 
-  .collection-card:hover img {
+  .card-image {
+    transition: transform 0.7s ease;
+    transform-origin: center;
+  }
+
+  .collection-card:hover .card-image {
     transform: scale(1.1);
   }
 
   /* ── Animated SVG border that hugs the clip-path edge ──────── */
-  .border-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-  }
 
   @keyframes trace-border {
     0% { stroke-dashoffset: 100; }
@@ -549,11 +547,11 @@ const categoryStyles = `
     .collection-row {
       gap: 24px;
       padding-left: 20px;
-      padding-right: 20px;
+      padding-right: 80px; /* Adjust for floating buttons */
     }
     .collection-card {
       width: 160px;
-      height: 240px;
+      height: auto;
     }
     .category-name {
       font-size: 16px;
@@ -581,8 +579,23 @@ export function CategoryGrid() {
           {featuredCategories.map((cat) => (
             <Link key={cat.name} href={cat.href} className="cat-item">
               <div className="collection-card">
-                <img src={cat.image} alt={cat.name} />
-                <svg viewBox="0 0 210 310" className="border-overlay">
+                <svg viewBox="0 0 210 310" className="card-svg" preserveAspectRatio="xMidYMid meet">
+                  <defs>
+                    <clipPath id={`clip-${cat.name.replace(/\s+/g, '-')}`}>
+                      <path d="M102 0 C135 0 145 35 175 35 C205 35 210 75 190 95 C220 125 205 165 175 168 C190 205 158 235 130 220 C110 255 70 250 65 220 C30 235 5 205 25 170 C-5 160 -2 115 25 98 C5 65 30 35 62 38 C70 15 82 0 102 0 Z" />
+                    </clipPath>
+                  </defs>
+                  
+                  <g clipPath={`url(#clip-${cat.name.replace(/\s+/g, '-')})`}>
+                    <image 
+                      href={cat.image} 
+                      width="100%" 
+                      height="100%" 
+                      preserveAspectRatio="xMidYMid slice" 
+                      className="card-image"
+                    />
+                  </g>
+
                   {/* Base Track (Faint outline) */}
                   <path
                     d="M102 0 C135 0 145 35 175 35 C205 35 210 75 190 95 C220 125 205 165 175 168 C190 205 158 235 130 220 C110 255 70 250 65 220 C30 235 5 205 25 170 C-5 160 -2 115 25 98 C5 65 30 35 62 38 C70 15 82 0 102 0 Z"
@@ -775,108 +788,12 @@ export function SpotlightSection() {
   )
 }
 
-/* ── Offers Strip ─────────────────────────────────── */
+/* ── Offers Strip (Hidden) ─────────────────────────── */
 export function OffersStrip() {
-  return (
-    <div
-      className="py-6"
-      style={{
-        background: 'var(--gold-pale)',
-        borderTop: '1px solid rgba(201,168,76,0.3)',
-        borderBottom: '1px solid rgba(201,168,76,0.3)',
-      }}
-    >
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex flex-col md:flex-row items-center gap-4 lg:gap-10">
-        {[
-          {
-            emoji: '🎉', title: 'First Order Offer',
-            sub: 'Use code during checkout',
-            extra: <span className="inline-block mt-1 px-3 py-0.5 text-xs font-bold tracking-widest rounded-sm" style={{ background: 'var(--burgundy)', color: 'var(--gold-light)' }}>SAS15OFF</span>,
-          },
-          {
-            emoji: '🎂', title: 'Birthday Month Special',
-            sub: 'Exclusive discount every year',
-            extra: <span className="text-[11px]" style={{ color: 'var(--muted)' }}>Register with your DOB to unlock</span>,
-          },
-          {
-            emoji: '🌍', title: 'NRI & Global Orders',
-            sub: 'Worldwide shipping available',
-            extra: <span className="text-[11px]" style={{ color: 'var(--muted)' }}>Real-time parcel tracking</span>,
-          },
-        ].map(offer => (
-          <div
-            key={offer.title}
-            className="flex items-center gap-3 w-full md:w-auto md:flex-1 rounded-md px-5 py-3"
-            style={{ background: 'white', border: '1px solid rgba(201,168,76,0.4)' }}
-          >
-            <span className="text-2xl">{offer.emoji}</span>
-            <div>
-              <strong className="block text-sm font-bold" style={{ color: 'var(--burgundy)' }}>{offer.title}</strong>
-              <span className="block text-xs" style={{ color: 'var(--muted)' }}>{offer.sub}</span>
-              {offer.extra}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  return null
 }
 
-/* ── Loyalty Banner ────────────────────────────────── */
+/* ── Loyalty Banner (Hidden) ───────────────────────── */
 export function LoyaltyBanner() {
-  return (
-    <div
-      className="py-14 relative overflow-hidden"
-      style={{ background: 'var(--burgundy-dark)' }}
-    >
-      <div
-        className="max-w-[1400px] mx-auto px-4 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] items-center gap-10"
-      >
-        <div>
-          <h2 className="text-[30px] font-bold leading-tight mb-4" style={{ fontFamily: 'Playfair Display, serif', color: 'white' }}>
-            Earn{' '}
-            <em style={{ color: 'var(--gold-light)', fontStyle: 'italic' }}>Rewards</em>
-            {' '}with Every Purchase
-          </h2>
-          <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.65)' }}>
-            Join our loyalty program and earn points with every order. Redeem for discounts, early access,
-            and exclusive member events.
-          </p>
-          <Link
-            href="/loyalty"
-            className="inline-block px-7 py-3 text-xs font-bold uppercase tracking-widest rounded-sm no-underline"
-            style={{ background: 'var(--gold)', color: 'var(--burgundy-dark)' }}
-          >
-            Join Now — It's Free
-          </Link>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          {loyaltyTiers.map(tier => (
-            <div
-              key={tier.name}
-              className="flex-1 rounded-lg p-4 text-center"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(201,168,76,0.25)',
-              }}
-            >
-              <div className="text-3xl mb-2">{tier.icon}</div>
-              <div
-                className="text-sm font-bold tracking-widest uppercase mb-1"
-                style={{ color: 'var(--gold-light)' }}
-              >
-                {tier.name}
-              </div>
-              <div className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                {tier.perks.join(' · ')}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div />
-      </div>
-    </div>
-  )
+  return null
 }
