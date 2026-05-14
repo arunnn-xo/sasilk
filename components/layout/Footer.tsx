@@ -107,50 +107,51 @@ export default function Footer() {
   ]
 
   const themeColors = {
-    bg: '#FAF6EE',
-    textDark: '#333333',
-    textLight: '#666666',
-    accentRed: '#A33B24',
+    bg: '#300D14',
+    textDark: '#FAF6EE',
+    textLight: '#E8DFD0',
+    accentRed: '#C4A462',
     accentGold: '#C4A462',
-    borderLight: '#E8DFD0'
+    borderLight: '#5A1827'
   }
 
   return (
     <>
-      <footer className="pb-24 md:pb-4 relative" style={{ background: themeColors.bg, color: '#000000', paddingTop: '40px', fontFamily: '"Assistant", sans-serif', fontSize: '13px', lineHeight: '21px', fontWeight: 400 }}>
+      <footer className="pb-24 md:pb-4 relative" style={{ background: themeColors.bg, color: themeColors.textDark, paddingTop: '40px', fontFamily: '"Assistant", sans-serif', fontSize: '13px', lineHeight: '21px', fontWeight: 400 }}>
 
         {/* ── Main Grid ── */}
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-4 mb-6">
 
           {/* About Us */}
           <div>
-            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: '#000000', fontFamily: '"Assistant", sans-serif' }}>
+            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3 flex items-center gap-2" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
               About Us
+              <img src="/sectionicon/golden-quill-feather.png" className="w-4 h-4 object-contain opacity-80" alt="" />
             </h4>
-            <p className="text-[12px] leading-relaxed mb-4" style={{ color: '#000000' }}>
-              <strong className="font-semibold uppercase tracking-widest" style={{ color: '#000000', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> offers beautifully crafted handloom sarees that blend traditional artistry with modern simplicity — made for comfort and effortless elegance.
+            <p className="text-[12px] leading-relaxed mb-4" style={{ color: themeColors.textDark }}>
+              <strong className="font-semibold uppercase tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> offers beautifully crafted handloom sarees that blend traditional artistry with modern simplicity — made for comfort and effortless elegance.
             </p>
 
-            <div className="space-y-2 text-[12px] leading-relaxed" style={{ color: '#000000' }}>
+            <div className="space-y-2 text-[12px] leading-relaxed" style={{ color: themeColors.textDark }}>
               <div className="flex items-start gap-3">
                 <IconMail className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: themeColors.accentGold }} />
-                <span><strong className="font-medium" style={{ color: '#000000' }}>Email:</strong><br />care@soilgoddess.com</span>
+                <span><strong className="font-medium" style={{ color: themeColors.textDark }}>Email:</strong><br />care@soilgoddess.com</span>
               </div>
               <div className="flex items-start gap-3">
                 <IconPhone className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: themeColors.accentGold }} />
-                <span><strong className="font-medium" style={{ color: '#000000' }}>Phone:</strong><br />+91 6354506028</span>
+                <span><strong className="font-medium" style={{ color: themeColors.textDark }}>Phone:</strong><br />+91 6354506028</span>
               </div>
               <div className="flex items-start gap-3">
                 <IconChat className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: themeColors.accentGold }} />
-                <span><strong className="font-medium" style={{ color: '#000000' }}>WhatsApp:</strong><br />+91 9265660282</span>
+                <span><strong className="font-medium" style={{ color: themeColors.textDark }}>WhatsApp:</strong><br />+91 9265660282</span>
               </div>
             </div>
 
             <div className="mt-4 pt-3 border-t" style={{ borderColor: themeColors.borderLight }}>
-              <div className="flex items-start gap-3 text-[13px] leading-relaxed" style={{ color: '#000000' }}>
+              <div className="flex items-start gap-3 text-[13px] leading-relaxed" style={{ color: themeColors.textDark }}>
                 <IconLocation className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: themeColors.accentGold }} />
                 <div>
-                  <strong className="font-medium" style={{ color: '#000000' }}>Address:</strong><br />
+                  <strong className="font-medium" style={{ color: themeColors.textDark }}>Address:</strong><br />
                   Dr. India Textile Hub, Shop No. 518–522,<br />5th Floor, Surat, Gujarat, India
                 </div>
               </div>
@@ -166,7 +167,7 @@ export default function Footer() {
 
           {/* Useful Links */}
           <div>
-            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: '#000000', fontFamily: '"Assistant", sans-serif' }}>
+            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
               Useful Links
             </h4>
             <div className="space-y-2 flex flex-col items-start">
@@ -175,10 +176,10 @@ export default function Footer() {
                   key={l.label}
                   href={l.href}
                   className="group relative inline-block text-[13px] no-underline pb-1 transition-all duration-300"
-                  style={{ color: '#000000' }}
+                  style={{ color: themeColors.textDark }}
                 >
-                  <span className="relative z-10 group-hover:text-[#A33B24] transition-colors duration-300">{l.label}</span>
-                  <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[#A33B24] transition-all duration-300 group-hover:w-full"></span>
+                  <span className="relative z-10 group-hover:text-[#C4A462] transition-colors duration-300">{l.label}</span>
+                  <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[#C4A462] transition-all duration-300 group-hover:w-full"></span>
                 </Link>
               ))}
             </div>
@@ -186,7 +187,7 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: '#000000', fontFamily: '"Assistant", sans-serif' }}>
+            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
               Customer Service
             </h4>
             <div className="space-y-2 flex flex-col items-start">
@@ -195,21 +196,25 @@ export default function Footer() {
                   key={l.label}
                   href={l.href}
                   className="group relative inline-block text-[13px] no-underline pb-1 transition-all duration-300"
-                  style={{ color: '#000000' }}
+                  style={{ color: themeColors.textDark }}
                 >
-                  <span className="relative z-10 group-hover:text-[#A33B24] transition-colors duration-300">{l.label}</span>
-                  <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[#A33B24] transition-all duration-300 group-hover:w-full"></span>
+                  <span className="relative z-10 group-hover:text-[#C4A462] transition-colors duration-300">{l.label}</span>
+                  <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-[#C4A462] transition-all duration-300 group-hover:w-full"></span>
                 </Link>
               ))}
             </div>
           </div>
 
           {/* Newsletter & Socials */}
-          <div>
-            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3" style={{ color: '#000000', fontFamily: '"Assistant", sans-serif' }}>
+          <div className="relative overflow-hidden">
+            {/* White-gold flowers subtle bg watermark */}
+            <div className="absolute -top-4 -right-4 w-32 sm:w-40 h-32 sm:h-40 opacity-10 pointer-events-none select-none rotate-12">
+              <img src="/sectionicon/white-gold-flowers.png" className="w-full h-full object-contain" alt="" />
+            </div>
+            <h4 className="footer-section-heading text-[12px] font-bold uppercase tracking-[2px] mb-3 relative z-10" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
               Newsletter
             </h4>
-            <p className="text-[12px] mb-4 leading-relaxed" style={{ color: '#000000' }}>
+            <p className="text-[12px] mb-4 leading-relaxed" style={{ color: themeColors.textDark }}>
               Sign up to our newsletter to receive exclusive offers and updates on our latest collections.
             </p>
 
@@ -243,14 +248,14 @@ export default function Footer() {
                 }}
               >
                 <span className="relative z-10 group-hover:text-white transition-colors duration-300">Subscribe</span>
-                <div className="absolute inset-0 h-full w-0 bg-[#A33B24] transition-all duration-500 ease-out group-hover:w-full z-0"></div>
+                <div className="absolute inset-0 h-full w-0 bg-[#C4A462] transition-all duration-500 ease-out group-hover:w-full z-0"></div>
               </button>
             </div>
 
             {/* Social Media & Currency Dropdown */}
             <div className="flex flex-col items-start lg:items-end w-full gap-4">
               <div className="flex flex-col items-start lg:items-end gap-3 w-full">
-                <h5 className="text-[11px] uppercase tracking-[2px] font-bold" style={{ color: '#000000' }}>
+                <h5 className="text-[11px] uppercase tracking-[2px] font-bold" style={{ color: themeColors.textDark }}>
                   Follow Us
                 </h5>
                 <div
@@ -272,7 +277,7 @@ export default function Footer() {
               </div>
 
               <div className="flex flex-col items-start lg:items-end gap-3 mt-2 w-full">
-                <h5 className="text-[11px] uppercase tracking-[2px] font-bold" style={{ color: '#000000' }}>
+                <h5 className="text-[11px] uppercase tracking-[2px] font-bold" style={{ color: themeColors.textDark }}>
                   Local Currency
                 </h5>
                 <div
@@ -348,21 +353,21 @@ export default function Footer() {
           <div className="footer-bottom-divider"></div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-center sm:text-left">
-              <span className="text-[13px] font-bold tracking-widest" style={{ color: '#000000', fontFamily: 'Playfair Display, serif' }}>
+              <span className="text-[13px] font-bold tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif' }}>
                 SOIL GODDESS
               </span>
               <span className="hidden sm:block text-[10px]" style={{ color: themeColors.borderLight }}>|</span>
-              <span className="text-[11px]" style={{ color: '#000000' }}>
+              <span className="text-[11px]" style={{ color: themeColors.textDark }}>
                 © 2026 · All rights reserved.
               </span>
               <span className="hidden sm:block text-[10px]" style={{ color: themeColors.borderLight }}>|</span>
-              <span className="text-[10px]" style={{ color: '#000000' }}>
+              <span className="text-[10px]" style={{ color: themeColors.textDark }}>
                 Crafted with ❤ in India
               </span>
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-[10px] hidden md:block" style={{ color: '#000000' }}>
+              <span className="text-[10px] hidden md:block" style={{ color: themeColors.textDark }}>
                 Designed by Sai Techno Solutions
               </span>
               <div className="flex items-center gap-1.5">
@@ -376,21 +381,21 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Mobile Bottom Navigation (Updated colors to match light theme) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#FAF6EE] border-t border-[#E8DCC4] flex md:hidden items-end justify-between px-6 pb-2 pt-2 z-[100] shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-        <Link href="/" className="flex flex-col items-center gap-1 text-[#A04724] no-underline">
+      {/* Mobile Bottom Navigation (Updated colors to match dark theme) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#300D14] border-t border-[#5A1827] flex md:hidden items-end justify-between px-6 pb-2 pt-2 z-[100] shadow-[0_-4px_12px_rgba(0,0,0,0.5)]">
+        <Link href="/" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
           <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
           <span className="text-[10px] font-medium">Sarees</span>
         </Link>
-        <Link href="/trending" className="flex flex-col items-center gap-1 text-[#A04724] no-underline">
+        <Link href="/trending" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
           <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
           <span className="text-[10px] font-medium">Trending</span>
         </Link>
-        <Link href="/favourites" className="flex flex-col items-center gap-1 text-[#A04724] no-underline">
+        <Link href="/favourites" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
           <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
           <span className="text-[10px] font-medium">Favourites</span>
         </Link>
-        <Link href="/swiftship" className="flex flex-col items-center gap-1 text-[#A04724] no-underline">
+        <Link href="/swiftship" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
           <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
           <span className="text-[10px] font-medium">SwiftShip</span>
         </Link>

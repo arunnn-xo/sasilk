@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Heart, ShoppingCart, Shield, Clock, Globe, Truck } from 'lucide-react'
 import { featuredCategories, organicSareeSubcats, newArrivals, loyaltyTiers } from '@/lib/data'
@@ -25,7 +25,7 @@ export function CollectionBanner() {
       {/* Floral motif watermark */}
       <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 opacity-15 pointer-events-none" style={{ backgroundImage: "url('/borderdesign/flower-motif.png')", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "top right" }}></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 md:w-96 md:h-96 opacity-15 pointer-events-none transform rotate-180" style={{ backgroundImage: "url('/borderdesign/flower-motif.png')", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "top right" }}></div>
-      
+
       {/* Blurred nature overlay */}
       <div
         className="absolute inset-0 opacity-40"
@@ -145,13 +145,13 @@ export function FeaturesStrip() {
         <div className="relative flex items-center justify-center">
           <Shield size={24} className="text-[#5e171b]" />
           {/* Custom SVG Tick for drawing animation */}
-          <svg 
-            className="absolute w-4 h-4 text-[#5e171b]" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="4" 
-            strokeLinecap="round" 
+          <svg
+            className="absolute w-4 h-4 text-[#5e171b]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
             strokeLinejoin="round"
           >
             <polyline points="20 6 9 17 4 12" className="animate-tick-draw" />
@@ -166,7 +166,7 @@ export function FeaturesStrip() {
       {/* Top Hexagon Border */}
       <div className="w-full h-5 md:h-6 bg-repeat-x opacity-70" style={{ backgroundImage: "url('/borderdesign/hex-border.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
       <div className="w-full bg-[#faf7f2] py-8 px-4 md:px-8 overflow-hidden">
-      <style>{`
+        <style>{`
         /* Truck driving vibration */
         @keyframes truckDrive {
           0%, 100% { transform: translateY(0) translateX(0); }
@@ -218,34 +218,33 @@ export function FeaturesStrip() {
         .delay-700 { animation-delay: 0.7s; }
       `}</style>
 
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0">
-        {features.map((feature, index) => (
-          <div 
-            key={feature.id} 
-            className={`flex items-center gap-4 px-6 relative ${
-              index !== features.length - 1 ? 'lg:border-r border-stone-300' : ''
-            }`}
-          >
-            {/* Icon Container with White Circle */}
-            <div className="flex-shrink-0 w-14 h-14 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
-              {feature.icon}
-            </div>
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-0">
+          {features.map((feature, index) => (
+            <div
+              key={feature.id}
+              className={`flex items-center gap-4 px-6 relative ${index !== features.length - 1 ? 'lg:border-r border-stone-300' : ''
+                }`}
+            >
+              {/* Icon Container with White Circle */}
+              <div className="flex-shrink-0 w-14 h-14 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-sm transition-transform duration-300 hover:scale-110">
+                {feature.icon}
+              </div>
 
-            {/* Text Information */}
-            <div className="flex flex-col">
-              <h3 className="text-[#5e171b] font-bold text-[13.5px] md:text-base leading-tight uppercase tracking-wide">
-                {feature.title}
-              </h3>
-              <p className="text-gray-500 text-[11px] md:text-sm mt-1 font-medium">
-                {feature.description}
-              </p>
+              {/* Text Information */}
+              <div className="flex flex-col">
+                <h3 className="text-[#5e171b] font-bold text-[13.5px] md:text-base leading-tight uppercase tracking-wide">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-500 text-[11px] md:text-sm mt-1 font-medium">
+                  {feature.description}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-    {/* Bottom Hexagon Border */}
-    <div className="w-full h-5 md:h-6 bg-repeat-x opacity-70" style={{ backgroundImage: "url('/borderdesign/hex-border.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
+      {/* Bottom Hexagon Border */}
+      <div className="w-full h-5 md:h-6 bg-repeat-x opacity-70" style={{ backgroundImage: "url('/borderdesign/hex-border.jpg')", backgroundSize: "contain", backgroundPosition: "center" }}></div>
     </>
   );
 }
@@ -271,7 +270,25 @@ export function SubcatBar() {
   ];
 
   return (
-    <div className="py-16 bg-white flex flex-col items-center px-4 font-sans overflow-hidden">
+    <div className="py-16 bg-[#FAF6EE] flex flex-col items-center px-4 font-sans overflow-hidden relative border-y border-[#E8DCC4]">
+      {/* Abstract Luxury Paisley Background (CSS + SVG Masking) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+        {/* Floral Paisley Motif fading out from left */}
+        <div className="absolute top-0 left-0 w-[120%] md:w-[60%] h-full" style={{
+          backgroundImage: "url('/sectionicon/white-gold-flowers.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "left center",
+          backgroundRepeat: "no-repeat",
+          maskImage: "linear-gradient(to right, black 10%, transparent 90%)",
+          WebkitMaskImage: "linear-gradient(to right, black 10%, transparent 90%)"
+        }} />
+        {/* Subtle Geometric Texture over the section */}
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30.5V28H0v-2h30v-2.5l15-6.5 15 6.5V26h-30v2h30v2.5l-15 6.5-15-6.5zM30 30.5V28H0v-2h30v-2.5L15 13 0 19.5V26h30v2H0v2.5L15 37l15-6.5z' fill='%23c29b57' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+          backgroundSize: "80px 80px"
+        }} />
+      </div>
+
       {/* Google Fonts and Animations import seiyum style tag */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -348,22 +365,14 @@ export function SubcatBar() {
       `}} />
 
       {/* Siriya thalaippu (Small Header) */}
-      <h3 className="font-montserrat text-[#c29b57] text-[11px] font-semibold tracking-[0.25em] uppercase mb-4 text-center">
+      <h3 className="font-montserrat text-[#c29b57] text-[11px] font-semibold tracking-[0.25em] uppercase mb-4 text-center z-10 relative">
         Organic Sarees
       </h3>
 
       {/* Mukkiya thalaippu (Main Title) */}
-      <h1 className="font-playfair text-[#5a1827] text-4xl md:text-5xl font-bold mb-5 tracking-wide text-center">
+      <h1 className="font-playfair text-[#5a1827] text-4xl md:text-5xl font-bold mb-5 tracking-wide text-center z-10 relative">
         Shop by Fabric
       </h1>
-
-      {/* Winding Floral Divider Line */}
-      <img
-        src="/borderdesign/winding-border.jpg"
-        alt=""
-        aria-hidden="true"
-        className="w-80 max-w-[86vw] sm:w-[26rem] md:w-[34rem] h-auto mb-12 opacity-80 object-contain"
-      />
 
       {/* Image Categories Container */}
       <div className="w-full max-w-7xl overflow-x-auto hide-scrollbar">
@@ -576,22 +585,22 @@ export function CategoryGrid() {
       {/* Cards */}
       <div className="collection-container">
         <div className="collection-row">
-          {featuredCategories.map((cat) => (
+          {featuredCategories.map((cat, index) => (
             <Link key={cat.name} href={cat.href} className="cat-item">
               <div className="collection-card">
                 <svg viewBox="0 0 210 310" className="card-svg" preserveAspectRatio="xMidYMid meet">
                   <defs>
-                    <clipPath id={`clip-${cat.name.replace(/\s+/g, '-')}`}>
+                    <clipPath id={`clip-cat-${index}`}>
                       <path d="M102 0 C135 0 145 35 175 35 C205 35 210 75 190 95 C220 125 205 165 175 168 C190 205 158 235 130 220 C110 255 70 250 65 220 C30 235 5 205 25 170 C-5 160 -2 115 25 98 C5 65 30 35 62 38 C70 15 82 0 102 0 Z" />
                     </clipPath>
                   </defs>
-                  
-                  <g clipPath={`url(#clip-${cat.name.replace(/\s+/g, '-')})`}>
-                    <image 
-                      href={cat.image} 
-                      width="100%" 
-                      height="100%" 
-                      preserveAspectRatio="xMidYMid slice" 
+
+                  <g clipPath={`url(#clip-cat-${index})`}>
+                    <image
+                      href={cat.image}
+                      width="100%"
+                      height="100%"
+                      preserveAspectRatio="xMidYMid slice"
                       className="card-image"
                     />
                   </g>
@@ -635,12 +644,24 @@ export function ProductGrid() {
     setWishlist(w => w.includes(id) ? w.filter(x => x !== id) : [...w, id])
 
   return (
-    <section className="py-16" style={{ background: 'white' }}>
-      <div className="w-full mx-auto px-4 lg:px-8">
-        <div className="text-center mb-11">
+    <section className="py-16 relative overflow-hidden bg-[#FAF6EE] border-b border-[#E8DCC4]">
+      {/* Abstract Symmetrical Mughal Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
+        {/* Subtle Geometric Texture */}
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2.5l10-4.5 10 4.5V16h-20v2h20v2.5l-10 4.5-10-4.5z' fill='%23c29b57' fill-opacity='0.3' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+          backgroundSize: "40px 40px"
+        }} />
+        {/* Symmetrical Floral Frames (Mughal Arch vibe) */}
+        <div className="absolute top-0 left-0 w-[120px] md:w-[250px] h-full" style={{ backgroundImage: "url('/sectionicon/golden-floral-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
+        <div className="absolute top-0 right-0 w-[120px] md:w-[250px] h-full transform scale-x-[-1]" style={{ backgroundImage: "url('/sectionicon/golden-floral-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
+      </div>
+
+      <div className="w-full mx-auto px-4 lg:px-8 relative z-10">
+        <div className="text-center mb-8 md:mb-11">
           <p className="text-xs tracking-[3px] uppercase font-medium mb-2" style={{ color: 'var(--gold)' }}>Just In</p>
-          <h2 className="text-[36px] font-bold mb-3" style={{ fontFamily: 'Playfair Display, serif', color: 'var(--burgundy-dark)' }}>New Arrivals</h2>
-          <div className="w-14 h-0.5 mx-auto rounded" style={{ background: 'var(--gold)' }} />
+          <h2 className="text-[28px] md:text-[36px] font-bold mb-1" style={{ fontFamily: 'Playfair Display, serif', color: 'var(--burgundy-dark)' }}>New Arrivals</h2>
+          {/* Teal-Gold Flourish under heading */}
         </div>
 
         {/* Elegant CSS Frame Wrapper */}
@@ -777,16 +798,286 @@ export function ProductGrid() {
 /* ── Spotlight Section ─────────────────────────────── */
 export function SpotlightSection() {
   return (
-    <section className="w-full bg-white overflow-hidden">
-      {/* The user's uploaded banner image - touching edges perfectly */}
-      <img
-        src="/spotlight-banner.png"
-        alt="Spotlight Stealer"
-        className="w-full h-auto block object-cover"
-      />
+    <section className="relative w-full bg-[#FAF6EE] overflow-hidden py-8 md:py-14">
+
+      {/* Golden Floral Pillars — hidden on mobile, show md+ */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
+        <img src="/sectionicon/golden-floral-pillar.png" alt="" className="w-full h-full object-contain object-left drop-shadow-xl" />
+      </div>
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
+        <img src="/sectionicon/golden-floral-pillar.png" alt="" className="w-full h-full object-contain object-right scale-x-[-1] drop-shadow-xl" />
+      </div>
+
+      {/* Spotlight Banner image */}
+      <div className="max-w-[1200px] mx-auto relative z-0 px-2 sm:px-4 md:px-16 lg:px-24">
+        <img
+          src="/spotlight-banner.png"
+          alt="Spotlight Stealer"
+          className="w-full h-auto block object-cover rounded-xl shadow-[0_16px_40px_rgba(107,26,42,0.15)] border-2 md:border-4 border-white"
+        />
+      </div>
     </section>
   )
 }
+
+function AnimatedCounter({ end, duration = 5000, suffix = "" }: { end: number, duration?: number, suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setCount(0);
+      return;
+    }
+    
+    let startTimestamp: number | null = null;
+    let animationFrameId: number;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 5); 
+      setCount(Math.floor(easeOut * end));
+      
+      if (progress < 1) {
+        animationFrameId = window.requestAnimationFrame(step);
+      } else {
+        setCount(end);
+      }
+    };
+    
+    animationFrameId = window.requestAnimationFrame(step);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [isVisible, end, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+/* ── Heritage & Craftsmanship Section ───────────── */
+export function HeritageSection() {
+  return (
+    <section className="py-16 md:py-24 relative text-center px-4 overflow-hidden bg-[#FAF6EE]">
+      {/* Abstract Silk Glow Effect */}
+      <div className="absolute inset-0 opacity-50 mix-blend-multiply pointer-events-none"
+           style={{ 
+             backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(194,155,87,0.1) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(107,29,21,0.05) 0%, transparent 40%)' 
+           }}>
+      </div>
+      {/* Abstract thread lines SVG */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+           style={{ 
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100,200 C300,-100 600,500 1200,100' fill='none' stroke='%23C29B57' stroke-width='4'/%3E%3Cpath d='M-100,300 C400,0 500,400 1200,200' fill='none' stroke='%236B1D15' stroke-width='2'/%3E%3C/svg%3E")`,
+             backgroundSize: 'cover'
+           }}>
+      </div>
+
+      <div className="max-w-5xl mx-auto mb-10 md:mb-14 relative z-10">
+        <h2 className="text-2xl md:text-3xl font-montserrat tracking-[0.15em] text-[#333333] font-semibold mb-6 uppercase">
+          Artisans and Weavers
+        </h2>
+        <p className="text-[13px] md:text-[14px] font-montserrat text-[#555555] leading-relaxed max-w-4xl mx-auto">
+          Artisans and weavers are the guardians of heritage and sustainability in the fashion industry. They use their skills to create intricate handweaving pieces that tell stories and carry cultural traditions. These craftsmen prioritize sustainable materials and traditional techniques, advocating for eco-friendly fashion. Their creations, often made from pure natural fibers, offer unparalleled comfort and durability, defying the trends of fast fashion. Supporting artisans and weavers means embracing timeless artistry, preserving heritage, and making a conscious choice for a more sustainable and earth-friendly lifestyle.
+        </p>
+      </div>
+
+      <div className="w-full max-w-[1600px] mx-auto mb-16 md:mb-20 relative z-10">
+        <div className="w-full h-[300px] md:h-[500px] lg:h-[600px] overflow-hidden shadow-2xl">
+          <img 
+            src="/artisan_weaver.png" 
+            alt="Artisan Weaver working on handloom" 
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 text-center relative z-10">
+        <div>
+          <h3 className="text-4xl md:text-5xl font-playfair text-[#6B1D15] mb-3">
+            <AnimatedCounter end={300} suffix="K+" />
+          </h3>
+          <p className="text-[11px] md:text-xs tracking-widest font-montserrat uppercase text-[#666666]">Instagram Family</p>
+        </div>
+        <div>
+          <h3 className="text-4xl md:text-5xl font-playfair text-[#6B1D15] mb-3">
+            <AnimatedCounter end={2} suffix="Lakh" />
+          </h3>
+          <p className="text-[11px] md:text-xs tracking-widest font-montserrat uppercase text-[#666666]">Artisans Network</p>
+        </div>
+        <div>
+          <h3 className="text-4xl md:text-5xl font-playfair text-[#6B1D15] mb-3">
+            <AnimatedCounter end={120} suffix="%" />
+          </h3>
+          <p className="text-[11px] md:text-xs tracking-widest font-montserrat uppercase text-[#666666]">Sustainable Art</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Signature Lookbook Section ──────────────────── */
+export function LookbookSection() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const blockRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  const stories = [
+    {
+      image: "/story_spinner.png",
+      title: "The Spinner of Dreams",
+      body: "At the heart of every handwoven saree is the painstaking process of spinning the perfect thread, a task mastered with years of dedication. The spinning wheel sings a rhythmic song, turning raw cotton into fine threads, which later becomes the elegant saree loved by our patrons. Their work is the foundation of the handloom tradition, ensuring that the magic of the weaving legacy continues to thrive.",
+      watermark: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%23C29B57' stroke-width='2'/%3E%3Cpath d='M50,10 L50,90 M10,50 L90,50 M22,22 L78,78 M22,78 L78,22' stroke='%23C29B57' stroke-width='1'/%3E%3Ccircle cx='50' cy='50' r='10' fill='none' stroke='%23C29B57' stroke-width='2'/%3E%3C/svg%3E")`,
+    },
+    {
+      image: "/story_loom.png",
+      title: "The Master of the Loom",
+      body: "Weaving is more than a craft—it is a lifelong devotion to artistry. Sitting at the wooden loom in the heart of the village, they transform fine cotton threads into exquisite handwoven sarees, each a testament to unparalleled skill. Steady hands and sharp focus breathe life into every warp and weft, ensuring that each SutiSancha saree carries a story of dedication, resilience, and cultural pride.",
+      watermark: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='20' width='80' height='60' fill='none' stroke='%23C29B57' stroke-width='2'/%3E%3Cpath d='M10,35 L90,35 M10,65 L90,65 M30,20 L30,80 M70,20 L70,80' stroke='%23C29B57' stroke-width='1'/%3E%3Cpath d='M10,50 L90,50' stroke='%23C29B57' stroke-width='1' stroke-dasharray='4 2'/%3E%3C/svg%3E")`,
+    },
+    {
+      image: "/lookbook_detail.png",
+      title: "The Essence of Tradition",
+      body: "With skilled hands and unwavering dedication, our artisans bring to life the delicate threads of handloom sarees. Every weave crafted is a reflection of rich textile heritage, passed down through generations. Intricate work on the loom symbolizes patience, precision, and passion—creating fabrics that are not just sarees but timeless pieces of art, carrying the soul of SutiSancha.",
+      watermark: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50,10 C70,40 90,50 90,50 C90,50 70,60 50,90 C30,60 10,50 10,50 C10,50 30,40 50,10 Z' fill='none' stroke='%23C29B57' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='10' fill='none' stroke='%23C29B57' stroke-width='1'/%3E%3C/svg%3E")`,
+    },
+  ]
+
+  useEffect(() => {
+    const observers = blockRefs.current.map((ref, index) => {
+      if (!ref) return null
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveIndex(index)
+            }
+          })
+        },
+        { threshold: 0.4 }
+      )
+      observer.observe(ref)
+      return observer
+    })
+    return () => observers.forEach((obs) => obs?.disconnect())
+  }, [])
+
+  return (
+    <section className="relative border-t border-[#E8DCC4] bg-[#FAF6EE]">
+      {/* Silk glow bg */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            'radial-gradient(ellipse at top left, rgba(194,155,87,0.07) 0%, transparent 55%), radial-gradient(ellipse at bottom right, rgba(107,29,21,0.04) 0%, transparent 55%)',
+        }}
+      />
+
+      <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row">
+
+        {/* ── Left: Sticky image panel ── */}
+        <div className="lg:w-[48%] flex-shrink-0 lg:sticky lg:top-0 lg:h-screen flex items-center justify-center px-6 lg:px-12 py-12 lg:py-16">
+          <div className="relative w-full max-w-[420px] lg:max-w-[460px]" style={{ aspectRatio: '4/5' }}>
+            {stories.map((s, idx) => (
+              <img
+                key={idx}
+                src={s.image}
+                alt={s.title}
+                className="absolute inset-0 w-full h-full object-cover shadow-xl"
+                style={{
+                  opacity: activeIndex === idx ? 1 : 0,
+                  transform: activeIndex === idx ? 'scale(1)' : 'scale(1.03)',
+                  transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
+                  zIndex: activeIndex === idx ? 10 : 0,
+                }}
+              />
+            ))}
+            {/* Caption */}
+            <p className="absolute -bottom-7 left-0 text-[11px] font-montserrat text-[#999] italic tracking-wide">
+              The Hands Behind the Heritage
+            </p>
+          </div>
+        </div>
+
+
+        {/* ── Right: Naturally scrolling text blocks ── */}
+        <div className="lg:w-[52%] flex flex-col">
+          {stories.map((s, idx) => (
+            <div
+              key={idx}
+              ref={(el) => { blockRefs.current[idx] = el }}
+              className="min-h-screen flex flex-col justify-center px-6 lg:px-14 py-24 lg:py-0 relative"
+            >
+              {/* SVG Watermark */}
+              <div
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 opacity-[0.04] pointer-events-none"
+                style={{
+                  backgroundImage: s.watermark,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                }}
+              />
+
+              {/* Story number */}
+              <p className="text-[11px] tracking-[0.25em] font-montserrat uppercase text-[#C29B57] mb-4">
+                {String(idx + 1).padStart(2, '0')}&nbsp;&nbsp;/&nbsp;&nbsp;{String(stories.length).padStart(2, '0')}
+              </p>
+
+              {/* Title */}
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-montserrat text-[#2A2A2A] font-semibold mb-6 leading-snug">
+                {s.title}
+              </h3>
+
+              {/* Thin gold rule */}
+              <div className="w-12 h-[2px] bg-[#C29B57] mb-6 rounded-full" />
+
+              {/* Body */}
+              <p className="text-[14px] md:text-[15px] text-[#666] leading-[2] font-montserrat max-w-md">
+                {s.body}
+              </p>
+
+              {/* Progress dots */}
+              <div className="flex gap-2 mt-10">
+                {stories.map((_, di) => (
+                  <span
+                    key={di}
+                    className="block h-[3px] rounded-full"
+                    style={{
+                      width: di === activeIndex ? '36px' : '14px',
+                      backgroundColor: di === activeIndex ? '#6B1D15' : '#D9C8A8',
+                      transition: 'width 0.4s ease, background-color 0.4s ease',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
 
 /* ── Offers Strip (Hidden) ─────────────────────────── */
 export function OffersStrip() {
@@ -797,3 +1088,4 @@ export function OffersStrip() {
 export function LoyaltyBanner() {
   return null
 }
+

@@ -208,6 +208,11 @@ function Slide2() {
       />
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.5)' }} />
 
+      {/* Peacock Watermark — hidden on mobile */}
+      <div className="absolute left-0 bottom-0 w-32 sm:w-48 md:w-72 opacity-30 pointer-events-none z-10 hidden sm:block">
+        <img src="/sectionicon/peacock-transparent.png" className="w-full h-auto object-contain object-bottom" alt="" />
+      </div>
+
       <div className="relative z-10 text-center flex flex-col items-center px-4">
         <p
           className="tracking-[5px] uppercase text-[11px] md:text-sm mb-4 font-semibold"

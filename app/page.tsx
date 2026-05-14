@@ -12,6 +12,8 @@ import {
   CategoryGrid,
   ProductGrid,
   SpotlightSection,
+  HeritageSection,
+  LookbookSection,
   OffersStrip,
   LoyaltyBanner,
 } from '@/components/home/HomeComponents'
@@ -30,6 +32,8 @@ export default function HomePage() {
         <CategoryGrid />
         <ProductGrid />
         <SpotlightSection />
+        <HeritageSection />
+        <LookbookSection />
         <OffersStrip />
         <LoyaltyBanner />
       </main>

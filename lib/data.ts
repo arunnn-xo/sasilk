@@ -1,19 +1,17 @@
 // ── Navigation Categories ──────────────────────────────
 export const mainCategories = [
-  { label: 'Organic Sarees', href: '/collections/organic-sarees', hasDropdown: true },
-  { label: 'Ethnic Wear',    href: '/collections/ethnic-wear' },
-  { label: 'Daily Wear',     href: '/collections/daily-wear' },
-  { label: 'Men',            href: '/collections/men' },
-  { label: 'Kids',           href: '/collections/kids' },
-  { label: 'Teen',           href: '/collections/teen' },
-  { label: 'Privacy Wear',   href: '/collections/privacy-wear' },
+  { label: 'Organic Sarees',    href: '/collections/organic-sarees', hasDropdown: true },
+  { label: 'Party Wear',        href: '/collections/party-wear' },
+  { label: 'Daily Wear',        href: '/collections/daily-wear' },
+  { label: 'Men',               href: '/collections/men' },
+  { label: 'Kids',              href: '/collections/kids' },
+  { label: 'Privacy Wear',      href: '/collections/privacy-wear' },
   { label: 'Organic Cosmetics', href: '/collections/cosmetics' },
-  { label: 'Footwear',       href: '/collections/footwear' },
-  { label: 'Accessories',    href: '/collections/accessories' },
-  { label: 'Jewellery',      href: '/collections/jewellery' },
-  { label: 'Home & Living',  href: '/collections/home-living' },
-  { label: 'Return Gifts',   href: '/collections/return-gifts' },
-  { label: 'Clearance Sale', href: '/sale', isSale: true },
+  { label: 'Accessories',       href: '/collections/accessories' },
+  { label: 'Jewellery',         href: '/collections/jewellery' },
+  { label: 'Home & Living',     href: '/collections/home-living' },
+  { label: 'Return Gifts',      href: '/collections/return-gifts' },
+  { label: 'Clearance Sale',    href: '/sale', isSale: true },
 ]
 
 // ── Subcategories under Organic Sarees ────────────────
@@ -27,19 +25,18 @@ export const organicSareeSubcats = [
 
 // ── Featured Categories (homepage grid) ──────────────
 export const featuredCategories = [
-  { name: 'Mul Diaries',    href: '/collections/organic-sarees', image: '/categories/mul_diaries.png' },
-  { name: 'Linen Luxe',     href: '/collections/organic-sarees', image: '/categories/linen_luxe.png' },
-  { name: 'Tissue Tales',   href: '/collections/organic-sarees', image: '/categories/tissue_tales.png' },
-  { name: 'Weave Heritage', href: '/collections/organic-sarees', image: '/categories/weave_heritage.png' },
-  { name: 'Cloud Cotton',   href: '/collections/organic-sarees', image: '/categories/cloud_cotton.png' },
-  { name: 'Ethnic Wear',    href: '/collections/ethnic-wear',    image: '/categories/ethnic_wear.png' },
-  { name: 'Men\'s Wear',    href: '/collections/men',            image: '/categories/men.png' },
-  { name: 'Kids & Teen',    href: '/collections/kids',           image: '/categories/kids_teen.png' },
-  { name: 'Jewellery',      href: '/collections/jewellery',      image: '/categories/jewellery.png' },
-  { name: 'Home & Living',  href: '/collections/home-living',    image: '/categories/home_living.png' },
-  { name: 'Cosmetics',      href: '/collections/cosmetics',      image: '/categories/cosmetics.png' },
-  { name: 'Footwear',       href: '/collections/footwear',       image: '/categories/footwear.png' },
-  { name: 'Accessories',    href: '/collections/accessories',    image: '/categories/accessories.png' },
+  { name: 'Organic Sarees',    href: '/collections/organic-sarees', image: '/categories/organic_sarees_cat.png' },
+  { name: 'Party Wear',        href: '/collections/party-wear',     image: '/categories/party_wear_cat.png' },
+  { name: 'Daily Wear',        href: '/collections/daily-wear',     image: '/categories/daily_wear_cat.png' },
+  { name: 'Men\'s Wear',       href: '/collections/men',            image: '/categories/men_cat.png' },
+  { name: 'Kids',              href: '/collections/kids',           image: '/categories/kids_cat.png' },
+  { name: 'Privacy Wear',      href: '/collections/privacy-wear',   image: '/categories/privacy_wear_cat.png' },
+  { name: 'Organic Cosmetics', href: '/collections/cosmetics',      image: '/categories/organic_cosmetics_cat.png' },
+  { name: 'Accessories',       href: '/collections/accessories',    image: '/categories/accessories_cat.png' },
+  { name: 'Jewellery',         href: '/collections/jewellery',      image: '/categories/jewellery_cat.png' },
+  { name: 'Home & Living',     href: '/collections/home-living',    image: '/categories/home_living_cat.png' },
+  { name: 'Return Gifts',      href: '/collections/return-gifts',   image: '/categories/return_gifts_cat.png' },
+  { name: 'Clearance Sale',    href: '/sale',                       image: '/categories/clearance_sale_cat.png' },
 ]
 
 
