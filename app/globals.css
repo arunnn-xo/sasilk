@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -25,9 +25,190 @@
 
 body {
   font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
   background-color: var(--ivory);
   color: var(--charcoal);
   overflow-x: hidden;
+}
+
+.font-product {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.product-thumb-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.product-thumb-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.product-thumb-scroll::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+
+.product-thumb-scroll::-webkit-scrollbar-thumb:hover {
+  background: #A34336;
+}
+
+.product-trust-icon {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(163, 67, 54, 0.08);
+}
+
+.product-trust-icon::before,
+.product-trust-icon::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.product-trust-svg {
+  position: relative;
+  z-index: 2;
+}
+
+.product-trust-icon-truck .product-trust-svg {
+  animation: productTruckDrive 1.6s ease-in-out infinite;
+}
+
+.product-trust-icon-truck::before,
+.product-trust-icon-truck::after {
+  left: 13px;
+  bottom: 21px;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(163, 67, 54, 0.2);
+  filter: blur(0.3px);
+  animation: productTruckSmoke 1.6s ease-out infinite;
+}
+
+.product-trust-icon-truck::after {
+  animation-delay: 0.45s;
+}
+
+.product-trust-icon-support::before {
+  inset: 13px;
+  z-index: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(163, 67, 54, 0.25);
+  animation: productSupportPulse 1.8s ease-out infinite;
+}
+
+.product-trust-icon-support .product-trust-svg {
+  animation: productIconFloat 2.2s ease-in-out infinite;
+}
+
+.product-trust-icon-quality::before {
+  inset: -30%;
+  z-index: 3;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  transform: rotate(24deg) translateX(-240%);
+  animation: productQualityShine 2.6s ease-in-out infinite;
+}
+
+.product-trust-icon-quality .product-trust-svg {
+  animation: productMedalPop 2.4s ease-in-out infinite;
+}
+
+.product-trust-icon-return .product-trust-svg {
+  animation: productReturnSpin 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes productTruckDrive {
+  0%, 100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes productTruckSmoke {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.55);
+  }
+
+  25% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-15px, -8px) scale(1.45);
+  }
+}
+
+@keyframes productSupportPulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.82);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes productIconFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes productQualityShine {
+  0%, 35% {
+    transform: rotate(24deg) translateX(-240%);
+  }
+
+  70%, 100% {
+    transform: rotate(24deg) translateX(340%);
+  }
+}
+
+@keyframes productMedalPop {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes productReturnSpin {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+
+  45%, 60% {
+    transform: rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-trust-icon,
+  .product-trust-icon::before,
+  .product-trust-icon::after,
+  .product-trust-svg {
+    animation: none !important;
+  }
 }
 
 /* Announcement bar marquee */
@@ -294,7 +475,7 @@ body {
   background: #000000;
   color: #ffffff;
   text-decoration: none;
-  font-family: 'Assistant', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   line-height: 18px;
   padding: 8px 16px;
@@ -467,6 +648,66 @@ body {
   50% {
     opacity: 0.5;
     transform: scale(0.8);
+  }
+}
+
+/* Footer heritage images */
+.footer-artisan-gallery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 56px;
+  padding: 14px 0 18px;
+}
+
+.footer-artisan-item {
+  flex: 0 0 160px;
+  height: 220px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
+  border-top-left-radius: 999px;
+  border-top-right-radius: 999px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #FAF6EE;
+}
+
+.footer-artisan-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 1100px) {
+  .footer-artisan-gallery {
+    gap: 28px;
+  }
+
+  .footer-artisan-item {
+    flex-basis: 138px;
+    height: 190px;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer-artisan-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+
+  .footer-artisan-item {
+    width: 100%;
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-artisan-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

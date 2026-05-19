@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Heart, ShoppingCart, Shield, Clock, Globe, Truck } from 'lucide-react'
+import { Shield, Clock, Globe, Truck } from 'lucide-react'
 import { featuredCategories, organicSareeSubcats, newArrivals, loyaltyTiers } from '@/lib/data'
+import ProductCard from '@/components/product/ProductCard'
 
 /* ── Summer Sufiana Collection Banner ─────────────── */
 export function CollectionBanner() {
@@ -421,36 +422,65 @@ const categoryStyles = `
 
   /* ── Outer wrapper ── */
   .collection-wrapper {
-    background: #f7efe7;
-    padding: 60px 0 35px;
+    position: relative;
+    background-color: #FAF6EE;
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(194, 155, 87, 0.08), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(107, 29, 21, 0.04), transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.8), transparent 70%);
+    padding: 80px 0 50px;
     text-align: center;
     overflow: hidden;
   }
 
+  .collection-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/sectionicon/white-gold-flowers.png') no-repeat top right;
+    background-size: 60% auto;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: linear-gradient(to bottom left, black 10%, transparent 60%);
+    -webkit-mask-image: linear-gradient(to bottom left, black 10%, transparent 60%);
+  }
+
   /* ── Section heading area ─────────────────────────── */
+  .collection-heading {
+    position: relative;
+    z-index: 10;
+  }
+
   .collection-heading .section-label {
     font-size: 13px;
     letter-spacing: 3px;
-    color: #9f351c;
-    font-weight: 600;
-    margin-bottom: 10px;
+    color: #c29b57;
+    font-weight: 700;
+    margin-bottom: 12px;
     text-transform: uppercase;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     display: block;
   }
 
   .collection-heading h2 {
-    font-size: 40px;
+    font-size: 44px;
     font-family: 'Playfair Display', serif;
-    color: #6B1D15;
-    margin: 0 0 40px;
+    color: #5a1827;
+    margin: 0 0 45px;
     font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
   /* ── Inner container – caps width and centers ─────── */
   .collection-container {
     max-width: 100%;
     margin: auto;
+    position: relative;
+    z-index: 10;
   }
 
   /* ── Desktop & Mobile: Single-line horizontal scroll ── */
@@ -639,10 +669,6 @@ export function CategoryGrid() {
 
 /* ── New Arrivals Product Grid ────────────────────── */
 export function ProductGrid() {
-  const [wishlist, setWishlist] = useState<number[]>([])
-  const toggle = (id: number) =>
-    setWishlist(w => w.includes(id) ? w.filter(x => x !== id) : [...w, id])
-
   return (
     <section className="py-16 relative overflow-hidden bg-[#FAF6EE] border-b border-[#E8DCC4]">
       {/* Abstract Symmetrical Mughal Background */}
@@ -701,87 +727,35 @@ export function ProductGrid() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-              {newArrivals.map(p => (
-                <div
-                  key={p.id}
-                  className="rounded-lg overflow-hidden"
-                  style={{
-                    background: 'white', border: '1px solid var(--ivory-dark)',
-                    transition: 'transform .25s, box-shadow .25s', cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = 'translateY(-4px)'
-                    el.style.boxShadow = '0 16px 40px rgba(107,26,42,0.15)'
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLElement
-                    el.style.transform = ''
-                    el.style.boxShadow = ''
-                  }}
-                >
-                  {/* Image */}
-                  <div className="h-[280px] relative bg-cover bg-center" style={{ backgroundImage: p.image ? `url(${p.image})` : `linear-gradient(160deg, ${p.color.split(' ')[0].replace('from-[', '').replace(']', '')}, ${p.color.split(' ')[1].replace('to-[', '').replace(']', '')})` }}>
-                    {p.isNew && (
-                      <span
-                        className="absolute top-0 right-0 text-[10px] font-bold px-2 py-0.5 uppercase"
-                        style={{ background: 'var(--gold)', color: 'var(--charcoal)' }}
-                      >
-                        NEW
-                      </span>
-                    )}
-                    <div
-                      className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-medium shadow-sm"
-                      style={{ background: 'rgba(255,255,255,0.9)', color: 'var(--charcoal)' }}
-                    >
-                      <span style={{ color: 'var(--gold)' }}>★</span> 4.8 | 14 Review
-                    </div>
-                    <button
-                      className="absolute bottom-2 right-2 w-7 h-7 bg-white rounded-sm flex items-center justify-center text-lg shadow-sm"
-                      style={{ color: 'var(--charcoal)', border: 'none', cursor: 'pointer' }}
-                    >
-                      +
-                    </button>
+            <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 lg:grid-cols-4">
+              {newArrivals.map(p => {
+                const fabric = p.category.includes('Cotton') ? 'Cotton' : p.category.includes('Tussar') ? 'Tussar' : 'Silk'
+                const occasion = p.category.includes('Kanchipuram') ? 'Bridal' : p.category.includes('Cotton') ? 'Daily' : 'Festive'
 
-                  </div>
-
-                  {/* Info */}
-                  <div className="p-2.5 md:p-4 bg-white">
-                    <div className="text-[12px] md:text-[14px] font-medium mb-1 truncate" style={{ color: 'var(--charcoal)' }}>
-                      {p.name}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-1.5">
-                      <div className="flex flex-col">
-                        <span className="text-[13px] md:text-[15px] font-bold" style={{ color: 'var(--charcoal)' }}>
-                          ₹ {p.price.toLocaleString('en-IN')}.00 INR
-                        </span>
-                        {p.originalPrice && (
-                          <span className="text-[10px] md:text-xs line-through" style={{ color: 'var(--muted)' }}>
-                            ₹ {p.originalPrice.toLocaleString('en-IN')}.00 INR
-                          </span>
-                        )}
-                      </div>
-
-                      {p.originalPrice && (
-                        <div
-                          className="px-1.5 py-1 rounded-sm flex flex-col items-center justify-center ml-1"
-                          style={{ background: '#9D3B22', color: 'white', fontSize: '9px', lineHeight: 1.2, fontWeight: 'bold' }}
-                        >
-                          <span>{Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)}%</span>
-                          <span>OFF</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                return (
+                  <ProductCard
+                    key={p.id}
+                    product={{
+                      id: p.id,
+                      name: p.name,
+                      category: 'Sarees',
+                      fabric,
+                      occasion,
+                      image: p.image,
+                      price: p.price,
+                      oldPrice: p.originalPrice,
+                      badge: p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller',
+                      rating: 4.8,
+                      reviews: 14,
+                    }}
+                  />
+                )
+              })}
             </div>
 
             <div className="text-center mt-9">
               <Link
-                href="/collections/new-arrivals"
+                href="/shop"
                 className="inline-block px-8 py-3.5 text-xs font-bold uppercase tracking-widest rounded-sm no-underline"
                 style={{ background: 'var(--gold)', color: 'var(--burgundy-dark)' }}
               >
@@ -874,6 +848,41 @@ function AnimatedCounter({ end, duration = 5000, suffix = "" }: { end: number, d
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
+/* ── Smooth Typography Component ─────────────── */
+function SmoothTypography({ children, className, delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div 
+      ref={ref} 
+      className={className} 
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(25px)',
+        filter: isVisible ? 'blur(0px)' : 'blur(5px)',
+        transition: `opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, filter 1.2s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /* ── Heritage & Craftsmanship Section ───────────── */
 export function HeritageSection() {
   return (
@@ -893,12 +902,16 @@ export function HeritageSection() {
       </div>
 
       <div className="max-w-5xl mx-auto mb-10 md:mb-14 relative z-10">
-        <h2 className="text-2xl md:text-3xl font-montserrat tracking-[0.15em] text-[#333333] font-semibold mb-6 uppercase">
-          Artisans and Weavers
-        </h2>
-        <p className="text-[13px] md:text-[14px] font-montserrat text-[#555555] leading-relaxed max-w-4xl mx-auto">
-          Artisans and weavers are the guardians of heritage and sustainability in the fashion industry. They use their skills to create intricate handweaving pieces that tell stories and carry cultural traditions. These craftsmen prioritize sustainable materials and traditional techniques, advocating for eco-friendly fashion. Their creations, often made from pure natural fibers, offer unparalleled comfort and durability, defying the trends of fast fashion. Supporting artisans and weavers means embracing timeless artistry, preserving heritage, and making a conscious choice for a more sustainable and earth-friendly lifestyle.
-        </p>
+        <SmoothTypography delay={0}>
+          <h2 className="text-2xl md:text-3xl font-montserrat tracking-[0.15em] text-[#333333] font-semibold mb-6 uppercase">
+            Artisans and Weavers
+          </h2>
+        </SmoothTypography>
+        <SmoothTypography delay={0.2}>
+          <p className="text-[13px] md:text-[14px] font-montserrat text-[#555555] leading-relaxed max-w-4xl mx-auto">
+            Artisans and weavers are the guardians of heritage and sustainability in the fashion industry. They use their skills to create intricate handweaving pieces that tell stories and carry cultural traditions. These craftsmen prioritize sustainable materials and traditional techniques, advocating for eco-friendly fashion. Their creations, often made from pure natural fibers, offer unparalleled comfort and durability, defying the trends of fast fashion. Supporting artisans and weavers means embracing timeless artistry, preserving heritage, and making a conscious choice for a more sustainable and earth-friendly lifestyle.
+          </p>
+        </SmoothTypography>
       </div>
 
       <div className="w-full max-w-[1600px] mx-auto mb-16 md:mb-20 relative z-10">
@@ -982,19 +995,47 @@ export function LookbookSection() {
 
   return (
     <section className="relative border-t border-[#E8DCC4] bg-[#FAF6EE]">
-      {/* Silk glow bg */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse at top left, rgba(194,155,87,0.07) 0%, transparent 55%), radial-gradient(ellipse at bottom right, rgba(107,29,21,0.04) 0%, transparent 55%)',
-        }}
-      />
+      {/* Conceptual Abstract Background: Spinner of Dreams */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Deep rich background gradient */}
+        <div className="absolute inset-0" style={{
+          background: 'radial-gradient(ellipse at 80% 20%, rgba(194, 155, 87, 0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(107, 29, 21, 0.06) 0%, transparent 60%), linear-gradient(to bottom right, #FAF6EE 0%, #F5F0E6 100%)'
+        }} />
+        
+        {/* Conceptual Floating Threads SVG */}
+        <svg className="absolute w-full h-full opacity-60" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+          {/* Gold threads */}
+          <g stroke="#C29B57" fill="none" strokeWidth="1" opacity="0.5">
+            <path d="M-200,300 C100,500 400,100 800,400 C1200,700 1400,200 1600,400" />
+            <path d="M-200,350 C150,550 450,150 850,450 C1250,750 1450,250 1650,450" />
+            <path d="M-200,400 C200,600 500,200 900,500 C1300,800 1500,300 1700,500" />
+          </g>
+          {/* Burgundy threads */}
+          <g stroke="#6B1D15" fill="none" strokeWidth="1" opacity="0.2">
+            <path d="M1200,-200 C900,100 1100,400 800,800 C500,1200 200,900 0,1100" />
+            <path d="M1150,-200 C850,150 1050,450 750,850 C450,1250 150,950 -50,1150" />
+          </g>
+          {/* Abstract Spinning Wheel Conceptual Rings */}
+          <g opacity="0.15" stroke="#C29B57" fill="none">
+             <circle cx="800" cy="200" r="150" strokeWidth="2" strokeDasharray="10 15" />
+             <circle cx="800" cy="200" r="250" strokeWidth="1" strokeDasharray="5 20" />
+             <circle cx="800" cy="200" r="350" strokeWidth="0.5" />
+          </g>
+          {/* Bottom left Wheel */}
+          <g opacity="0.08" stroke="#6B1D15" fill="none">
+             <circle cx="100" cy="900" r="200" strokeWidth="1" strokeDasharray="10 30" />
+             <circle cx="100" cy="900" r="300" strokeWidth="0.5" />
+          </g>
+        </svg>
 
-      <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row">
+        {/* Floating Motifs */}
+        <div className="absolute top-0 right-0 w-full h-full opacity-[0.03]" style={{ backgroundImage: "url('/sectionicon/white-gold-flowers.png')", backgroundSize: "300px", backgroundRepeat: "repeat" }} />
+      </div>
+
+      <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row relative z-10">
 
         {/* ── Left: Sticky image panel ── */}
-        <div className="lg:w-[48%] flex-shrink-0 lg:sticky lg:top-0 lg:h-screen flex items-center justify-center px-6 lg:px-12 py-12 lg:py-16">
+        <div className="hidden lg:flex lg:w-[48%] flex-shrink-0 lg:sticky lg:top-0 lg:h-screen items-center justify-center px-6 lg:px-12 py-12 lg:py-16">
           <div className="relative w-full max-w-[420px] lg:max-w-[460px]" style={{ aspectRatio: '4/5' }}>
             {stories.map((s, idx) => (
               <img
@@ -1019,12 +1060,12 @@ export function LookbookSection() {
 
 
         {/* ── Right: Naturally scrolling text blocks ── */}
-        <div className="lg:w-[52%] flex flex-col">
+        <div className="w-full lg:w-[52%] flex flex-col">
           {stories.map((s, idx) => (
             <div
               key={idx}
               ref={(el) => { blockRefs.current[idx] = el }}
-              className="min-h-screen flex flex-col justify-center px-6 lg:px-14 py-24 lg:py-0 relative"
+              className="min-h-screen lg:min-h-screen flex flex-col justify-center px-6 lg:px-14 py-16 lg:py-0 relative"
             >
               {/* SVG Watermark */}
               <div
@@ -1046,6 +1087,14 @@ export function LookbookSection() {
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-montserrat text-[#2A2A2A] font-semibold mb-6 leading-snug">
                 {s.title}
               </h3>
+
+              {/* Mobile Inline Image */}
+              <div className="block lg:hidden w-full max-w-[420px] mx-auto mb-12 relative" style={{ aspectRatio: '4/5' }}>
+                <img src={s.image} className="absolute inset-0 w-full h-full object-cover shadow-xl rounded-md" alt={s.title} />
+                <p className="absolute -bottom-7 left-0 text-[11px] font-montserrat text-[#999] italic tracking-wide w-full text-center">
+                  The Hands Behind the Heritage
+                </p>
+              </div>
 
               {/* Thin gold rule */}
               <div className="w-12 h-[2px] bg-[#C29B57] mb-6 rounded-full" />

@@ -27,8 +27,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ['DM Sans', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
-        cormorant: ['Cormorant Garamond', 'serif'],
+        serif: ['DM Sans', 'sans-serif'],
+        cormorant: ['DM Sans', 'sans-serif'],
       },
     },
   },

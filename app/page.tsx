@@ -5,6 +5,7 @@ import HeroSection from '@/components/home/HeroSection'
 import IntroVideo from '@/components/ui/IntroVideo'
 import CouponPopup from '@/components/ui/CouponPopup'
 import FloatingActions from '@/components/ui/FloatingActions'
+import CartNavigationHandler from '@/components/ui/CartNavigationHandler'
 import {
   CollectionBanner,
   FeaturesStrip,
@@ -21,6 +22,7 @@ import {
 export default function HomePage() {
   return (
     <>
+      <CartNavigationHandler />
       <IntroVideo />
       <AnnouncementBar />
       <Header />

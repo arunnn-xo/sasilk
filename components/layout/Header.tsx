@@ -7,6 +7,10 @@ import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
 import { megaMenuData } from '@/lib/megaMenuData'
 
+function filteredCollectionHref(baseHref: string, filter: string) {
+  return `${baseHref}?filter=${encodeURIComponent(filter)}`
+}
+
 export default function Header() {
   const [showMobileBanner, setShowMobileBanner] = useState(true)
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
@@ -46,9 +50,9 @@ export default function Header() {
       {/* Mobile Top Row */}
       <div className="flex lg:hidden w-full items-center justify-between px-4 py-3" style={{ background: '#FAF6EE' }}>
         {/* Search Box */}
-        <button className="icon-btn w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95">
+        <Link href="/shop" aria-label="Search products" className="icon-btn w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95">
           <Search size={20} strokeWidth={2} />
-        </button>
+        </Link>
 
         {/* Logo */}
         <Link href="/" className="flex flex-col items-center flex-1 no-underline">
@@ -68,12 +72,12 @@ export default function Header() {
           <a href="https://wa.me/" className="icon-btn group w-10 h-10 rounded-lg bg-[#84A98C] flex items-center justify-center text-white transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-[#25D366] active:scale-95">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path><path d="M16.48 14.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-1.3-.65-2.26-1.2-3.1-2.65-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42H8.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.34.98 2.5c.12.16 1.7 2.6 4.12 3.64 1.54.66 2.14.72 2.92.6.86-.14 2.14-.88 2.44-1.72.3-.84.3-1.56.2-1.72-.1-.16-.36-.24-.6-.36z"></path></svg>
           </a>
-          <button className="icon-btn group w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 relative">
+          <Link href="/cart" aria-label="Open cart" className="icon-btn group w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 relative">
             <ShoppingCart size={20} strokeWidth={2} className="fill-transparent transition-colors duration-300 group-hover:fill-[var(--charcoal)]/20 group-active:fill-[var(--charcoal)]" />
             <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white bg-[var(--burgundy)] border-2 border-white animate-badge-pulse">
               3
             </span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -203,25 +207,25 @@ export default function Header() {
           <div className="w-px h-8 mx-1" style={{ background: 'var(--ivory-dark)' }} />
 
           {/* Track Order */}
-          <button className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95">
+          <Link href="/track-order" className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 no-underline">
             <Truck size={22} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#6b1a2a] group-active:fill-[#6b1a2a]" />
             <span className="text-[10px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Track Order
             </span>
-          </button>
+          </Link>
 
           <div className="w-px h-8 mx-1" style={{ background: 'var(--ivory-dark)' }} />
 
           {/* Wishlist */}
-          <button className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95">
+          <Link href="/wishlist" className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 no-underline">
             <Heart size={22} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#6b1a2a] group-active:fill-[#6b1a2a]" />
             <span className="text-[10px] tracking-wide hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Wishlist</span>
-          </button>
+          </Link>
 
           <div className="w-px h-8 mx-1" style={{ background: 'var(--ivory-dark)' }} />
 
           {/* Cart */}
-          <button className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative">
+          <Link href="/cart" className="action-item group flex flex-col items-center gap-1 px-2 md:px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
             <ShoppingCart size={22} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#6b1a2a] group-active:fill-[#6b1a2a]" />
             <span className="text-[10px] tracking-wide hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Cart</span>
             <span
@@ -230,7 +234,7 @@ export default function Header() {
             >
               3
             </span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -257,7 +261,7 @@ export default function Header() {
                     cat.isSale ? 'text-[#FFD700]' : 'text-[#FDFBF7]'
                   } px-3 xl:px-4 py-3.5 text-[11px] xl:text-[11.5px] tracking-widest uppercase font-semibold no-underline inline-block transition-colors hover:text-[var(--gold)]`}
                 >
-                  {cat.isSale && '🔥 '}{cat.label}
+                  {cat.label}
                 </Link>
               </div>
 
@@ -329,7 +333,7 @@ export default function Header() {
                             <p className="text-[14px] text-[#444] font-medium mb-8 z-10 max-w-md leading-relaxed" style={{ fontFamily: '"Assistant", sans-serif' }}>
                               Experience the epitome of luxury and tradition. Explore our handpicked collection of <strong className="text-[var(--burgundy)]">{activeSubcatData.name}</strong> tailored perfectly for you.
                             </p>
-                            <Link href={cat.href} className="z-10 px-10 py-3.5 bg-[var(--burgundy)] text-white text-[12px] font-bold tracking-[0.2em] uppercase hover:bg-[#8A2B3C] transition-all duration-300 no-underline shadow-[0_4px_15px_rgba(107,26,42,0.3)] hover:shadow-[0_6px_20px_rgba(107,26,42,0.4)] hover:-translate-y-1 rounded-sm">
+                            <Link href={filteredCollectionHref(cat.href, activeSubcatData.name)} className="z-10 px-10 py-3.5 bg-[var(--burgundy)] text-white text-[12px] font-bold tracking-[0.2em] uppercase hover:bg-[#8A2B3C] transition-all duration-300 no-underline shadow-[0_4px_15px_rgba(107,26,42,0.3)] hover:shadow-[0_6px_20px_rgba(107,26,42,0.4)] hover:-translate-y-1 rounded-sm">
                               Explore Collection
                             </Link>
                           </div>
@@ -345,7 +349,7 @@ export default function Header() {
                               {activeSubcatData.products?.map((prod, i) => (
                                 <Link 
                                   key={prod.name} 
-                                  href={cat.href} 
+                                  href={filteredCollectionHref(cat.href, prod.name)}
                                   className="text-[14px] text-[#2C2C2C] hover:text-[var(--burgundy-dark)] transition-all duration-300 flex items-center gap-2.5 no-underline group/link hover:translate-x-1.5 py-1"
                                   style={{ animationDelay: `${i * 20}ms` }}
                                 >

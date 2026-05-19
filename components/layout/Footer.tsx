@@ -98,12 +98,12 @@ export default function Footer() {
   ]
 
   const handloomImages = [
-    { src: '/footer-icons/charkha.png', label: 'Charkha', type: 'octagon' },
-    { src: '/footer-icons/yarn.png', label: 'Yarn', type: 'arch' },
-    { src: '/footer-icons/saree.png', label: 'Saree', type: 'octagon' },
-    { src: '/footer-icons/loom.png', label: 'Loom', type: 'arch' },
-    { src: '/footer-icons/tassels.png', label: 'Tassels', type: 'octagon' },
-    { src: '/footer-icons/mannequin.png', label: 'Mannequin', type: 'arch' },
+    { src: '/footer-icons/charkha.png', label: 'Traditional charkha' },
+    { src: '/footer-icons/yarn.png', label: 'Thread spool' },
+    { src: '/footer-icons/loom.png', label: 'Handloom' },
+    { src: '/footer-icons/tassels.png', label: 'Saree tassels' },
+    { src: '/footer-icons/saree.png', label: 'Folded saree' },
+    { src: '/footer-icons/mannequin.png', label: 'Tailoring mannequin' },
   ]
 
   const themeColors = {
@@ -295,56 +295,14 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* ── Decorative Motif Divider ── */}
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mb-5">
-          <div className="relative flex items-center justify-between">
-            <div className="absolute inset-0 flex items-center">
-              {/* Base thin line */}
-              <div className="w-full h-px" style={{ background: themeColors.borderLight }} />
-            </div>
-            {/* 5 Motif items positioned over the line */}
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="relative z-10 p-1 bg-transparent flex items-center justify-center">
-                {/* Replace with actual img tag if needed: <img src="/borderdesign/flower-motif.png" className="w-10 h-10 object-contain" /> */}
-                <div
-                  className="w-8 h-8 md:w-10 md:h-10 bg-contain bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: "url('/borderdesign/flower-motif.png')",
-                    filter: 'brightness(0) saturate(100%) invert(77%) sepia(21%) saturate(968%) hue-rotate(352deg) brightness(87%) contrast(85%)' // Approximating gold color for the png
-                  }}
-                />
+        {/* ── Handloom Styled Image Blocks Row ── */}
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mb-6">
+          <div className="footer-artisan-gallery">
+            {handloomImages.map(({ src, label }) => (
+              <div key={label} className="footer-artisan-item">
+                <img src={src} alt={label} className="footer-artisan-image" />
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* ── Handloom Styled Image Blocks Row ── */}
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mb-5">
-          <div className="flex flex-wrap justify-center md:justify-between items-center gap-4 md:gap-3">
-            {handloomImages.map(({ src, label, type }, index) => {
-              const isOctagon = type === 'octagon';
-              return (
-                <div key={index} className="flex-shrink-0 relative group transition-transform hover:-translate-y-1 hover:scale-105 duration-300">
-                  <div
-                    className={`overflow-hidden shadow-sm ${isOctagon ? 'w-28 h-28 md:w-36 md:h-36' : 'w-28 h-36 md:w-32 md:h-44'}`}
-                    style={isOctagon ? {
-                      clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
-                    } : {
-                      borderTopLeftRadius: '999px',
-                      borderTopRightRadius: '999px',
-                      borderBottomLeftRadius: '0',
-                      borderBottomRightRadius: '0'
-                    }}
-                  >
-                    <img
-                      src={src}
-                      alt={label}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
 

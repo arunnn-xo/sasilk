@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, Sparkles } from 'lucide-react'
 import { searchSuggestions, organicSareeSubcats } from '@/lib/data'
 
@@ -13,6 +14,7 @@ const placeholders = [
 ]
 
 export default function SearchBar() {
+  const router = useRouter()
   const [focused, setFocused] = useState(false)
   const [query, setQuery]     = useState('')
   const [placeholderText, setPlaceholderText] = useState('')
@@ -61,6 +63,17 @@ export default function SearchBar() {
       })
     : searchSuggestions
 
+  function goToShop(value = query) {
+    const nextQuery = value.trim()
+    setFocused(false)
+    router.push(nextQuery ? `/shop?search=${encodeURIComponent(nextQuery)}` : '/shop')
+  }
+
+  function goToOrganicCollection(filter: string) {
+    setFocused(false)
+    router.push(`/collections/organic-sarees?filter=${encodeURIComponent(filter)}`)
+  }
+
   return (
     <div className="relative w-full max-w-3xl">
       {/* Animated gradient border wrapper */}
@@ -91,12 +104,18 @@ export default function SearchBar() {
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setTimeout(() => setFocused(false), 180)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                goToShop()
+              }
+            }}
             className="w-full bg-transparent py-2.5 outline-none text-[15px] text-[var(--burgundy-dark)] transition-all duration-300"
             style={{ fontFamily: query ? '"DM Sans", sans-serif' : '"Cormorant Garamond", serif', fontWeight: query ? 500 : 600, fontSize: query ? '14px' : '17px' }}
           />
 
           {/* Creative animated search button */}
-          <button className="creative-search-btn" style={{ width: 36, height: 36, margin: '2px' }}>
+          <button type="button" onClick={() => goToShop()} className="creative-search-btn" style={{ width: 36, height: 36, margin: '2px' }}>
             <Search className="search-icon-svg w-5 h-5" strokeWidth={2.5} />
             <Sparkles className="sparkle-icon w-3 h-3" />
           </button>
@@ -121,6 +140,11 @@ export default function SearchBar() {
             {chips.map(chip => (
               <button
                 key={chip}
+                type="button"
+                onMouseDown={e => {
+                  e.preventDefault()
+                  goToOrganicCollection(chip)
+                }}
                 className="px-3 py-1 rounded-full text-xs font-medium transition-all"
                 style={{
                   border: '1px solid var(--ivory-dark)',
@@ -149,6 +173,10 @@ export default function SearchBar() {
             {filtered.map((p, i) => (
               <div
                 key={p.code}
+                onMouseDown={e => {
+                  e.preventDefault()
+                  goToShop(p.name)
+                }}
                 className="flex items-center gap-3 py-2 cursor-pointer"
                 style={{
                   borderBottom: i < filtered.length - 1 ? '1px solid var(--ivory-dark)' : 'none',
