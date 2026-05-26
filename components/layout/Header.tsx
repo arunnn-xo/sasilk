@@ -14,6 +14,24 @@ function filteredCollectionHref(baseHref: string, filter: string) {
 export default function Header() {
   const [showMobileBanner, setShowMobileBanner] = useState(true)
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+
+  // Close mobile search on ESC key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileSearchOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Auto-focus input when mobile search panel opens
+  useEffect(() => {
+    if (mobileSearchOpen) {
+      setTimeout(() => mobileSearchInputRef.current?.focus(), 60)
+    }
+  }, [mobileSearchOpen])
 
   return (
     <header
@@ -50,9 +68,18 @@ export default function Header() {
       {/* Mobile Top Row */}
       <div className="flex lg:hidden w-full items-center justify-between px-4 py-3" style={{ background: '#FAF6EE' }}>
         {/* Search Box */}
-        <Link href="/shop" aria-label="Search products" className="icon-btn w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95">
+        <button
+          type="button"
+          aria-label="Toggle search"
+          onClick={() => setMobileSearchOpen(prev => !prev)}
+          className={`icon-btn w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${
+            mobileSearchOpen
+              ? 'bg-[var(--burgundy)] text-white shadow-md'
+              : 'bg-[#E2C792] text-[var(--charcoal)]'
+          }`}
+        >
           <Search size={20} strokeWidth={2} />
-        </Link>
+        </button>
 
         {/* Logo */}
         <Link href="/" className="flex flex-col items-center flex-1 no-underline">
@@ -80,6 +107,53 @@ export default function Header() {
           </Link>
         </div>
       </div>
+
+      {/* ── Mobile Search Panel ─────────────────────── */}
+      <div
+        className={`lg:hidden transition-all duration-300 ease-out overflow-hidden ${
+          mobileSearchOpen
+            ? 'max-h-[420px] opacity-100'
+            : 'max-h-0 opacity-0 pointer-events-none'
+        }`}
+        style={{
+          background: '#FAF6EE',
+          borderTop: mobileSearchOpen ? '1px solid var(--ivory-dark)' : 'none',
+          transform: mobileSearchOpen ? 'translateY(0)' : 'translateY(-6px)',
+        }}
+      >
+        <div className="px-4 pt-3 pb-4">
+          {/* Panel header row */}
+          <div className="flex items-center justify-between mb-3">
+            <span
+              className="text-[10px] uppercase tracking-[2px] font-semibold"
+              style={{ color: 'var(--muted)' }}
+            >
+              Search Products
+            </span>
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen(false)}
+              aria-label="Close search"
+              className="w-7 h-7 flex items-center justify-center rounded-full transition-colors hover:bg-[var(--ivory-dark)]"
+              style={{ color: 'var(--burgundy)' }}
+            >
+              <X size={15} strokeWidth={2.5} />
+            </button>
+          </div>
+          {/* Full animated SearchBar */}
+          <SearchBar ref={mobileSearchInputRef} />
+        </div>
+      </div>
+
+      {/* Backdrop — closes search on outside tap */}
+      {mobileSearchOpen && (
+        <div
+          className="fixed inset-0 z-[99] lg:hidden"
+          style={{ background: 'rgba(74, 15, 28, 0.15)' }}
+          onClick={() => setMobileSearchOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Desktop Top row */}
       <div

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Sparkles } from 'lucide-react'
 import { searchSuggestions, organicSareeSubcats } from '@/lib/data'
@@ -13,7 +13,7 @@ const placeholders = [
   'Search relevant product names...'
 ]
 
-export default function SearchBar() {
+const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
   const router = useRouter()
   const [focused, setFocused] = useState(false)
   const [query, setQuery]     = useState('')
@@ -99,6 +99,7 @@ export default function SearchBar() {
           )}
 
           <input
+            ref={ref}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -201,4 +202,6 @@ export default function SearchBar() {
       )}
     </div>
   )
-}
+})
+
+export default SearchBar

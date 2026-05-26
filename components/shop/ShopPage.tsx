@@ -17,6 +17,7 @@ type Product = ProductCardProduct & {
   occasion: Exclude<Occasion, 'All'>
   isNewest?: boolean
   featuredRank: number
+  subCategory?: string
 }
 
 const categories: Category[] = ['All', 'Sarees', 'Party Wear', 'Daily Wear', 'Accessories']
@@ -42,6 +43,13 @@ const products: Product[] = [
     reviews: 42,
     isNewest: true,
     featuredRank: 1,
+    colors: [
+      { name: 'Kum Kum Red', hex: '#C0392B' },
+      { name: 'Peacock Teal', hex: '#0E6655' },
+      { name: 'Royal Sapphire', hex: '#1A3A8F' },
+      { name: 'Turmeric Gold', hex: '#D4AC0D' },
+      { name: 'Plum Purple', hex: '#6C3483' },
+    ],
   },
   {
     id: 2,
@@ -57,6 +65,12 @@ const products: Product[] = [
     reviews: 28,
     isNewest: true,
     featuredRank: 2,
+    colors: [
+      { name: 'Bridal Red', hex: '#922B21' },
+      { name: 'Deep Maroon', hex: '#641E16' },
+      { name: 'Champagne Gold', hex: '#C9A84C' },
+      { name: 'Ivory Cream', hex: '#FAF0DC' },
+    ],
   },
   {
     id: 3,
@@ -70,6 +84,13 @@ const products: Product[] = [
     rating: 4.7,
     reviews: 19,
     featuredRank: 3,
+    colors: [
+      { name: 'Pastel Lilac', hex: '#C39BD3' },
+      { name: 'Rose Dust', hex: '#D98880' },
+      { name: 'Seafoam', hex: '#76D7C4' },
+      { name: 'Butter Yellow', hex: '#F7DC6F' },
+      { name: 'Sky Mist', hex: '#85C1E9' },
+    ],
   },
   {
     id: 4,
@@ -84,6 +105,12 @@ const products: Product[] = [
     rating: 4.6,
     reviews: 14,
     featuredRank: 4,
+    colors: [
+      { name: 'Natural Beige', hex: '#D7B899' },
+      { name: 'Copper Bronze', hex: '#B5651D' },
+      { name: 'Forest Olive', hex: '#556B2F' },
+      { name: 'Dusty Rose', hex: '#C08080' },
+    ],
   },
   {
     id: 5,
@@ -98,6 +125,13 @@ const products: Product[] = [
     reviews: 31,
     isNewest: true,
     featuredRank: 5,
+    colors: [
+      { name: 'Mango Yellow', hex: '#F0A500' },
+      { name: 'Indigo Blue', hex: '#3B3F8C' },
+      { name: 'Terracotta', hex: '#C1693A' },
+      { name: 'Off White', hex: '#F5F0E8' },
+      { name: 'Sage Green', hex: '#8DA47E' },
+    ],
   },
   {
     id: 6,
@@ -112,6 +146,12 @@ const products: Product[] = [
     rating: 4.5,
     reviews: 11,
     featuredRank: 6,
+    colors: [
+      { name: 'Slate Blue', hex: '#6C8EBF' },
+      { name: 'Taupe Gray', hex: '#9E9085' },
+      { name: 'Soft Cream', hex: '#EDE7D9' },
+      { name: 'Muted Teal', hex: '#4E8A7A' },
+    ],
   },
   {
     id: 7,
@@ -126,6 +166,13 @@ const products: Product[] = [
     rating: 4.7,
     reviews: 24,
     featuredRank: 7,
+    colors: [
+      { name: 'Festive Red', hex: '#B03A2E' },
+      { name: 'Emerald', hex: '#1E8449' },
+      { name: 'Violet', hex: '#7D3C98' },
+      { name: 'Gold Ochre', hex: '#C9A227' },
+      { name: 'Peacock Blue', hex: '#1A5276' },
+    ],
   },
   {
     id: 8,
@@ -140,6 +187,12 @@ const products: Product[] = [
     reviews: 16,
     isNewest: true,
     featuredRank: 8,
+    colors: [
+      { name: 'Deep Maroon', hex: '#6B1A2A' },
+      { name: 'Midnight Black', hex: '#1A1A2E' },
+      { name: 'Wine Red', hex: '#8B0000' },
+      { name: 'Royal Plum', hex: '#5B2C6F' },
+    ],
   },
   {
     id: 9,
@@ -154,6 +207,13 @@ const products: Product[] = [
     rating: 4.4,
     reviews: 18,
     featuredRank: 9,
+    colors: [
+      { name: 'Sky Blue', hex: '#5DADE2' },
+      { name: 'Coral Pink', hex: '#E8927C' },
+      { name: 'Mint Green', hex: '#76C893' },
+      { name: 'Lavender', hex: '#A78BCA' },
+      { name: 'Warm White', hex: '#FAF3E8' },
+    ],
   },
   {
     id: 10,
@@ -168,6 +228,12 @@ const products: Product[] = [
     reviews: 9,
     isNewest: true,
     featuredRank: 10,
+    colors: [
+      { name: 'Stone Gray', hex: '#8D9099' },
+      { name: 'Camel Brown', hex: '#C19A6B' },
+      { name: 'Dusty Pink', hex: '#D4A5A5' },
+      { name: 'Sage Green', hex: '#B2C9AD' },
+    ],
   },
   {
     id: 11,
@@ -182,6 +248,12 @@ const products: Product[] = [
     rating: 4.3,
     reviews: 12,
     featuredRank: 11,
+    colors: [
+      { name: 'Antique Gold', hex: '#C9A84C' },
+      { name: 'Ruby Red', hex: '#9B1B30' },
+      { name: 'Emerald Green', hex: '#1B6B45' },
+      { name: 'Royal Blue', hex: '#1F3A8F' },
+    ],
   },
   {
     id: 12,
@@ -195,8 +267,147 @@ const products: Product[] = [
     rating: 4.6,
     reviews: 21,
     featuredRank: 12,
+    colors: [
+      { name: 'Indigo', hex: '#4B0082' },
+      { name: 'Terracotta', hex: '#C1693A' },
+      { name: 'Forest Green', hex: '#228B22' },
+      { name: 'Blush Pink', hex: '#FFB6C1' },
+      { name: 'Charcoal', hex: '#36454F' },
+    ],
+  },
+  {
+    id: 13,
+    name: 'Kanchi Pure Silk Zari Saree',
+    category: 'Sarees',
+    fabric: 'Silk',
+    occasion: 'Festive',
+    subCategory: 'Kanchi',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=900',
+    price: 14500,
+    oldPrice: 18000,
+    badge: 'Bestseller',
+    rating: 4.9,
+    reviews: 56,
+    isNewest: true,
+    featuredRank: 13,
+    colors: [
+      { name: 'Temple Red', hex: '#A93226' },
+      { name: 'Parrot Green', hex: '#28B463' },
+      { name: 'Sapphire Blue', hex: '#154360' },
+      { name: 'Golden Yellow', hex: '#D4AC0D' },
+      { name: 'Deep Purple', hex: '#512E5F' },
+    ],
+  },
+  {
+    id: 14,
+    name: 'Kanchi Cotton Temple Border Saree',
+    category: 'Sarees',
+    fabric: 'Cotton',
+    occasion: 'Daily',
+    subCategory: 'Kanchi',
+    image: 'https://images.unsplash.com/photo-1583391733958-6c5905d76161?auto=format&fit=crop&q=80&w=900',
+    price: 2200,
+    oldPrice: 2800,
+    badge: 'Sale',
+    rating: 4.7,
+    reviews: 33,
+    isNewest: true,
+    featuredRank: 14,
+    colors: [
+      { name: 'Saffron', hex: '#F4A300' },
+      { name: 'Indigo Blue', hex: '#3B3F8C' },
+      { name: 'Off White', hex: '#FAF0DC' },
+      { name: 'Rust Red', hex: '#B7410E' },
+    ],
+  },
+  {
+    id: 15,
+    name: 'Kanchi Korvai Bridal Silk Saree',
+    category: 'Sarees',
+    fabric: 'Silk',
+    occasion: 'Bridal',
+    subCategory: 'Kanchi',
+    image: '/saree1.png',
+    price: 22000,
+    oldPrice: 27000,
+    badge: 'New',
+    rating: 5.0,
+    reviews: 18,
+    isNewest: true,
+    featuredRank: 15,
+    colors: [
+      { name: 'Bridal Red', hex: '#922B21' },
+      { name: 'Deep Maroon', hex: '#641E16' },
+      { name: 'Midnight Blue', hex: '#1C2980' },
+      { name: 'Forest Green', hex: '#145A32' },
+    ],
+  },
+  {
+    id: 16,
+    name: 'Kanchi Tissue Silk Saree',
+    category: 'Sarees',
+    fabric: 'Silk',
+    occasion: 'Festive',
+    subCategory: 'Kanchi',
+    image: '/saree2.png',
+    price: 8900,
+    badge: 'Bestseller',
+    rating: 4.8,
+    reviews: 41,
+    featuredRank: 16,
+    colors: [
+      { name: 'Rose Gold', hex: '#B76E79' },
+      { name: 'Silver Mist', hex: '#BDC3C7' },
+      { name: 'Champagne', hex: '#C9A84C' },
+      { name: 'Ivory', hex: '#FFFFF0' },
+      { name: 'Blush Mauve', hex: '#C39EA0' },
+    ],
+  },
+  {
+    id: 17,
+    name: 'Kanchi x Cotton Silk Blend Saree',
+    category: 'Sarees',
+    fabric: 'Cotton',
+    occasion: 'Office',
+    subCategory: 'Kanchi',
+    image: '/saree3.png',
+    price: 3800,
+    oldPrice: 4500,
+    badge: 'Sale',
+    rating: 4.6,
+    reviews: 22,
+    featuredRank: 17,
+    colors: [
+      { name: 'Stone Blue', hex: '#6C8EBF' },
+      { name: 'Warm Taupe', hex: '#9E9085' },
+      { name: 'Olive Green', hex: '#708238' },
+      { name: 'Pale Coral', hex: '#E8927C' },
+    ],
+  },
+  {
+    id: 18,
+    name: 'Kanchi Soft Silk Checks Saree',
+    category: 'Sarees',
+    fabric: 'Silk',
+    occasion: 'Daily',
+    subCategory: 'Kanchi',
+    image: '/saree4.png',
+    price: 5500,
+    badge: 'New',
+    rating: 4.7,
+    reviews: 14,
+    isNewest: true,
+    featuredRank: 18,
+    colors: [
+      { name: 'Peacock Green', hex: '#0E6655' },
+      { name: 'Kum Kum Red', hex: '#C0392B' },
+      { name: 'Turmeric', hex: '#D4AC0D' },
+      { name: 'Midnight Blue', hex: '#1A3A8F' },
+      { name: 'Plum', hex: '#6C3483' },
+    ],
   },
 ]
+
 
 function inPriceRange(product: Product, range: PriceRange) {
   if (range === 'Under Rs. 2,000') return product.price < 2000
@@ -213,6 +424,7 @@ type ShopPageProps = {
   initialFabric?: Fabric
   initialQuery?: string
   saleOnly?: boolean
+  backgroundImage?: string
 }
 
 export default function ShopPage({
@@ -223,6 +435,7 @@ export default function ShopPage({
   initialFabric = 'All',
   initialQuery = '',
   saleOnly = false,
+  backgroundImage,
 }: ShopPageProps) {
   const [query, setQuery] = useState(initialQuery)
   const [category, setCategory] = useState<Category>(initialCategory)
@@ -247,11 +460,32 @@ export default function ShopPage({
     const normalizedQuery = query.trim().toLowerCase()
 
     const nextProducts = products.filter(product => {
-      const matchesQuery =
-        !normalizedQuery ||
-        [product.name, product.category, product.fabric, product.occasion].some(value =>
-          value.toLowerCase().includes(normalizedQuery),
-        )
+      let matchesQuery = !normalizedQuery
+      if (normalizedQuery) {
+        if (
+          normalizedQuery === 'kurti & tops' ||
+          normalizedQuery === 'kurti' ||
+          normalizedQuery === 'tops' ||
+          normalizedQuery === 'kurti and tops'
+        ) {
+          matchesQuery =
+            product.category === 'Daily Wear' &&
+            (product.name.toLowerCase().includes('kurti') ||
+              product.name.toLowerCase().includes('top') ||
+              product.name.toLowerCase().includes('set') ||
+              product.name.toLowerCase().includes('co-ord'))
+        } else {
+          // Check subCategory first for precise filter matching (e.g. Kanchi, Chettinad)
+          const subCatMatch = product.subCategory
+            ? product.subCategory.toLowerCase().includes(normalizedQuery)
+            : false
+          matchesQuery =
+            subCatMatch ||
+            [product.name, product.category, product.fabric, product.occasion].some(value =>
+              value.toLowerCase().includes(normalizedQuery),
+            )
+        }
+      }
 
       return (
         matchesQuery &&
@@ -271,7 +505,8 @@ export default function ShopPage({
     })
   }, [category, fabric, occasion, priceRange, query, saleOnly, sortMode])
 
-  const hasActiveFilters = query || category !== initialCategory || fabric !== initialFabric || occasion !== 'All' || priceRange !== 'All'
+  const hasActiveFilters =
+    query || category !== initialCategory || fabric !== initialFabric || occasion !== 'All' || priceRange !== 'All'
 
   function clearFilters() {
     setQuery('')
@@ -294,7 +529,11 @@ export default function ShopPage({
           Filters
         </h2>
         {hasActiveFilters ? (
-          <button type="button" onClick={clearFilters} className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6B1A2A] underline-offset-4 hover:underline">
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6B1A2A] underline-offset-4 hover:underline"
+          >
             Clear
           </button>
         ) : null}
@@ -308,27 +547,54 @@ export default function ShopPage({
   )
 
   return (
-    <main className="bg-[#FAF6EE] text-[#2A1A1E]">
-      <section className="relative overflow-hidden border-b border-[#E8DCC4] bg-[#4A0F1C]">
-        <div className="pointer-events-none absolute inset-0 bg-[url('/borderdesign/flower-motif.png')] bg-[length:420px] bg-right-top bg-no-repeat opacity-[0.06]" />
-        <div className="relative mx-auto max-w-[1500px] px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+    <main className="relative bg-[#FAF6EE] text-[#2A1A1E]">
+      {/* Dynamic Watermark / Abstract Overlay for Premium Boutique Feeling */}
+      {backgroundImage && (
+        <div
+          className="pointer-events-none absolute inset-0 z-0 bg-repeat opacity-[0.02]"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: '350px',
+          }}
+        />
+      )}
+
+      {/* Header Banner Section */}
+      <section className="relative overflow-hidden border-b border-[#E8DCC4] bg-[#4A0F1C] py-14 sm:py-16 md:py-20 lg:py-24">
+        {backgroundImage ? (
+          <>
+            {/* High-end Abstract Visual Background Cover */}
+            <div
+              className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
+              style={{ backgroundImage: `url(${backgroundImage})` }}
+            />
+            {/* Elegant Gradient To Ensure Premium Styling & Contrast */}
+            <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#4A0F1C] via-[#4A0F1C]/85 to-[#4A0F1C]/40" />
+            {/* Corner traditional flower motif blended subtly */}
+            <div className="pointer-events-none absolute inset-0 z-20 bg-[url('/borderdesign/flower-motif.png')] bg-[length:420px] bg-right-top bg-no-repeat opacity-[0.05]" />
+          </>
+        ) : (
+          <div className="pointer-events-none absolute inset-0 bg-[url('/borderdesign/flower-motif.png')] bg-[length:420px] bg-right-top bg-no-repeat opacity-[0.06]" />
+        )}
+
+        <div className="relative z-30 mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-[#E8C97E]">{eyebrow}</p>
-          <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-[#FAF6EE] sm:text-5xl md:text-6xl" style={{ fontFamily: 'Playfair Display, serif' }}>
+          <h1
+            className="max-w-3xl text-4xl font-semibold leading-tight text-[#FAF6EE] sm:text-5xl md:text-6xl"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
             {title}
           </h1>
-          <p className="mt-5 max-w-2xl text-sm leading-7 text-[#F5EDD6] sm:text-base">
-            {description}
-          </p>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-[#F5EDD6] sm:text-base">{description}</p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
+      {/* Catalog & Filter Section */}
+      <section className="relative z-10 mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 rounded-lg border border-[#E8DCC4] bg-white p-4 shadow-[0_12px_34px_rgba(74,15,28,0.05)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm font-semibold text-[#6B1A2A]">
-                Showing {filteredProducts.length} products
-              </p>
+              <p className="text-sm font-semibold text-[#6B1A2A]">Showing {filteredProducts.length} products</p>
               <p className="mt-1 text-xs text-[#7A6065]">Search, filter, and sort the full UI-only catalog.</p>
             </div>
 
@@ -363,7 +629,9 @@ export default function ShopPage({
                 type="button"
                 onClick={() => setCategory(item)}
                 className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold ${
-                  category === item ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white' : 'border-[#E8DCC4] bg-[#FAF6EE] text-[#2A1A1E]'
+                  category === item
+                    ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white'
+                    : 'border-[#E8DCC4] bg-[#FAF6EE] text-[#2A1A1E]'
                 }`}
               >
                 {item}
@@ -396,7 +664,9 @@ export default function ShopPage({
                       key={product.id}
                       product={product}
                       wished={wished}
-                      onToggleWishlist={() => setWishlist(current => (wished ? current.filter(id => id !== product.id) : [...current, product.id]))}
+                      onToggleWishlist={() =>
+                        setWishlist(current => (wished ? current.filter(id => id !== product.id) : [...current, product.id]))
+                      }
                       onAddToCart={() => addToCart(product.name)}
                     />
                   )
@@ -410,7 +680,11 @@ export default function ShopPage({
                 <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#7A6065]">
                   Try clearing filters or searching for another weave, fabric, or occasion.
                 </p>
-                <button type="button" onClick={clearFilters} className="mt-6 rounded-md bg-[#6B1A2A] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#4A0F1C]">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="mt-6 rounded-md bg-[#6B1A2A] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#4A0F1C]"
+                >
                   Clear filters
                 </button>
               </div>
@@ -426,13 +700,22 @@ export default function ShopPage({
               <h2 className="text-lg font-semibold text-[#6B1A2A]" style={{ fontFamily: 'Playfair Display, serif' }}>
                 Filter products
               </h2>
-              <button type="button" onClick={() => setMobileFiltersOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8DCC4] text-[#6B1A2A]" aria-label="Close filters">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8DCC4] text-[#6B1A2A]"
+                aria-label="Close filters"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5">{filterPanel}</div>
             <div className="border-t border-[#E8DCC4] p-4">
-              <button type="button" onClick={() => setMobileFiltersOpen(false)} className="w-full rounded-md bg-[#6B1A2A] py-3 text-sm font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="w-full rounded-md bg-[#6B1A2A] py-3 text-sm font-semibold text-white"
+              >
                 Show {filteredProducts.length} products
               </button>
             </div>

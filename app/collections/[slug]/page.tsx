@@ -75,17 +75,39 @@ export default function CollectionRoute({ params, searchParams }: CollectionRout
   const initialFabric = fabricFilters.includes(filter as Fabric) ? (filter as Fabric) : 'All'
   const initialQuery = initialFabric === 'All' ? filter || search : search
 
+  const combinedFilter = (filter + ' ' + search).toLowerCase()
+
+  // organic-sarees sub-filters → Kanchi silk abstract bg
+  const isKanchi =
+    params.slug === 'organic-sarees' &&
+    (combinedFilter.includes('kanchi') || combinedFilter.includes('kanchipuram'))
+
+  // daily-wear → Kurti & Tops abstract bg
+  const isKurtiTops =
+    params.slug === 'daily-wear' &&
+    (combinedFilter.includes('kurti') || combinedFilter.includes('top'))
+
+  const headerBg = isKanchi
+    ? '/bgabstractimage/kanchi_sarees_bg.png'
+    : isKurtiTops
+    ? '/bgabstractimage/kurti_tops_bg.png'
+    : undefined
+
+  // Make title more descriptive for the sub-filter
+  const displayTitle = filter ? `${collection.title} — ${filter}` : collection.title
+
   return (
     <>
       <AnnouncementBar />
       <Header />
       <ShopPage
-        title={collection.title}
+        title={displayTitle}
         eyebrow="SOIL GODDESS Collection"
         description={collection.description}
         initialCategory={collection.category}
         initialFabric={initialFabric}
         initialQuery={initialQuery}
+        backgroundImage={headerBg}
       />
       <Footer />
       <FloatingActions />
