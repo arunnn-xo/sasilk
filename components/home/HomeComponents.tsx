@@ -679,8 +679,8 @@ export function ProductGrid() {
           backgroundSize: "40px 40px"
         }} />
         {/* Symmetrical Floral Frames (Mughal Arch vibe) */}
-        <div className="absolute top-0 left-0 w-[120px] md:w-[250px] h-full" style={{ backgroundImage: "url('/sectionicon/golden-floral-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
-        <div className="absolute top-0 right-0 w-[120px] md:w-[250px] h-full transform scale-x-[-1]" style={{ backgroundImage: "url('/sectionicon/golden-floral-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
+        <div className="absolute top-0 left-0 w-[120px] md:w-[250px] h-full" style={{ backgroundImage: "url('/rose-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
+        <div className="absolute top-0 right-0 w-[120px] md:w-[250px] h-full transform scale-x-[-1]" style={{ backgroundImage: "url('/rose-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
       </div>
 
       <div className="w-full mx-auto px-4 lg:px-8 relative z-10">
@@ -776,10 +776,10 @@ export function SpotlightSection() {
 
       {/* Golden Floral Pillars — hidden on mobile, show md+ */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
-        <img src="/sectionicon/golden-floral-pillar.png" alt="" className="w-full h-full object-contain object-left drop-shadow-xl" />
+        <img src="/rose-pillar.png" alt="" className="w-full h-full object-contain object-left drop-shadow-xl" />
       </div>
       <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
-        <img src="/sectionicon/golden-floral-pillar.png" alt="" className="w-full h-full object-contain object-right scale-x-[-1] drop-shadow-xl" />
+        <img src="/rose-pillar.png" alt="" className="w-full h-full object-contain object-right scale-x-[-1] drop-shadow-xl" />
       </div>
 
       {/* Spotlight Banner image */}

@@ -317,11 +317,11 @@ export default function Header() {
         className="hidden lg:block relative"
         style={{ background: 'var(--burgundy)' }}
       >
-        <div className="max-w-[1400px] mx-auto px-8 flex items-center whitespace-nowrap overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="max-w-[1400px] mx-auto px-4 flex items-center justify-center">
           {megaMenuData.map(cat => (
             <div 
               key={cat.label}
-              className="group/mainnav h-full"
+              className="group/mainnav h-full flex-shrink-0"
               onMouseEnter={() => {
                 if (cat.subCategories && cat.subCategories.length > 0 && !activeSubcats[cat.label]) {
                   setActiveSubcats(prev => ({ ...prev, [cat.label]: cat.subCategories![0].name }));
@@ -333,7 +333,7 @@ export default function Header() {
                   href={cat.href}
                   className={`${
                     cat.isSale ? 'text-[#FFD700]' : 'text-[#FDFBF7]'
-                  } px-3 xl:px-4 py-3.5 text-[11px] xl:text-[11.5px] tracking-widest uppercase font-semibold no-underline inline-block transition-colors hover:text-[var(--gold)]`}
+                  } px-1.5 xl:px-2.5 py-3.5 text-[10px] xl:text-[10.5px] tracking-[0.06em] xl:tracking-[0.08em] uppercase font-semibold no-underline inline-block transition-colors hover:text-[var(--gold)]`}
                 >
                   {cat.label}
                 </Link>

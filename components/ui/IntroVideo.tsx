@@ -10,17 +10,29 @@ export default function IntroVideo() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const closeStartedRef = useRef(false)
   const closeTimerRef = useRef<number | null>(null)
+  const loadTimerRef = useRef<number | null>(null)
+  const hasPlayedRef = useRef(false)
   const [visible, setVisible] = useState(true)
   const [loading, setLoading] = useState(true)
   const [leaving, setLeaving] = useState(false)
+
+  const clearLoadTimer = useCallback(() => {
+    if (loadTimerRef.current) {
+      window.clearTimeout(loadTimerRef.current)
+      loadTimerRef.current = null
+    }
+  }, [])
 
   const enterSite = useCallback(() => {
     if (closeStartedRef.current) return
     closeStartedRef.current = true
     setLeaving(true)
-    sessionStorage.setItem(SEEN_KEY, '1')
+    clearLoadTimer()
+    if (hasPlayedRef.current) {
+      sessionStorage.setItem(SEEN_KEY, '1')
+    }
     closeTimerRef.current = window.setTimeout(() => setVisible(false), 650)
-  }, [])
+  }, [clearLoadTimer])
 
   useEffect(() => {
     if (sessionStorage.getItem(SEEN_KEY)) {
@@ -28,11 +40,12 @@ export default function IntroVideo() {
     }
 
     return () => {
+      clearLoadTimer()
       if (closeTimerRef.current) {
         window.clearTimeout(closeTimerRef.current)
       }
     }
-  }, [])
+  }, [clearLoadTimer])
 
   useEffect(() => {
     if (!visible) return
@@ -48,11 +61,28 @@ export default function IntroVideo() {
   useEffect(() => {
     if (!visible) return
 
+    loadTimerRef.current = window.setTimeout(() => {
+      enterSite()
+    }, 12000)
+
+    return () => {
+      clearLoadTimer()
+    }
+  }, [visible, enterSite, clearLoadTimer])
+
+  useEffect(() => {
+    if (!visible) return
+
     const video = videoRef.current
     video?.play().catch(() => {
-      setLoading(false)
+      enterSite()
     })
-  }, [visible])
+  }, [visible, enterSite])
+
+  const handleCanPlay = useCallback(() => {
+    setLoading(false)
+    clearLoadTimer()
+  }, [clearLoadTimer])
 
   if (!visible) return null
 
@@ -71,8 +101,13 @@ export default function IntroVideo() {
         muted
         playsInline
         preload="auto"
-        onLoadedData={() => setLoading(false)}
-        onCanPlay={() => setLoading(false)}
+        onCanPlay={handleCanPlay}
+        onLoadedData={handleCanPlay}
+        onTimeUpdate={() => {
+          if (!hasPlayedRef.current && videoRef.current && videoRef.current.currentTime > 0) {
+            hasPlayedRef.current = true
+          }
+        }}
         onEnded={enterSite}
         onError={enterSite}
       />

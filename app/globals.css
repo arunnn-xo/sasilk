@@ -739,8 +739,8 @@ body {
 
 /* ── Custom Cursor Support ───────────────────────── */
 @media (pointer: fine) {
-  body, html, * {
-    cursor: none !important;
+  body, html {
+    cursor: none;
   }
 }
 
