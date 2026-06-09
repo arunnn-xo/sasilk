@@ -364,7 +364,7 @@ export default function SingleProductPage() {
 
         <section className="mb-12 sm:mb-16">
           <h2 className="mb-6 text-center text-xl font-medium text-[#333333] sm:mb-8 sm:text-2xl">Related products</h2>
-          <div className="grid grid-cols-1 gap-5 min-[420px]:grid-cols-2 md:grid-cols-4 md:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4 md:gap-6">
             {relatedProducts.map(product => (
               <ProductCard key={product.id ?? product.name} product={product} onAddToCart={() => setCartOpen(true)} />
             ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   ArrowRight,
@@ -25,6 +26,8 @@ const account = {
   mobile: '+91 98765 43210',
 }
 
+const ACCOUNT_READY_KEY = 'soil_goddess_account_ready'
+
 const tabs: Array<{ id: AccountTab; label: string; Icon: LucideIcon }> = [
   { id: 'dashboard', label: 'Dashboard', Icon: Grid2X2 },
   { id: 'orders', label: 'Orders', Icon: ShoppingBag },
@@ -39,6 +42,26 @@ const orderStats = [
   { label: 'Delivered', value: 0 },
   { label: 'Cancelled', value: 0 },
 ]
+
+type AddressFields = {
+  fullName: string
+  phone: string
+  line1: string
+  line2: string
+  city: string
+  state: string
+  pincode: string
+}
+
+const emptyAddress: AddressFields = {
+  fullName: '',
+  phone: '',
+  line1: '',
+  line2: '',
+  city: '',
+  state: '',
+  pincode: '',
+}
 
 function EmptyOrdersPanel({ title = 'Recent orders', showViewAll = true }: { title?: string; showViewAll?: boolean }) {
   return (
@@ -72,6 +95,7 @@ function EmptyOrdersPanel({ title = 'Recent orders', showViewAll = true }: { tit
 }
 
 export default function AccountDashboard() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<AccountTab>('dashboard')
   const [editing, setEditing] = useState(false)
   const [profile, setProfile] = useState({
@@ -79,6 +103,35 @@ export default function AccountDashboard() {
     email: account.email,
     mobile: account.mobile,
   })
+  const [addressFormOpen, setAddressFormOpen] = useState(false)
+  const [address, setAddress] = useState<AddressFields | null>(null)
+  const [addressDraft, setAddressDraft] = useState<AddressFields>(emptyAddress)
+  const [addressError, setAddressError] = useState('')
+
+  function updateAddressField<Key extends keyof AddressFields>(key: Key, value: AddressFields[Key]) {
+    setAddressDraft(current => ({ ...current, [key]: value }))
+    setAddressError('')
+  }
+
+  function openAddressForm() {
+    setAddressDraft(address ?? emptyAddress)
+    setAddressFormOpen(true)
+    setAddressError('')
+  }
+
+  function saveAddress() {
+    const requiredFields: Array<keyof AddressFields> = ['fullName', 'phone', 'line1', 'city', 'state', 'pincode']
+    const missingField = requiredFields.find(field => !addressDraft[field].trim())
+
+    if (missingField) {
+      setAddressError('Please fill all required address details.')
+      return
+    }
+
+    setAddress(addressDraft)
+    setAddressFormOpen(false)
+    setAddressError('')
+  }
 
   const renderPanel = () => {
     if (activeTab === 'dashboard') {
@@ -110,28 +163,140 @@ export default function AccountDashboard() {
             <div className="min-w-0">
               <p className="mb-2 text-sm uppercase tracking-[0.18em] text-[#7A6065]">Address</p>
               <h2 className="break-words text-2xl font-semibold leading-tight text-[#6B1A2A] sm:text-3xl" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Saved address
+                Delivery address
               </h2>
             </div>
-            <button type="button" className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#6B1A2A] px-5 py-3 font-semibold text-white transition hover:bg-[#4A0F1C] sm:w-auto">
-              Add Address
+            <button
+              type="button"
+              onClick={addressFormOpen ? saveAddress : openAddressForm}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#6B1A2A] px-5 py-3 font-semibold text-white transition hover:bg-[#4A0F1C] sm:w-auto"
+            >
+              {addressFormOpen ? 'Save Address' : address ? 'Edit Address' : 'Add Address'}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="rounded-lg border border-dashed border-[#E8DCC4] bg-[#FAF6EE]/45 p-4 sm:p-5">
-            <div className="mb-4 flex min-w-0 items-start gap-3">
-              <Home className="mt-1 h-5 w-5 shrink-0 text-[#6B1A2A]" />
-              <div className="min-w-0">
-                <h3 className="break-words text-lg font-semibold text-[#2A1A1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  No default address yet
-                </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7A6065]">
-                  Add a delivery address to make checkout faster for your next SOIL GODDESS order.
-                </p>
+          {addressFormOpen ? (
+            <div className="rounded-lg border border-[#E8DCC4] bg-white p-4 sm:p-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">Full name *</span>
+                  <input
+                    value={addressDraft.fullName}
+                    onChange={event => updateAddressField('fullName', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="Arun arun"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">Mobile *</span>
+                  <input
+                    value={addressDraft.phone}
+                    onChange={event => updateAddressField('phone', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="+91 98765 43210"
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">Address line 1 *</span>
+                  <input
+                    value={addressDraft.line1}
+                    onChange={event => updateAddressField('line1', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="House number, street, area"
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">Address line 2</span>
+                  <input
+                    value={addressDraft.line2}
+                    onChange={event => updateAddressField('line2', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="Landmark, apartment, optional"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">City *</span>
+                  <input
+                    value={addressDraft.city}
+                    onChange={event => updateAddressField('city', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="Chennai"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">State *</span>
+                  <input
+                    value={addressDraft.state}
+                    onChange={event => updateAddressField('state', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="Tamil Nadu"
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="mb-2 block text-sm font-semibold text-[#2A1A1E]">Pincode *</span>
+                  <input
+                    value={addressDraft.pincode}
+                    onChange={event => updateAddressField('pincode', event.target.value)}
+                    className="w-full rounded-md border border-[#E8DCC4] bg-[#FFFCF7] px-4 py-3 text-sm outline-none transition focus:border-[#6B1A2A]"
+                    placeholder="600001"
+                  />
+                </label>
+              </div>
+
+              {addressError ? <p className="mt-4 text-sm font-semibold text-[#A34336]">{addressError}</p> : null}
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddressFormOpen(false)
+                    setAddressError('')
+                  }}
+                  className="inline-flex w-full justify-center rounded-md border border-[#E8DCC4] px-5 py-3 font-semibold text-[#6B1A2A] transition hover:bg-[#F5EDD6] sm:w-auto"
+                >
+                  Cancel
+                </button>
+                <button type="button" onClick={saveAddress} className="inline-flex w-full justify-center rounded-md bg-[#6B1A2A] px-5 py-3 font-semibold text-white transition hover:bg-[#4A0F1C] sm:w-auto">
+                  Save Address
+                </button>
               </div>
             </div>
-          </div>
+          ) : address ? (
+            <div className="rounded-lg border border-[#E8DCC4] bg-[#FAF6EE]/45 p-4 sm:p-5">
+              <div className="flex min-w-0 items-start gap-3">
+                <Home className="mt-1 h-5 w-5 shrink-0 text-[#6B1A2A]" />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 className="break-words text-lg font-semibold text-[#2A1A1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                      Default delivery address
+                    </h3>
+                    <span className="w-fit rounded-full bg-[#6B1A2A] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white">Default</span>
+                  </div>
+                  <p className="font-semibold text-[#2A1A1E]">{address.fullName}</p>
+                  <p className="mt-1 text-sm leading-6 text-[#7A6065]">{address.phone}</p>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7A6065]">
+                    {address.line1}
+                    {address.line2 ? `, ${address.line2}` : ''}, {address.city}, {address.state} - {address.pincode}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-[#E8DCC4] bg-[#FAF6EE]/45 p-4 sm:p-5">
+              <div className="mb-4 flex min-w-0 items-start gap-3">
+                <Home className="mt-1 h-5 w-5 shrink-0 text-[#6B1A2A]" />
+                <div className="min-w-0">
+                  <h3 className="break-words text-lg font-semibold text-[#2A1A1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    No default address yet
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7A6065]">
+                    Add a delivery address to make checkout faster for your next SOIL GODDESS order.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       )
     }
@@ -193,12 +358,19 @@ export default function AccountDashboard() {
       <section className="rounded-lg border border-[#E8DCC4] bg-[#FFFCF7] p-5 text-center sm:p-8">
         <LogOut className="mx-auto mb-5 h-9 w-9 text-[#6B1A2A] sm:h-10 sm:w-10" />
         <h2 className="mb-3 text-2xl font-semibold text-[#6B1A2A] sm:text-3xl" style={{ fontFamily: 'Playfair Display, serif' }}>
-          Logout preview
+          Logout
         </h2>
-        <p className="mx-auto mb-6 max-w-md text-sm leading-6 text-[#7A6065]">This UI-only account page does not end a real session yet.</p>
-        <Link href="/" className="inline-flex w-full justify-center rounded-md bg-[#6B1A2A] px-6 py-3 font-semibold text-white transition hover:bg-[#4A0F1C] sm:w-auto">
-          Back to home
-        </Link>
+        <p className="mx-auto mb-6 max-w-md text-sm leading-6 text-[#7A6065]">Logout will clear the saved account shortcut on this device.</p>
+        <button
+          type="button"
+          onClick={() => {
+            window.localStorage.removeItem(ACCOUNT_READY_KEY)
+            router.push('/')
+          }}
+          className="inline-flex w-full justify-center rounded-md bg-[#6B1A2A] px-6 py-3 font-semibold text-white transition hover:bg-[#4A0F1C] sm:w-auto"
+        >
+          Logout and go home
+        </button>
       </section>
     )
   }

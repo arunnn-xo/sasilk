@@ -2,6 +2,12 @@
 
 import Link from 'next/link'
 import { useState, type CSSProperties } from 'react'
+import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
+import { megaMenuData, type MainCategory } from '@/lib/megaMenuData'
+
+function filteredCollectionHref(baseHref: string, filter: string) {
+  return `${baseHref}?filter=${encodeURIComponent(filter)}`
+}
 
 /* ── Data ─────────────────────────────────────────── */
 const usefulLinks = [
@@ -86,9 +92,39 @@ function BadgeGPay({ className }: { className?: string }) {
   )
 }
 
+function MobileNavLink({ href, label, Icon, badge }: { href: string; label: string; Icon: LucideIcon; badge?: string }) {
+  return (
+    <Link href={href} className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[#FAF6EE] no-underline transition-colors hover:text-[#C4A462]">
+      <span className="relative">
+        <Icon className="h-5 w-5" />
+        {badge ? (
+          <span className="absolute -right-2 -top-2 flex h-4 min-w-[1rem] items-center justify-center rounded-full border border-[#300D14] bg-[#C4A462] px-1 text-[9px] font-bold leading-none text-[#300D14]">
+            {badge}
+          </span>
+        ) : null}
+      </span>
+      <span className="max-w-full truncate text-[10px] font-semibold leading-none">{label}</span>
+    </Link>
+  )
+}
+
 /* ── Main Component ─────────────────────────────── */
+function MobileDrawerQuickLink({ href, label, Icon }: { href: string; label: string; Icon: LucideIcon }) {
+  return (
+    <Link
+      href={href}
+      className="flex min-w-0 items-center justify-center gap-2 rounded-lg border border-[#E8DCC4] bg-white px-3 py-3 text-sm font-bold text-[#6B1A2A] no-underline shadow-[0_8px_22px_rgba(74,15,28,0.04)]"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-[#C4A462]" />
+      <span className="truncate">{label}</span>
+    </Link>
+  )
+}
+
 export default function Footer() {
   const [email, setEmail] = useState('')
+  const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const [activeMobileCategory, setActiveMobileCategory] = useState<MainCategory | null>(null)
 
   const socials = [
     { Icon: IconFacebook, href: '#', label: 'Facebook' },
@@ -339,31 +375,170 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Mobile Bottom Navigation (Updated colors to match dark theme) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#300D14] border-t border-[#5A1827] flex md:hidden items-end justify-between px-6 pb-2 pt-2 z-[100] shadow-[0_-4px_12px_rgba(0,0,0,0.5)]">
-        <Link href="/" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-          <span className="text-[10px] font-medium">Sarees</span>
-        </Link>
-        <Link href="/trending" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
-          <span className="text-[10px] font-medium">Trending</span>
-        </Link>
-        <Link href="/favourites" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-          <span className="text-[10px] font-medium">Favourites</span>
-        </Link>
-        <Link href="/swiftship" className="flex flex-col items-center gap-1 text-[#FAF6EE] hover:text-[#C4A462] transition-colors no-underline">
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
-          <span className="text-[10px] font-medium">SwiftShip</span>
-        </Link>
-        <Link href="/more" className="flex flex-col items-center gap-1 text-[#C4A462] no-underline relative">
-          <div className="absolute -top-[52px] w-[46px] h-[46px] rounded-md bg-[#C4A462] flex items-center justify-center text-white shadow-lg">
-            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path></svg>
+      {categoriesOpen ? (
+        <div className="fixed inset-0 z-[120] md:hidden" role="dialog" aria-modal="true" aria-label="More categories">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close categories"
+            onClick={() => {
+              setCategoriesOpen(false)
+              setActiveMobileCategory(null)
+            }}
+          />
+          <div className="absolute bottom-[64px] right-0 top-0 w-[min(88vw,390px)] overflow-hidden rounded-l-xl border-l border-[#C4A462]/45 bg-[#FAF6EE] shadow-[-18px_0_42px_rgba(0,0,0,0.34)] animate-[sgMobileCategoryDrawerIn_260ms_cubic-bezier(0.22,1,0.36,1)_both]">
+            <div className="flex items-start justify-between border-b border-[#E8DCC4] px-5 py-5">
+              <div className="min-w-0 pr-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C4A462]">SOIL GODDESS</p>
+                <h2 className="mt-1 truncate text-2xl font-semibold text-[#6B1A2A]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  {activeMobileCategory ? activeMobileCategory.label : 'Categories'}
+                </h2>
+                <p className="mt-1 text-xs font-medium text-[#7A5E4B]">
+                  {activeMobileCategory ? 'Choose a collection' : 'Explore sarees and collections'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeMobileCategory) {
+                    setActiveMobileCategory(null)
+                    return
+                  }
+                  setCategoriesOpen(false)
+                }}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center text-white shadow-sm transition-colors ${
+                  activeMobileCategory ? 'rounded-full bg-[#6B1A2A]' : 'rounded-sm bg-[#8B172D]'
+                }`}
+                aria-label={activeMobileCategory ? 'Back to categories' : 'Close categories'}
+              >
+                {activeMobileCategory ? <ChevronRight className="h-5 w-5 rotate-180" /> : <X className="h-5 w-5" />}
+              </button>
+            </div>
+
+            <div className="relative overflow-hidden" style={{ height: 'calc(100% - 105px)' }}>
+              <div
+                className={`absolute inset-0 overflow-y-auto px-5 py-5 transition-transform duration-300 ease-out ${
+                  activeMobileCategory ? '-translate-x-full' : 'translate-x-0'
+                }`}
+                aria-hidden={Boolean(activeMobileCategory)}
+              >
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-2">
+                    <MobileDrawerQuickLink href="/track-order" label="Track Order" Icon={Truck} />
+                    <MobileDrawerQuickLink href="/sale" label="Sale" Icon={Percent} />
+                  </div>
+
+                  <div className="divide-y divide-[#E8DCC4] border-y border-[#E8DCC4]">
+                    {megaMenuData.map(category => (
+                      category.subCategories?.length ? (
+                        <button
+                          key={category.label}
+                          type="button"
+                          onClick={() => setActiveMobileCategory(category)}
+                          className="flex w-full items-center justify-between py-4 text-left text-[#2A1A1E]"
+                        >
+                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
+                          <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
+                        </button>
+                      ) : (
+                        <Link
+                          key={category.label}
+                          href={category.href}
+                          onClick={() => setCategoriesOpen(false)}
+                          className="flex items-center justify-between py-4 text-[#2A1A1E] no-underline"
+                        >
+                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
+                          <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
+                        </Link>
+                      )
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`absolute inset-0 overflow-y-auto px-5 py-5 transition-transform duration-300 ease-out ${
+                  activeMobileCategory ? 'translate-x-0' : 'translate-x-full'
+                }`}
+                aria-hidden={!activeMobileCategory}
+              >
+                {activeMobileCategory ? (
+                  <div className="space-y-5">
+                    <Link
+                      href={activeMobileCategory.href}
+                      onClick={() => setCategoriesOpen(false)}
+                      className="flex items-center justify-between rounded-lg bg-[#6B1A2A] px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white no-underline"
+                    >
+                      View All {activeMobileCategory.label}
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+
+                    <div className="divide-y divide-[#E8DCC4] border-y border-[#E8DCC4]">
+                      {activeMobileCategory.subCategories?.map(sub => (
+                        <section key={sub.name} className="py-3">
+                          <Link
+                            href={filteredCollectionHref(activeMobileCategory.href, sub.name)}
+                            onClick={() => setCategoriesOpen(false)}
+                            className="flex items-center justify-between py-1 text-[15px] font-bold text-[#6B1A2A] no-underline"
+                          >
+                            {sub.name}
+                            <ChevronRight className="h-5 w-5 text-[#7A5E4B]" />
+                          </Link>
+                          {sub.products?.length ? (
+                            <div className="mt-2 grid grid-cols-1 gap-1.5">
+                              {sub.products.map(product => (
+                                <Link
+                                  key={product.name}
+                                  href={filteredCollectionHref(activeMobileCategory.href, product.name)}
+                                  onClick={() => setCategoriesOpen(false)}
+                                  className="flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium leading-5 text-[#2A1A1E] no-underline hover:bg-white"
+                                >
+                                  <span>{product.name}</span>
+                                  <ChevronRight className="h-4 w-4 text-[#C4A462]" />
+                                </Link>
+                              ))}
+                            </div>
+                          ) : null}
+                        </section>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
-          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          <span className="text-[10px] font-medium">More</span>
-        </Link>
+          <style jsx global>{`
+            @keyframes sgMobileCategoryDrawerIn {
+              from {
+                opacity: 0.92;
+                transform: translateX(100%);
+              }
+              to {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+          `}</style>
+        </div>
+      ) : null}
+
+      <div className="fixed bottom-0 left-0 right-0 z-[100] flex h-[64px] items-center justify-between border-t border-[#5A1827] bg-[#300D14] px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_12px_rgba(0,0,0,0.5)] md:hidden">
+        <MobileNavLink href="/" label="Home" Icon={Home} />
+        <MobileNavLink href="/shop" label="Shop" Icon={ShoppingBag} />
+        <MobileNavLink href="/wishlist" label="Wishlist" Icon={Heart} />
+        <MobileNavLink href="/cart" label="Cart" Icon={ShoppingCart} badge="3" />
+        <button
+          type="button"
+          onClick={() => {
+            setCategoriesOpen(true)
+            setActiveMobileCategory(null)
+          }}
+          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[#C4A462] transition-colors"
+          aria-label="Open more categories"
+        >
+          <Menu className="h-5 w-5" />
+          <span className="max-w-full truncate text-[10px] font-semibold leading-none">Categories</span>
+        </button>
       </div>
     </>
   )

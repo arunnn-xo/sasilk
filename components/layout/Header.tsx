@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { ShoppingCart, Heart, Truck, Search, Smartphone, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X } from 'lucide-react'
 import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
 import { megaMenuData } from '@/lib/megaMenuData'
@@ -11,11 +12,30 @@ function filteredCollectionHref(baseHref: string, filter: string) {
   return `${baseHref}?filter=${encodeURIComponent(filter)}`
 }
 
+const ACCOUNT_READY_KEY = 'soil_goddess_account_ready'
+
 export default function Header() {
+  const router = useRouter()
   const [showMobileBanner, setShowMobileBanner] = useState(true)
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [accountReady, setAccountReady] = useState(false)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const refreshAccountReady = () => {
+      setAccountReady(window.localStorage.getItem(ACCOUNT_READY_KEY) === 'true')
+    }
+
+    refreshAccountReady()
+    window.addEventListener('focus', refreshAccountReady)
+    window.addEventListener('storage', refreshAccountReady)
+
+    return () => {
+      window.removeEventListener('focus', refreshAccountReady)
+      window.removeEventListener('storage', refreshAccountReady)
+    }
+  }, [])
 
   // Close mobile search on ESC key
   useEffect(() => {
@@ -99,12 +119,29 @@ export default function Header() {
           <a href="https://wa.me/" className="icon-btn group w-10 h-10 rounded-lg bg-[#84A98C] flex items-center justify-center text-white transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-[#25D366] active:scale-95">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path><path d="M16.48 14.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-1.3-.65-2.26-1.2-3.1-2.65-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42H8.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.34.98 2.5c.12.16 1.7 2.6 4.12 3.64 1.54.66 2.14.72 2.92.6.86-.14 2.14-.88 2.44-1.72.3-.84.3-1.56.2-1.72-.1-.16-.36-.24-.6-.36z"></path></svg>
           </a>
-          <Link href="/cart" aria-label="Open cart" className="icon-btn group w-10 h-10 rounded-lg bg-[#E2C792] flex items-center justify-center text-[var(--charcoal)] transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 relative">
-            <ShoppingCart size={20} strokeWidth={2} className="fill-transparent transition-colors duration-300 group-hover:fill-[var(--charcoal)]/20 group-active:fill-[var(--charcoal)]" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white bg-[var(--burgundy)] border-2 border-white animate-badge-pulse">
-              3
-            </span>
-          </Link>
+          <button
+            type="button"
+            aria-label={accountReady ? 'Open my account' : 'Create or sign in to account'}
+            onClick={() => router.push(accountReady ? '/account' : '/register')}
+            className={`icon-btn group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 ${
+              accountReady
+                ? 'bg-[var(--burgundy)] text-[#F6E9D5]'
+                : 'bg-[#E2C792] text-[var(--charcoal)]'
+            }`}
+          >
+            <User
+              size={20}
+              strokeWidth={2}
+              className={`transition-colors duration-300 ${
+                accountReady
+                  ? 'fill-[#F6E9D5]/20'
+                  : 'fill-transparent group-hover:fill-[var(--charcoal)]/20 group-active:fill-[var(--charcoal)]'
+              }`}
+            />
+            {accountReady ? (
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border border-[var(--burgundy)] bg-[#C4A462]" />
+            ) : null}
+          </button>
         </div>
       </div>
 

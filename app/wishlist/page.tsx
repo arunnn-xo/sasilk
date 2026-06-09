@@ -83,7 +83,7 @@ export default function WishlistRoute() {
             <p className="text-sm font-semibold text-[#6B1A2A]">Showing {wishlistProducts.length} saved products</p>
             <p className="text-xs text-[#7A6065]">UI-only wishlist preview for now.</p>
           </div>
-          <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
             {wishlistProducts.map(product => (
               <ProductCard key={product.name} product={product} wished />
             ))}

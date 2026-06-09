@@ -671,17 +671,18 @@ export function CategoryGrid() {
 export function ProductGrid() {
   return (
     <section className="py-16 relative overflow-hidden bg-[#FAF6EE] border-b border-[#E8DCC4]">
-      {/* Abstract Symmetrical Mughal Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
-        {/* Subtle Geometric Texture */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2.5l10-4.5 10 4.5V16h-20v2h20v2.5l-10 4.5-10-4.5z' fill='%23c29b57' fill-opacity='0.3' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-          backgroundSize: "40px 40px"
-        }} />
-        {/* Symmetrical Floral Frames (Mughal Arch vibe) */}
-        <div className="absolute top-0 left-0 w-[120px] md:w-[250px] h-full" style={{ backgroundImage: "url('/rose-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
-        <div className="absolute top-0 right-0 w-[120px] md:w-[250px] h-full transform scale-x-[-1]" style={{ backgroundImage: "url('/rose-pillar.png')", backgroundSize: "contain", backgroundPosition: "left center", backgroundRepeat: "no-repeat" }} />
-      </div>
+      {/* Luxurious Abstract Silk Background */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none" 
+        style={{
+          backgroundImage: "url('/bgabstractimage/new_arrivals_bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          mixBlendMode: "multiply",
+          opacity: 0.15
+        }} 
+      />
 
       <div className="w-full mx-auto px-4 lg:px-8 relative z-10">
         <div className="text-center mb-8 md:mb-11">
@@ -776,10 +777,10 @@ export function SpotlightSection() {
 
       {/* Golden Floral Pillars — hidden on mobile, show md+ */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
-        <img src="/rose-pillar.png" alt="" className="w-full h-full object-contain object-left drop-shadow-xl" />
+        <img src="/custom-pillar-transparent.png" alt="" className="w-full h-full object-contain object-left drop-shadow-xl" />
       </div>
       <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[90%] w-24 md:w-44 lg:w-60 pointer-events-none z-10 hidden md:block">
-        <img src="/rose-pillar.png" alt="" className="w-full h-full object-contain object-right scale-x-[-1] drop-shadow-xl" />
+        <img src="/custom-pillar-transparent.png" alt="" className="w-full h-full object-contain object-right scale-x-[-1] drop-shadow-xl" />
       </div>
 
       {/* Spotlight Banner image */}

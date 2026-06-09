@@ -1,11 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useMemo, useState } from 'react'
-import { CheckCircle2, Leaf, LockKeyhole, Mail, MapPin, ShieldCheck, Sparkles, Truck, UserRound } from 'lucide-react'
+import { CheckCircle2, Leaf, LockKeyhole, Mail, ShieldCheck, Sparkles, Truck, UserRound } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 type SignupFields = {
-  name: string
+  firstName: string
+  lastName: string
   email: string
   mobile: string
   password: string
@@ -14,9 +17,14 @@ type SignupFields = {
 }
 
 type SignupErrors = Partial<Record<keyof SignupFields, string>>
+type ToastState = {
+  message: string
+  type: 'success' | 'error'
+}
 
 const initialFields: SignupFields = {
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   mobile: '',
   password: '',
@@ -24,13 +32,19 @@ const initialFields: SignupFields = {
   terms: false,
 }
 
+const ACCOUNT_READY_KEY = 'soil_goddess_account_ready'
+
 function validateSignup(fields: SignupFields) {
   const errors: SignupErrors = {}
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const mobilePattern = /^(\+91)?[6-9]\d{9}$/
 
-  if (!fields.name.trim()) errors.name = 'Full name is required.'
+  if (!fields.firstName.trim()) errors.firstName = 'First name is required.'
+  if (!fields.lastName.trim()) errors.lastName = 'Last name is required.'
   if (!fields.email.trim()) errors.email = 'Email address is required.'
   if (fields.email.trim() && !emailPattern.test(fields.email.trim())) errors.email = 'Enter a valid email address.'
+  if (!fields.mobile.trim()) errors.mobile = 'Mobile number is required.'
+  if (fields.mobile.trim() && !mobilePattern.test(fields.mobile.trim())) errors.mobile = 'Enter a valid 10-digit mobile number.'
   if (!fields.password) errors.password = 'Password is required.'
   if (fields.password && fields.password.length < 6) errors.password = 'Password must be at least 6 characters.'
   if (!fields.confirmPassword) errors.confirmPassword = 'Confirm your password.'
@@ -45,9 +59,11 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [fields, setFields] = useState(initialFields)
   const [errors, setErrors] = useState<SignupErrors>({})
-  const [toast, setToast] = useState('')
+  const [toast, setToast] = useState<ToastState | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const trustItems = useMemo(
     () => [
@@ -63,14 +79,51 @@ export default function SignupPage() {
     setErrors(current => ({ ...current, [key]: undefined }))
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors = validateSignup(fields)
     setErrors(nextErrors)
 
-    if (Object.keys(nextErrors).length === 0) {
-      setToast('Account UI created successfully')
-      window.setTimeout(() => setToast(''), 3000)
+    if (Object.keys(nextErrors).length > 0) return
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await apiFetch('/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: fields.firstName.trim(),
+          lastName: fields.lastName.trim(),
+          email: fields.email.trim(),
+          phone: fields.mobile.trim(),
+          password: fields.password,
+          confirmPassword: fields.confirmPassword,
+          acceptTerms: fields.terms,
+        }),
+      })
+
+      const data = (await response.json().catch(() => null)) as { message?: string } | null
+      const message = data?.message || (response.ok ? 'Account created successfully' : 'Unable to create account')
+
+      if (!response.ok) {
+        setToast({ message, type: 'error' })
+        window.setTimeout(() => setToast(null), 3500)
+        return
+      }
+
+      setToast({ message, type: 'success' })
+      window.localStorage.setItem(ACCOUNT_READY_KEY, 'true')
+      setFields(initialFields)
+      window.setTimeout(() => router.push('/account'), 900)
+      window.setTimeout(() => setToast(null), 3500)
+    } catch {
+      setToast({ message: 'Backend connection failed. Please check API URL and server status.', type: 'error' })
+      window.setTimeout(() => setToast(null), 3500)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -117,18 +170,33 @@ export default function SignupPage() {
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-              <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]" htmlFor="signup-name">
-                  Full name
-                </label>
-                <input
-                  id="signup-name"
-                  value={fields.name}
-                  onChange={event => updateField('name', event.target.value)}
-                  className="w-full border border-[#E8DCC4] bg-[#FBF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#A34336] focus:bg-white"
-                  placeholder="Your name"
-                />
-                <FieldError message={errors.name} />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]" htmlFor="signup-first-name">
+                    First Name
+                  </label>
+                  <input
+                    id="signup-first-name"
+                    value={fields.firstName}
+                    onChange={event => updateField('firstName', event.target.value)}
+                    className="w-full border border-[#E8DCC4] bg-[#FBF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#A34336] focus:bg-white"
+                    placeholder="First name"
+                  />
+                  <FieldError message={errors.firstName} />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]" htmlFor="signup-last-name">
+                    Last Name
+                  </label>
+                  <input
+                    id="signup-last-name"
+                    value={fields.lastName}
+                    onChange={event => updateField('lastName', event.target.value)}
+                    className="w-full border border-[#E8DCC4] bg-[#FBF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#A34336] focus:bg-white"
+                    placeholder="Last name"
+                  />
+                  <FieldError message={errors.lastName} />
+                </div>
               </div>
 
               <div>
@@ -151,7 +219,7 @@ export default function SignupPage() {
 
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]" htmlFor="signup-mobile">
-                  Mobile number <span className="normal-case tracking-normal text-gray-400">(optional)</span>
+                  Mobile number
                 </label>
                 <input
                   id="signup-mobile"
@@ -160,6 +228,7 @@ export default function SignupPage() {
                   className="w-full border border-[#E8DCC4] bg-[#FBF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#A34336] focus:bg-white"
                   placeholder="+91 mobile number"
                 />
+                <FieldError message={errors.mobile} />
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
@@ -210,10 +279,14 @@ export default function SignupPage() {
                 <FieldError message={errors.terms} />
               </div>
 
-              <button type="submit" className="group relative flex w-full items-center justify-center gap-2 overflow-hidden bg-[#A34336] py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white shadow-md transition">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden bg-[#A34336] py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-70"
+              >
                 <span className="absolute inset-0 z-0 origin-left scale-x-0 bg-[#8e382b] transition-transform duration-500 group-hover:scale-x-100" />
                 <span className="relative z-10 flex items-center gap-2">
-                  Create Account
+                  {isSubmitting ? 'Creating...' : 'Create Account'}
                   <Sparkles className="h-4 w-4" />
                 </span>
               </button>
@@ -231,9 +304,9 @@ export default function SignupPage() {
         </section>
       </div>
 
-      <div className={`fixed bottom-5 left-1/2 z-[120] flex -translate-x-1/2 items-center gap-2 rounded bg-black px-6 py-3 text-white shadow-xl transition-opacity duration-300 ${toast ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
-        <CheckCircle2 className="h-4 w-4 text-green-400" />
-        <span className="text-sm">{toast || 'Account UI created successfully'}</span>
+      <div className={`fixed bottom-5 left-1/2 z-[120] flex -translate-x-1/2 items-center gap-2 rounded px-6 py-3 text-white shadow-xl transition-opacity duration-300 ${toast ? 'opacity-100' : 'pointer-events-none opacity-0'} ${toast?.type === 'error' ? 'bg-[#A34336]' : 'bg-black'}`}>
+        <CheckCircle2 className={`h-4 w-4 ${toast?.type === 'error' ? 'text-[#F7D7D1]' : 'text-green-400'}`} />
+        <span className="text-sm">{toast?.message || 'Account created successfully'}</span>
       </div>
     </main>
   )
