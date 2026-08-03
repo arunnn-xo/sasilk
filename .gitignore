@@ -1,15 +1,41 @@
+# dependencies
 node_modules/
+
+# builds
 .next/
-out/
 dist/
-build/
-
-.env
-.env*.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
 *.tsbuildinfo
+
+# environment (secrets)
+.env
+.env.local
+.env.*.local
+.env.production
+
+# runtime uploads
+backend/node/uploads/
+
+# logs
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+Thumbs.db
+
+# dev scratch / one-off scripts
+backend/node/scratch/
+backend/node/assets/
+backend/node/check-announcements.ts
+backend/node/check-banners.ts
+backend/node/fix-dates.ts
+backend/node/remove-static-banners.ts
+backend/node/remove-static-messages.ts
+backend/node/seed-nav-categories.ts
+backend/node/test-announcements.ts
+backend/node/test-banners.ts
+backend/node/test-filter.ts
+backend/node/test-post.mjs
+backend/node/test-post.ts
+backend/node/test-products-import.xlsx
+backend/node/test-raw.ts
