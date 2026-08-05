@@ -4,15 +4,16 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { User, X } from 'lucide-react'
-import { useAuth } from '@/lib/context/AuthContext'
-import { loginWithEmail, sendOtp, forgotPassword, resetPassword as resetPasswordApi } from '@/lib/services/auth.service'
+import { useAuth } from '@/components/auth/AuthContext'
+import { loginCustomer, forgotPassword, resetPassword as resetPasswordApi } from '@/lib/api/auth'
 
 type LoginMode = 'login' | 'forgot-email' | 'forgot-otp' | 'forgot-reset'
 type MessageState = { text: string; type: 'success' | 'error' }
 
 export default function LoginDropdown() {
   const router = useRouter()
-  const { isAuthenticated, setAuth } = useAuth()
+  const { session, refresh } = useAuth()
+  const isAuthenticated = !!session
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<LoginMode>('login')
   const [contact, setContact] = useState('')
@@ -55,8 +56,8 @@ export default function LoginDropdown() {
     setMessage(null)
 
     try {
-      const result = await loginWithEmail(email || mobile, password)
-      setAuth(result.token || '', result.customer)
+      await loginCustomer({ contact: email || mobile, password })
+      await refresh()
       closeDropdown()
       router.push('/account')
     } catch (error) {
@@ -77,29 +78,9 @@ export default function LoginDropdown() {
     try {
       const result = await forgotPassword(email)
       setMessage({ text: result.message, type: 'success' })
-      setMode('forgot-otp')
-    } catch (error) {
-      setMessage({ text: error instanceof Error ? error.message : 'Failed to send OTP', type: 'error' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function verifyOtp() {
-    const email = forgotEmail.trim()
-    const nextOtp = otp.trim()
-    if (!email || !nextOtp) {
-      setMessage({ text: 'Enter email and OTP to verify.', type: 'error' })
-      return
-    }
-    setLoading(true)
-    setMessage(null)
-    try {
-      const result = await sendOtp(nextOtp)
-      setMessage({ text: result.message, type: 'success' })
       setMode('forgot-reset')
     } catch (error) {
-      setMessage({ text: error instanceof Error ? error.message : 'Verification failed', type: 'error' })
+      setMessage({ text: error instanceof Error ? error.message : 'Failed to send OTP', type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -119,7 +100,7 @@ export default function LoginDropdown() {
     setLoading(true)
     setMessage(null)
     try {
-      const result = await resetPasswordApi({ email, otp: nextOtp, newPassword })
+      const result = await resetPasswordApi(nextOtp, email, newPassword)
       setMessage({ text: result.message, type: 'success' })
       setContact(email)
       setPassword('')
@@ -136,7 +117,6 @@ export default function LoginDropdown() {
   function handleSubmit() {
     if (mode === 'login') { void handleLogin(); return }
     if (mode === 'forgot-email') { void sendForgotOtp(); return }
-    if (mode === 'forgot-otp') { void verifyOtp(); return }
     if (mode === 'forgot-reset') { void resetPasswordAction(); return }
   }
 

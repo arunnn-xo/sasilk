@@ -1,0 +1,135 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { SkipForward } from 'lucide-react'
+
+const INTRO_VIDEO_SRC = '/introvideo/introvideo.mp4'
+const SEEN_KEY = 'sas_intro_seen'
+
+export default function IntroVideo() {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const closeStartedRef = useRef(false)
+  const closeTimerRef = useRef<number | null>(null)
+  const loadTimerRef = useRef<number | null>(null)
+  const hasPlayedRef = useRef(false)
+  const [visible, setVisible] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [leaving, setLeaving] = useState(false)
+
+  const clearLoadTimer = useCallback(() => {
+    if (loadTimerRef.current) {
+      window.clearTimeout(loadTimerRef.current)
+      loadTimerRef.current = null
+    }
+  }, [])
+
+  const enterSite = useCallback(() => {
+    if (closeStartedRef.current) return
+    closeStartedRef.current = true
+    setLeaving(true)
+    clearLoadTimer()
+    if (hasPlayedRef.current) {
+      sessionStorage.setItem(SEEN_KEY, '1')
+    }
+    closeTimerRef.current = window.setTimeout(() => setVisible(false), 650)
+  }, [clearLoadTimer])
+
+  useEffect(() => {
+    if (sessionStorage.getItem(SEEN_KEY)) {
+      setVisible(false)
+    }
+
+    return () => {
+      clearLoadTimer()
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current)
+      }
+    }
+  }, [clearLoadTimer])
+
+  useEffect(() => {
+    if (!visible) return
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [visible])
+
+  useEffect(() => {
+    if (!visible) return
+
+    loadTimerRef.current = window.setTimeout(() => {
+      enterSite()
+    }, 12000)
+
+    return () => {
+      clearLoadTimer()
+    }
+  }, [visible, enterSite, clearLoadTimer])
+
+  useEffect(() => {
+    if (!visible) return
+
+    const video = videoRef.current
+    video?.play().catch(() => {
+      enterSite()
+    })
+  }, [visible, enterSite])
+
+  const handleCanPlay = useCallback(() => {
+    setLoading(false)
+    clearLoadTimer()
+  }, [clearLoadTimer])
+
+  if (!visible) return null
+
+  return (
+    <div
+      className={`fixed inset-0 z-[1200] flex items-center justify-center bg-[#FAF6EE] transition-opacity duration-700 ${
+        leaving ? 'opacity-0' : 'opacity-100'
+      }`}
+      aria-label="Intro video"
+    >
+      <video
+        ref={videoRef}
+        className="h-full w-full object-cover"
+        src={INTRO_VIDEO_SRC}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onCanPlay={handleCanPlay}
+        onLoadedData={handleCanPlay}
+        onTimeUpdate={() => {
+          if (!hasPlayedRef.current && videoRef.current && videoRef.current.currentTime > 0) {
+            hasPlayedRef.current = true
+          }
+        }}
+        onEnded={enterSite}
+        onError={enterSite}
+      />
+
+      {loading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF6EE]">
+          <div className="h-12 w-12 rounded-full border-2 border-[var(--burgundy)]/20 border-t-[var(--burgundy)] animate-spin" />
+          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--burgundy)]">
+            Loading
+          </p>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={enterSite}
+        className="absolute right-4 top-4 inline-flex h-11 items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:bg-black/60 focus:outline-none md:right-6 md:top-6"
+        aria-label="Skip intro video"
+      >
+        <SkipForward size={17} aria-hidden="true" />
+        Skip
+      </button>
+    </div>
+  )
+}

@@ -8,89 +8,89 @@ export default function TrackOrderPage() {
   const [submitted, setSubmitted] = useState(false)
 
   return (
-    <main className="bg-[#FAF6EE] text-[#2A1A1E] min-h-screen">
-      <section className="border-b border-[#D9B86E]/50 bg-[#FAF6EE]">
-        <div className="mx-auto max-w-[1180px] px-4 py-10 sm:px-6 md:py-14 lg:px-8">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.32em] text-[#A57C3A]">Order Support</p>
-          <h1 className="text-3xl font-bold text-[#300D14] sm:text-4xl md:text-5xl" style={{ fontFamily: 'Playfair Display, serif' }}>
+    <main className="bg-[var(--ivory)] text-[var(--charcoal)]">
+      <section className="border-b border-[var(--ivory-dark)] bg-[var(--burgundy-dark)]">
+        <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+          <p className="font-montserrat mb-3 text-[11px] md:text-xs font-bold uppercase tracking-[0.25em] text-[var(--gold-light)]">Order Support</p>
+          <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl font-medium tracking-wide text-[var(--ivory)]">
             Track Order
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5A4045]">
-            Enter your mobile or email with an order id to preview your SOIL GODDESS tracking status.
+          <p className="font-sans mt-4 max-w-2xl text-sm sm:text-base font-medium leading-relaxed text-[var(--gold-pale)]">
+            Enter your mobile or email with an order id to preview a simple Soil Goddess tracking flow.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[1180px] gap-6 px-4 py-10 sm:px-6 md:grid-cols-[0.85fr_1.15fr] lg:px-8">
+      <section className="mx-auto grid max-w-[1180px] gap-6 px-4 py-8 sm:px-6 md:grid-cols-[0.85fr_1.15fr] lg:px-8">
         <form
           onSubmit={event => {
             event.preventDefault()
             setSubmitted(true)
           }}
-          className="rounded-xl border border-[#D9B86E]/60 bg-white p-6 shadow-[0_12px_34px_rgba(42,26,30,0.06)] sm:p-8"
+          className="rounded-lg border border-[var(--ivory-dark)] bg-white p-5 shadow-[0_12px_34px_rgba(74,15,28,0.05)] sm:p-6"
         >
-          <div className="mb-6 flex items-center gap-3.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FAF6EE] border border-[#D9B86E]/50 text-[#721016]">
-              <PackageSearch className="h-6 w-6" />
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--gold-pale)] text-[var(--burgundy)]">
+              <PackageSearch className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#300D14]" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h2 className="font-playfair text-2xl sm:text-3xl font-medium italic tracking-wide text-[var(--burgundy)]">
                 Find your order
               </h2>
-              <p className="text-xs text-[#7A6065]">Enter your tracking details below.</p>
+              <p className="text-xs text-[var(--muted)]">Any dummy details will work for this UI pass.</p>
             </div>
           </div>
 
           <label className="mb-4 block">
-            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#300D14]">Mobile / Email</span>
+            <span className="mb-2 block text-sm font-semibold text-[var(--burgundy)]">Mobile / Email <span className="text-red-500">*</span></span>
             <input
               required
               type="text"
               placeholder="+91 or email address"
-              className="h-12 w-full rounded-lg border border-[#D9B86E]/70 bg-[#FAF6EE]/50 px-4 text-sm text-[#2A1A1E] outline-none transition focus:border-[#721016] focus:bg-white"
+              className="h-12 w-full rounded-md border border-[var(--ivory-dark)] bg-[var(--surface-soft)] px-4 text-sm outline-none transition focus:border-[var(--burgundy)]"
             />
           </label>
 
-          <label className="mb-6 block">
-            <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#300D14]">Order ID</span>
+          <label className="mb-5 block">
+            <span className="mb-2 block text-sm font-semibold text-[var(--burgundy)]">Order ID <span className="text-red-500">*</span></span>
             <input
               required
               type="text"
               placeholder="SG-1001"
-              className="h-12 w-full rounded-lg border border-[#D9B86E]/70 bg-[#FAF6EE]/50 px-4 text-sm text-[#2A1A1E] outline-none transition focus:border-[#721016] focus:bg-white"
+              className="h-12 w-full rounded-md border border-[var(--ivory-dark)] bg-[var(--surface-soft)] px-4 text-sm outline-none transition focus:border-[var(--burgundy)]"
             />
           </label>
 
-          <button type="submit" className="w-full rounded-lg bg-[#300D14] py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-[#F2C94C] shadow-md transition hover:bg-[#5A1827]">
+          <button type="submit" className="w-full rounded-md bg-[var(--burgundy)] py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[var(--burgundy-dark)]">
             Track Order
           </button>
-          <Link href="/shop" className="mt-4 block text-center text-xs font-semibold uppercase tracking-wider text-[#721016] underline-offset-4 hover:underline">
+          <Link href="/shop" className="mt-4 block text-center text-sm font-semibold text-[var(--burgundy)] underline-offset-4 hover:underline">
             Continue shopping
           </Link>
         </form>
 
-        <div className="rounded-xl border border-[#D9B86E]/60 bg-white p-6 shadow-[0_12px_34px_rgba(42,26,30,0.06)] sm:p-8">
-          <h2 className="text-2xl font-bold text-[#300D14]" style={{ fontFamily: 'Playfair Display, serif' }}>
+        <div className="rounded-lg border border-[var(--ivory-dark)] bg-white p-5 shadow-[0_12px_34px_rgba(74,15,28,0.05)] sm:p-6">
+          <h2 className="font-playfair text-2xl sm:text-3xl font-medium italic tracking-wide text-[var(--burgundy)]">
             {submitted ? 'Order preview' : 'Tracking status'}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[#5A4045]">
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             {submitted
               ? 'Your sample order is packed and ready for dispatch. This is UI-only and does not call an order API.'
               : 'Submit the form to see a dummy tracking preview for the customer flow.'}
           </p>
 
-          <div className="mt-8 space-y-5">
+          <div className="mt-6 space-y-4">
             {['Order received', 'Packed with care', 'Ready for dispatch'].map((step, index) => {
               const active = submitted || index === 0
 
               return (
-                <div key={step} className="flex gap-4 items-start">
-                  <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${active ? 'bg-[#300D14] border-[#300D14] text-[#F2C94C] shadow-sm' : 'bg-[#FAF6EE] border-[#D9B86E]/50 text-[#A58A48]'}`}>
+                <div key={step} className="flex gap-3">
+                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${active ? 'bg-[var(--burgundy)] text-white' : 'bg-[var(--gold-pale)] text-[var(--gold)]'}`}>
                     {index === 2 ? <Truck className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-[#300D14]">{step}</p>
-                    <p className="text-xs leading-5 text-[#7A6065] mt-0.5">
+                    <p className="font-semibold text-[var(--charcoal)]">{step}</p>
+                    <p className="text-xs leading-5 text-[var(--muted)]">
                       {active ? 'Completed in this preview flow.' : 'Waiting for lookup details.'}
                     </p>
                   </div>

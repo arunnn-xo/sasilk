@@ -78,15 +78,9 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
         <div className="flex items-center w-full bg-[#FDFBF7] rounded-[47px] overflow-hidden pr-1 pl-4 relative">
           {!query && (
             <div
-              className="absolute left-4 right-12 top-1/2 -translate-y-1/2 pointer-events-none text-[17px] font-['Cormorant_Garamond'] italic tracking-wide font-bold whitespace-nowrap overflow-hidden text-ellipsis"
+              className="absolute left-5 right-14 top-1/2 -translate-y-1/2 pointer-events-none text-[18px] font-['Cormorant_Garamond'] italic tracking-wide font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
               style={{
-                background: 'linear-gradient(90deg, #9C1A21 0%, #B8860B 25%, #8B3A2B 50%, #B8860B 75%, #9C1A21 100%)',
-                backgroundSize: '200% auto',
-                color: 'transparent',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                animation: 'textShine 3.5s linear infinite',
-                filter: 'drop-shadow(0px 1px 1px rgba(107, 26, 42, 0.15))'
+                color: '#C29B57',
               }}
             >
               {placeholderText}
@@ -103,13 +97,12 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
             onKeyDown={e => {
               if (e.key === 'Enter') { e.preventDefault(); goToShop() }
             }}
-            className="w-full bg-transparent py-3 outline-none text-[15px] text-[var(--burgundy-dark)] transition-all duration-300"
-            style={{ fontFamily: query ? '"DM Sans", sans-serif' : '"Cormorant Garamond", serif', fontWeight: query ? 500 : 600, fontSize: query ? '14px' : '17px' }}
+            className="w-full bg-transparent py-3.5 outline-none text-[15px] text-[#5C161D] transition-all duration-300"
+            style={{ fontFamily: query ? '"DM Sans", sans-serif' : '"Cormorant Garamond", serif', fontWeight: query ? 500 : 600, fontSize: query ? '15px' : '18px' }}
           />
 
-          <button type="button" onClick={() => goToShop()} className="creative-search-btn" style={{ width: 40, height: 40, margin: '2px' }}>
-            <Search className="search-icon-svg w-5.5 h-5.5" strokeWidth={2.5} />
-            <Sparkles className="sparkle-icon w-3.5 h-3.5" />
+          <button type="button" onClick={() => goToShop()} className="creative-search-btn" style={{ width: 38, height: 38 }} aria-label="Search">
+            <Search className="w-4.5 h-4.5" strokeWidth={2.5} style={{ color: '#E8C97E' }} />
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { apiGet, apiPost } from '@/lib/api'
+import { apiFetch } from '@/lib/api/client'
 
 export type ProductData = {
   id: number
@@ -38,7 +39,6 @@ export type ProductVariantData = {
 
 export type CategoryData = {
   id: number
-  parentId: number | null
   section: string
   name: string
   slug: string
@@ -76,9 +76,9 @@ export type NavSubCategory = {
   name: string
   href?: string
   imageUrl?: string | null
-  directLink?: boolean
   isHighlighted?: boolean
-  products?: { name: string; isHot?: boolean; href?: string }[]
+  directLink?: boolean
+  products?: { name: string; imageUrl?: string | null; isHot?: boolean; href?: string }[]
   subCategories?: NavSubCategory[]
 }
 
@@ -118,7 +118,7 @@ export async function fetchAnnouncementBar(): Promise<AnnouncementData[]> {
 }
 
 export async function fetchNavMenu(): Promise<NavMenuItem[]> {
-  const res = await apiGet<{ navigation: NavMenuItem[] }>('/storefront/nav-menu')
+  const res = await apiFetch<{ navigation: NavMenuItem[] }>('/storefront/nav-menu')
   return res.navigation
 }
 

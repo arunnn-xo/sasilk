@@ -1,31 +1,43 @@
 import type { Metadata } from 'next'
-import AnnouncementBar from '@/components/layout/AnnouncementBar'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { notFound, redirect } from 'next/navigation'
 import FloatingActions from '@/components/ui/FloatingActions'
 import SingleProductPage from '@/components/product/SingleProductPage'
-import { apiGet } from '@/lib/api'
+import { fetchProductBySlug, fetchCategoryBySlug } from '@/lib/api/storefront'
 
-type ProductData = { name: string; slug: string; category: string; metadata: Record<string, unknown> | null }
+type ProductPageProps = {
+  params: { slug: string }
+}
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  try {
-    const product = await apiGet<ProductData>(`/storefront/products/${params.slug}`)
-    return {
-      title: `${product.name} | SOIL GODDESS`,
-      description: `Shop the ${product.name} from SOIL GODDESS by Sri Akila.`,
-    }
-  } catch {
-    return { title: 'Product | SOIL GODDESS' }
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const title = params.slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+
+  return {
+    title: `${title} | Soil Goddess`,
+    description: `Shop the ${title} from Soil Goddess. Authentic handloom sarees, silk weaves and organic fabrics.`,
   }
 }
 
-export default function ProductRoute({ params }: { params: { slug: string } }) {
+export const dynamic = 'force-dynamic'
+
+export default async function ProductRoute({ params }: ProductPageProps) {
+  const product = await fetchProductBySlug(params.slug)
+  if (!product) {
+    const category = await fetchCategoryBySlug(params.slug)
+    if (category) {
+      redirect(`/shop?category=${encodeURIComponent(category.name)}`)
+    }
+    return notFound()
+  }
+
   return (
     <>
-      <AnnouncementBar />
       <Header />
-      <SingleProductPage slug={params.slug} />
+      <SingleProductPage product={product} />
       <Footer />
       <FloatingActions />
     </>

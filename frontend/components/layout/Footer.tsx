@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect, type CSSProperties } from 'react'
 import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/components/cart/CartContext'
 import { fetchNavMenu, type NavMenuItem } from '@/lib/services/storefront.service'
 import { STATIC_NAV_MENU } from '@/lib/data/navigation'
 
@@ -167,22 +167,21 @@ function MobileDrawerQuickLink({ href, label, Icon }: { href: string; label: str
 }
 
 export default function Footer() {
-  const { itemCount } = useCart()
+  const { totalUnits: itemCount } = useCart()
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [navMenu, setNavMenu] = useState<NavMenuItem[]>(STATIC_NAV_MENU)
   const [activeMobileCategory, setActiveMobileCategory] = useState<NavMenuItem | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function loadNavMenu() {
-      try {
-        const menu = await fetchNavMenu()
-        if (!cancelled && menu.length > 0) setNavMenu(menu)
-      } catch {
-        // API unavailable — keep STATIC_NAV_MENU fallback
-      }
-    }
-    loadNavMenu()
+    fetchNavMenu()
+      .then(menu => {
+        if (cancelled) return
+        setNavMenu(menu ? menu : STATIC_NAV_MENU)
+      })
+      .catch(() => {
+        if (!cancelled) setNavMenu(STATIC_NAV_MENU)
+      })
     return () => { cancelled = true }
   }, [])
 
@@ -195,12 +194,12 @@ export default function Footer() {
   ]
 
   const themeColors = {
-    bg: '#FF8F00',
-    textDark: '#103042',
-    textLight: '#1F080D',
-    accentRed: '#800020',
-    accentGold: '#103042',
-    borderLight: '#103042'
+    bg: '#103042',
+    textDark: '#FAF6EE',
+    textLight: '#FAF6EE',
+    accentRed: '#F2C94C',
+    accentGold: '#D9B86E',
+    borderLight: '#D9B86E'
   }
 
   return (
@@ -211,9 +210,9 @@ export default function Footer() {
 
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-10 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10 lg:gap-16">
           {/* Brand Intro */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#103042]/30 md:after:to-transparent">
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
             <Link href="/" className="inline-block no-underline mb-4">
-              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#103042]/20 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden" style={{ width: '210px', height: '95px' }}>
+              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#D9B86E]/30 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden" style={{ width: '210px', height: '95px' }}>
                 <Image 
                   src="/logo.png" 
                   alt="Soil Goddess By Sri Akila" 
@@ -224,7 +223,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-[12px] sm:text-[13px] leading-relaxed mt-1 font-semibold" style={{ color: themeColors.textDark }}>
-              <strong className="font-bold uppercase tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> is for premium handloom sarees, heritage silk collections, and traditional weaves.
+              <strong className="font-bold uppercase tracking-widest" style={{ color: '#D9B86E', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> is for premium handloom sarees, heritage silk collections, and traditional weaves.
             </p>
 
             <div className="mt-3 space-y-2">
@@ -234,22 +233,22 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <IconMail className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
-                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
+                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
               </div>
               <div className="flex items-center gap-2">
                 <IconPhone className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
-                <a href="tel:+919444199944" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline" style={{ color: themeColors.textDark }}>+91 94441-99944</a>
+                <a href="tel:+919444199944" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline" style={{ color: themeColors.textDark }}>+91 94441-99944</a>
               </div>
               <div className="flex items-center gap-2">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <a href="https://www.soilgoddess.com" target="_blank" rel="noopener noreferrer" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>www.soilgoddess.com</a>
+                <a href="https://www.soilgoddess.com" target="_blank" rel="noopener noreferrer" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>www.soilgoddess.com</a>
               </div>
             </div>
           </div>
 
           {/* Customer Services */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#103042]/30 md:after:to-transparent">
-            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
+            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
               CUSTOMER SERVICES
             </h4>
             <div className="space-y-1.5 flex flex-col items-start">
@@ -260,8 +259,8 @@ export default function Footer() {
                   className="group relative inline-block text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300"
                   style={{ color: themeColors.textDark }}
                 >
-                  <span className="relative z-10 group-hover:text-[#800020] transition-colors duration-300">{l.label}</span>
-                  <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#103042] transition-all duration-300 group-hover:w-full"></span>
+                  <span className="relative z-10 group-hover:text-[#D9B86E] transition-colors duration-300">{l.label}</span>
+                  <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
                 </Link>
               ))}
             </div>
@@ -269,11 +268,11 @@ export default function Footer() {
 
           {/* Payment Methods */}
           <div className="flex flex-col items-start w-full">
-            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
+            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
               PAYMENT METHODS
             </h4>
             <p className="text-[12px] sm:text-[13px] leading-relaxed mb-3 font-semibold" style={{ color: themeColors.textDark }}>
-              At <strong className="font-bold uppercase tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong>, we offer safe & secure payment options.
+              At <strong className="font-bold uppercase tracking-widest" style={{ color: '#D9B86E', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong>, we offer safe & secure payment options.
             </p>
             <div className="flex flex-wrap items-center gap-1.5">
               <BadgeVisa />
@@ -287,7 +286,7 @@ export default function Footer() {
         {/* ── Trust & Craftsmanship Badges Container (Custom Gold Kolam Loop Border) ── */}
         <div className="w-full pt-12 pb-4">
           <div className="max-w-[1350px] mx-auto px-2 sm:px-6">
-            <div className="relative p-5 sm:p-8 rounded-2xl bg-[#103042] shadow-[0_12px_40px_rgba(0,0,0,0.35)] overflow-hidden border border-[#D9B86E]/40">
+            <div className="relative p-5 sm:p-8 rounded-2xl bg-[#249D8F] shadow-[0_12px_40px_rgba(0,0,0,0.35)] overflow-hidden border border-[#D9B86E]/40">
               
               {/* Custom Top Gold Kolam Pattern */}
               <div className="absolute top-0 left-0 right-0 z-10">
@@ -345,7 +344,7 @@ export default function Footer() {
         {/* Copyright Section */}
         <div className="w-full pt-6 pb-0">
           <div className="max-w-[1000px] mx-auto px-4 flex items-center justify-center">
-            <div className="relative py-3.5 px-6 md:px-12 border border-[#103042]/30 rounded-full bg-[#103042] shadow-[0_8px_32px_rgba(0,0,0,0.25)] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-transform hover:scale-[1.01] duration-300">
+            <div className="relative py-3.5 px-6 md:px-12 border border-[#D9B86E]/30 rounded-full bg-[#249D8F] shadow-[0_8px_32px_rgba(0,0,0,0.25)] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-transform hover:scale-[1.01] duration-300">
               
               {/* Subtle Kolam Background inside the container */}
               <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />

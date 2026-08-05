@@ -83,7 +83,7 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}) {
       }
       const msg = data?.detail
         ? `${data.message} — ${data.detail}`
-        : data?.message || 'Request failed'
+        : data?.message || data?.error || 'Request failed'
       throw new Error(msg)
     }
     return data as T

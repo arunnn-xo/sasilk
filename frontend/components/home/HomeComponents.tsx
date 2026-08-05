@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Shield, Clock, Globe, Truck } from 'lucide-react'
 import ProductCard from '@/components/product/ProductCard'
+import { useCart } from '@/components/cart/CartContext'
 import { fetchProducts, fetchCategories } from '@/lib/services/storefront.service'
 import { newArrivals } from '@/lib/data'
 
@@ -701,11 +702,28 @@ export function CategoryGrid() {
 /* ── New Arrivals Product Grid ────────────────────── */
 export function ProductGrid() {
   const [products, setProducts] = useState<any[]>([])
+  const { addItem, setDrawerOpen } = useCart()
 
   useEffect(() => {
     // Show static new arrivals directly
     setProducts(newArrivals.slice(0, 4))
   }, [])
+
+  const handleAddToCart = (product: any) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      slug: product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      image: product.image,
+      price: product.price,
+      originalPrice: product.oldPrice,
+      variantId: product.variantId,
+      color: product.color,
+      size: product.size,
+      qty: 1,
+    })
+    setDrawerOpen(true)
+  }
 
   return (
     <section className="relative overflow-hidden bg-[#FAF6EE] py-10">
@@ -792,6 +810,7 @@ export function ProductGrid() {
                       rating: (meta.rating as number) || 4.8,
                       reviews: (meta.reviews as number) || 14,
                     }}
+                    onAddToCart={handleAddToCart}
                   />
                 )
               })}
