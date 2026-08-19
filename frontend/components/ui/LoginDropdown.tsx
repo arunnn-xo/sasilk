@@ -131,7 +131,7 @@ export default function LoginDropdown() {
     <div className="relative">
       <button
         type="button"
-        className={`action-item group flex flex-col items-center gap-1.5 rounded-lg border-none bg-transparent px-1.5 md:px-2.5 py-1.5 transition-all duration-300 hover:scale-105 active:scale-95 no-underline`}
+        className={`action-item group flex flex-col items-center gap-1 rounded-lg border-none bg-transparent px-1.5 xl:px-2 py-1 transition-all duration-300 hover:scale-105 active:scale-95 no-underline`}
         onClick={() => {
           if (isAuthenticated) {
             router.push('/account')
@@ -145,12 +145,12 @@ export default function LoginDropdown() {
         aria-haspopup="dialog"
       >
         <User
-          size={30}
+          size={28}
           color="var(--burgundy)"
           strokeWidth={1.6}
           className={`transition-colors duration-300 ${open ? 'fill-[#9c1a21]' : 'fill-transparent group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]'}`}
         />
-        <span className="text-[12px] tracking-wide" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+        <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
           Account
         </span>
       </button>

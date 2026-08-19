@@ -227,17 +227,17 @@ export default function Header() {
 
       {/* Desktop Top row */}
       <div
-        className="hidden lg:flex w-full px-4 lg:px-6 items-center justify-between relative h-[152px]"
+        className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[152px]"
       >
         {/* Search */}
-        <div className="flex-1 flex justify-start">
-          <div className="w-full max-w-[380px] xl:max-w-[440px]">
+        <div className="flex-1 flex justify-start items-center">
+          <div className="w-full max-w-[360px] xl:max-w-[420px]">
             <SearchBar />
           </div>
         </div>
 
         {/* Logo */}
-        <div className="absolute left-[47%] -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
           <Link href="/" className="flex items-center justify-center no-underline flex-shrink-0 pointer-events-auto">
             <Image 
               src="/logo.png" 
@@ -257,44 +257,53 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Actions */}
-        <div className="flex-1 flex items-center gap-1 md:gap-2 justify-end pr-8 xl:pr-16">
+        {/* Actions with Reduced Gap & Elegant Vertical Divider Lines */}
+        <div className="flex-1 flex items-center justify-end gap-1 xl:gap-2">
           {/* Home */}
-          <Link href="/" className="action-item group flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Home size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[12px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+          <Link href="/" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <Home size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Home
             </span>
             {pathname === '/' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           {/* Shop */}
-          <Link href="/shop" className="action-item group flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <ShoppingBag size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[12px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+          <Link href="/shop" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <ShoppingBag size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Shop
             </span>
             {pathname === '/shop' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           {/* Track Order */}
-          <Link href="/track-order" className="action-item group flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Truck size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[12px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+          <Link href="/track-order" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <Truck size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Track Order
             </span>
             {pathname === '/track-order' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           {/* Get App */}
           <div className="relative group/app flex items-center h-full">
-            <Link href="#" className="action-item flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:bg-[#FDFBF7] relative no-underline">
-              <Smartphone size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover/app:fill-[#9c1a21]" />
-              <span className="text-[12px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--burgundy)', fontWeight: 700 }}>
+            <Link href="#" className="action-item flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:bg-[#FDFBF7] relative no-underline">
+              <Smartphone size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover/app:fill-[#9c1a21]" />
+              <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--burgundy)', fontWeight: 700 }}>
                 Get App
               </span>
-              {/* Notification dot to make it inviting */}
-              <span className="absolute top-1.5 right-1.5 md:right-2.5 w-2 h-2 rounded-full bg-red-500 animate-pulse border border-gold"></span>
+              {/* Notification dot */}
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse border border-gold"></span>
             </Link>
 
             {/* Hover Details Mega-Menu */}
@@ -309,7 +318,6 @@ export default function Header() {
                   {/* QR Code Placeholder */}
                   <div className="w-24 h-24 bg-[#FAF6EE] border-2 border-dashed border-[#D9B86E] rounded flex items-center justify-center mb-5 relative hover:scale-105 transition-transform duration-300 cursor-pointer">
                     <div className="absolute inset-1.5 border border-[#D9B86E] flex flex-wrap gap-0.5 p-0.5">
-                      {/* Fake QR pattern */}
                       {[...Array(16)].map((_, i) => (
                         <div key={i} className={`w-[23%] h-[23%] ${i % 3 === 0 || i % 5 === 0 ? 'bg-[var(--burgundy)]' : 'bg-transparent'}`}></div>
                       ))}
@@ -360,22 +368,31 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           <LoginDropdown />
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           {/* Wishlist */}
-          <Link href="/wishlist" className="action-item group flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Heart size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[12px] tracking-wide hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Wishlist</span>
+          <Link href="/wishlist" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <Heart size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Wishlist</span>
             {pathname === '/wishlist' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
+          {/* Divider */}
+          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
           {/* Cart */}
-          <Link href="/cart" className="action-item group flex flex-col items-center gap-1.5 px-1.5 md:px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <ShoppingCart size={30} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[12px] tracking-wide hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Cart</span>
+          <Link href="/cart" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <ShoppingCart size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Cart</span>
             {pathname === '/cart' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
             <span
-              className="absolute top-0 right-0 w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold text-gold"
+              className="absolute top-0 right-0 w-[19px] h-[19px] rounded-full flex items-center justify-center text-[9.5px] font-bold text-gold"
               style={{ background: 'var(--burgundy)', border: '2px solid white' }}
             >
               {itemCount > 99 ? '99+' : itemCount}

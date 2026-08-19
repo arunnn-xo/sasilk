@@ -91,22 +91,11 @@ function BadgeDiscover({ className }: { className?: string }) {
   )
 }
 
-/* ── Custom Golden Kolam Loop Border (Pure SVG) ───── */
+/* ── Custom Golden Minimal Border ───── */
 function GoldKolamBorderSVG() {
   return (
-    <div className="w-full h-6 sm:h-7 overflow-hidden pointer-events-none opacity-90">
-      <svg className="w-full h-full text-[#D9B86E]" viewBox="0 0 800 24" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <pattern id="kolamGoldLoopPattern" x="0" y="0" width="40" height="24" patternUnits="userSpaceOnUse">
-          {/* Interlocking Kolam Loop Curves */}
-          <path d="M 0,12 C 10,0 30,24 40,12 M 0,12 C 10,24 30,0 40,12" stroke="currentColor" strokeWidth="1.3" fill="none" />
-          <path d="M 0,0 L 40,0 M 0,24 L 40,24" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.6" />
-          {/* Kolam Dots */}
-          <circle cx="20" cy="12" r="2.2" fill="currentColor" />
-          <circle cx="0" cy="12" r="1.5" fill="currentColor" />
-          <circle cx="40" cy="12" r="1.5" fill="currentColor" />
-        </pattern>
-        <rect width="100%" height="100%" fill="url(#kolamGoldLoopPattern)" />
-      </svg>
+    <div className="w-full py-1.5 opacity-60">
+      <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#D9B86E] to-transparent"></div>
     </div>
   )
 }
@@ -177,11 +166,11 @@ export default function Footer() {
   }, [])
 
   const trustBadges = [
-    { src: '/footer-icons/badge-skin-friendly.png', label: 'Skin Friendly' },
-    { src: '/footer-icons/badge-naturally-derived.png', label: 'Naturally Derived' },
-    { src: '/footer-icons/badge-biodegradable.png', label: 'Biodegradable' },
-    { src: '/footer-icons/badge-traditional-weaving.png', label: 'Traditional Weaving' },
-    { src: '/footer-icons/badge-handcrafted-luxury.png', label: 'Handcrafted Luxury' },
+    { src: '/footer-icons/badge-handcrafted-luxury.jpg', label: 'Luxury Handcrafted' },
+    { src: '/footer-icons/badge-traditional-weaving.jpg', label: 'Traditional Weaving' },
+    { src: '/footer-icons/badge-silk-thread.jpg', label: 'Natural Silk & Leaf' },
+    { src: '/footer-icons/badge-affordable-luxury.jpg', label: 'Affordable Luxury' },
+    { src: '/footer-icons/badge-pure-silk.jpg', label: 'Pure Silk Cocoon' },
   ]
 
   const themeColors = {
@@ -277,7 +266,7 @@ export default function Footer() {
         {/* ── Trust & Craftsmanship Badges Container (Custom Gold Kolam Loop Border) ── */}
         <div className="w-full pt-12 pb-4">
           <div className="max-w-[1350px] mx-auto px-2 sm:px-6">
-            <div className="relative p-5 sm:p-8 rounded-2xl bg-[#103042] shadow-[0_12px_40px_rgba(0,0,0,0.35)] overflow-hidden border border-[#D9B86E]/40">
+            <div className="relative p-5 sm:p-8 rounded-2xl bg-[#FAF6EE] shadow-[0_12px_40px_rgba(0,0,0,0.15)] overflow-hidden border border-[#D9B86E]/40">
               
               {/* Custom Top Gold Kolam Pattern */}
               <div className="absolute top-0 left-0 right-0 z-10">
@@ -306,22 +295,25 @@ export default function Footer() {
               {/* Inner Fine Gold Line Frame */}
               <div className="absolute inset-2 sm:inset-3 border border-[#D9B86E]/25 rounded-xl pointer-events-none z-10"></div>
 
-              {/* 5 Badges Grid */}
-              <div className="relative z-20 grid grid-cols-5 items-center justify-items-center gap-1 sm:gap-4 md:gap-8 py-3">
+              {/* 5 Badges Grid with Vertical Divider Lines */}
+              <div className="relative z-20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 items-start justify-items-center gap-3 sm:gap-4 lg:gap-0 py-4">
                 {trustBadges.map((badge, idx) => (
                   <div 
                     key={idx} 
-                    className="flex flex-col items-center justify-center group cursor-pointer transition-transform duration-300 hover:scale-105 w-full"
+                    className="relative flex flex-col items-center justify-start group cursor-pointer transition-transform duration-300 hover:scale-105 w-full text-center px-2 lg:px-4 lg:border-r last:border-r-0 border-[#D9B86E]/40"
                   >
-                    <div className="relative w-full max-w-[120px] sm:max-w-[150px] md:max-w-[180px] h-[75px] sm:h-[110px] md:h-[130px]">
+                    <div className="relative w-full max-w-[90px] sm:max-w-[115px] md:max-w-[125px] aspect-square rounded-2xl overflow-hidden border border-[#D9B86E]/40 bg-[#FAF6EE] shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:shadow-[0_8px_24px_rgba(217,184,110,0.25)]">
                       <Image 
                         src={badge.src} 
                         alt={badge.label} 
                         fill 
-                        className="object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-110"
-                        sizes="(max-width: 640px) 20vw, (max-width: 1024px) 160px, 180px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 150px"
                       />
                     </div>
+                    <span className="mt-2 text-[10.5px] sm:text-[11px] md:text-[11.5px] font-bold tracking-wider uppercase text-[#300D14] leading-tight">
+                      {badge.label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -335,17 +327,17 @@ export default function Footer() {
         {/* Copyright Section */}
         <div className="w-full pt-6 pb-0">
           <div className="max-w-[1000px] mx-auto px-4 flex items-center justify-center">
-            <div className="relative py-3.5 px-6 md:px-12 border border-[#103042]/30 rounded-full bg-[#103042] shadow-[0_8px_32px_rgba(0,0,0,0.25)] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-transform hover:scale-[1.01] duration-300">
+            <div className="relative py-3.5 px-6 md:px-12 border border-[#D9B86E]/40 rounded-full bg-[#FAF6EE] shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center overflow-hidden transition-transform hover:scale-[1.01] duration-300">
               
               {/* Subtle Kolam Background inside the container */}
-              <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
+              <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
               
               <div className="relative z-10 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12px] font-medium tracking-wide">
-                <span style={{ color: '#D9B86E' }}>Copyright &copy; 2026</span>
-                <span className="text-white font-semibold">Soil Goddess by Sri Akila</span>
-                <span className="text-white mx-0.5 opacity-50">&bull;</span>
-                <span style={{ color: '#D9B86E' }}>Designed by</span>
-                <a href="http://saitechnosolutions.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline hover:text-[#D9B86E] transition-colors">Sai techno solutions</a>
+                <span className="text-[#9C1A21]">Copyright &copy; 2026</span>
+                <span className="text-[#300D14] font-bold">Soil Goddess by Sri Akila</span>
+                <span className="text-[#300D14] mx-0.5 opacity-40">&bull;</span>
+                <span className="text-[#9C1A21]">Designed by</span>
+                <a href="http://saitechnosolutions.com/" target="_blank" rel="noopener noreferrer" className="text-[#300D14] font-semibold hover:underline hover:text-[#9C1A21] transition-colors">Sai techno solutions</a>
               </div>
             </div>
           </div>

@@ -747,32 +747,67 @@ export function ProductGrid() {
           {/* Teal-Gold Flourish under heading */}
         </div>
 
-        {/* Full Kolam Border Container */}
-        <div className="relative mx-auto w-full pt-8 md:pt-10 pb-8 md:pb-10 px-6 md:px-10 bg-[#FAF6EE] shadow-sm">
-          {/* Top Traditional Saree Wave Border */}
-          <div className="absolute top-0 left-8 md:left-10 right-8 md:right-10 h-8 md:h-10 opacity-95" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='32' viewBox='0 0 100 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='3' x2='100' y2='3' stroke='%23C89753' stroke-width='2'/%3E%3Cline x1='0' y1='7' x2='100' y2='7' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cpath d='M 0 16 Q 5 9, 10 16 T 20 16 T 30 16 T 40 16 T 50 16 T 60 16 T 70 16 T 80 16 T 90 16 T 100 16' fill='none' stroke='%233B7A5E' stroke-width='1.8'/%3E%3Ccircle cx='5' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='15' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='25' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='35' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='45' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='55' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='65' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='75' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='85' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='95' cy='11' r='1.8' fill='%23D87B32'/%3E%3Cline x1='0' y1='25' x2='100' y2='25' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cline x1='0' y1='29' x2='100' y2='29' stroke='%23C89753' stroke-width='2'/%3E%3C/svg%3E")`, backgroundSize: "auto 100%", backgroundRepeat: 'round no-repeat', backgroundPosition: "center" }}></div>
+        {/* Professional Minimal Kolam Border Container */}
+        <div className="relative mx-auto w-full pt-14 md:pt-16 pb-14 md:pb-16 px-6 md:px-12 bg-[#FAF6EE] shadow-sm">
           
-          {/* Bottom Traditional Saree Wave Border */}
-          <div className="absolute bottom-0 left-8 md:left-10 right-8 md:right-10 h-8 md:h-10 opacity-95" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='32' viewBox='0 0 100 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='3' x2='100' y2='3' stroke='%23C89753' stroke-width='2'/%3E%3Cline x1='0' y1='7' x2='100' y2='7' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cpath d='M 0 16 Q 5 9, 10 16 T 20 16 T 30 16 T 40 16 T 50 16 T 60 16 T 70 16 T 80 16 T 90 16 T 100 16' fill='none' stroke='%233B7A5E' stroke-width='1.8'/%3E%3Ccircle cx='5' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='15' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='25' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='35' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='45' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='55' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='65' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='75' cy='11' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='85' cy='21' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='95' cy='11' r='1.8' fill='%23D87B32'/%3E%3Cline x1='0' y1='25' x2='100' y2='25' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cline x1='0' y1='29' x2='100' y2='29' stroke='%23C89753' stroke-width='2'/%3E%3C/svg%3E")`, backgroundSize: "auto 100%", backgroundRepeat: 'round no-repeat', backgroundPosition: "center", transform: 'scaleY(-1)' }}></div>
+          {/* Thick Impressive Main Border */}
+          <div className="absolute inset-4 md:inset-6 border-[3px] border-[#D9B86E] pointer-events-none z-10"></div>
           
-          {/* Left Traditional Saree Wave Border */}
-          <div className="absolute top-8 md:top-10 bottom-8 md:bottom-10 left-0 w-3.5 sm:w-8 md:w-10 opacity-95" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='32' height='100' viewBox='0 0 32 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='3' y1='0' x2='3' y2='100' stroke='%23C89753' stroke-width='2'/%3E%3Cline x1='7' y1='0' x2='7' y2='100' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cpath d='M 16 0 Q 9 5, 16 10 T 16 20 T 16 30 T 16 40 T 16 50 T 16 60 T 16 70 T 16 80 T 16 90 T 16 100' fill='none' stroke='%233B7A5E' stroke-width='1.8'/%3E%3Ccircle cx='21' cy='5' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='15' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='25' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='35' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='45' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='55' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='65' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='75' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='85' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='95' r='1.8' fill='%23D87B32'/%3E%3Cline x1='25' y1='0' x2='25' y2='100' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cline x1='29' y1='0' x2='29' y2='100' stroke='%23C89753' stroke-width='2'/%3E%3C/svg%3E")`, backgroundSize: "100% auto", backgroundRepeat: 'no-repeat round', backgroundPosition: "center" }}></div>
-          
-          {/* Right Traditional Saree Wave Border */}
-          <div className="absolute top-8 md:top-10 bottom-8 md:bottom-10 right-0 w-3.5 sm:w-8 md:w-10 opacity-95" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='32' height='100' viewBox='0 0 32 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='3' y1='0' x2='3' y2='100' stroke='%23C89753' stroke-width='2'/%3E%3Cline x1='7' y1='0' x2='7' y2='100' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cpath d='M 16 0 Q 9 5, 16 10 T 16 20 T 16 30 T 16 40 T 16 50 T 16 60 T 16 70 T 16 80 T 16 90 T 16 100' fill='none' stroke='%233B7A5E' stroke-width='1.8'/%3E%3Ccircle cx='21' cy='5' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='15' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='25' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='35' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='45' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='55' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='65' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='75' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='21' cy='85' r='1.8' fill='%23D87B32'/%3E%3Ccircle cx='11' cy='95' r='1.8' fill='%23D87B32'/%3E%3Cline x1='25' y1='0' x2='25' y2='100' stroke='%233B7A5E' stroke-width='1.5'/%3E%3Cline x1='29' y1='0' x2='29' y2='100' stroke='%23C89753' stroke-width='2'/%3E%3C/svg%3E")`, backgroundSize: "100% auto", backgroundRepeat: 'no-repeat round', backgroundPosition: "center", transform: 'scaleX(-1)' }}></div>
-          
-          {/* Corner Motif Joiners matching traditional border motif */}
-          <div className="absolute top-0 left-0 w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 bg-[#FAF6EE] flex items-center justify-center z-10">
-            <div className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 border sm:border-2 border-[#C89753] rounded flex items-center justify-center"><div className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-[#D87B32] rounded-full"></div></div>
+          {/* Subtle Inner Frame */}
+          <div className="absolute inset-[22px] md:inset-[30px] border border-[#6B1A2A]/20 pointer-events-none z-10"></div>
+
+          {/* Minimal Clean Kolam Corners */}
+          {/* Top Left */}
+          <div className="absolute top-1 left-1 md:top-3 md:left-3 w-12 h-12 md:w-16 md:h-16 bg-[#FAF6EE] z-20 pointer-events-none flex items-center justify-center">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 md:w-12 md:h-12">
+              <rect x="5" y="5" width="40" height="40" stroke="#D9B86E" strokeWidth="3"/>
+              <circle cx="25" cy="25" r="14" stroke="#6B1A2A" strokeWidth="2"/>
+              <rect x="18" y="18" width="14" height="14" transform="rotate(45 25 25)" fill="#D9B86E"/>
+              <circle cx="25" cy="25" r="3" fill="#FAF6EE"/>
+              <circle cx="25" cy="12" r="2.5" fill="#D9B86E"/>
+              <circle cx="25" cy="38" r="2.5" fill="#D9B86E"/>
+              <circle cx="12" cy="25" r="2.5" fill="#D9B86E"/>
+              <circle cx="38" cy="25" r="2.5" fill="#D9B86E"/>
+            </svg>
           </div>
-          <div className="absolute top-0 right-0 w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 bg-[#FAF6EE] flex items-center justify-center z-10">
-            <div className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 border sm:border-2 border-[#C89753] rounded flex items-center justify-center"><div className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-[#D87B32] rounded-full"></div></div>
+          {/* Top Right */}
+          <div className="absolute top-1 right-1 md:top-3 md:right-3 w-12 h-12 md:w-16 md:h-16 bg-[#FAF6EE] z-20 pointer-events-none flex items-center justify-center">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 md:w-12 md:h-12">
+              <rect x="5" y="5" width="40" height="40" stroke="#D9B86E" strokeWidth="3"/>
+              <circle cx="25" cy="25" r="14" stroke="#6B1A2A" strokeWidth="2"/>
+              <rect x="18" y="18" width="14" height="14" transform="rotate(45 25 25)" fill="#D9B86E"/>
+              <circle cx="25" cy="25" r="3" fill="#FAF6EE"/>
+              <circle cx="25" cy="12" r="2.5" fill="#D9B86E"/>
+              <circle cx="25" cy="38" r="2.5" fill="#D9B86E"/>
+              <circle cx="12" cy="25" r="2.5" fill="#D9B86E"/>
+              <circle cx="38" cy="25" r="2.5" fill="#D9B86E"/>
+            </svg>
           </div>
-          <div className="absolute bottom-0 left-0 w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 bg-[#FAF6EE] flex items-center justify-center z-10">
-            <div className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 border sm:border-2 border-[#C89753] rounded flex items-center justify-center"><div className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-[#D87B32] rounded-full"></div></div>
+          {/* Bottom Left */}
+          <div className="absolute bottom-1 left-1 md:bottom-3 md:left-3 w-12 h-12 md:w-16 md:h-16 bg-[#FAF6EE] z-20 pointer-events-none flex items-center justify-center">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 md:w-12 md:h-12">
+              <rect x="5" y="5" width="40" height="40" stroke="#D9B86E" strokeWidth="3"/>
+              <circle cx="25" cy="25" r="14" stroke="#6B1A2A" strokeWidth="2"/>
+              <rect x="18" y="18" width="14" height="14" transform="rotate(45 25 25)" fill="#D9B86E"/>
+              <circle cx="25" cy="25" r="3" fill="#FAF6EE"/>
+              <circle cx="25" cy="12" r="2.5" fill="#D9B86E"/>
+              <circle cx="25" cy="38" r="2.5" fill="#D9B86E"/>
+              <circle cx="12" cy="25" r="2.5" fill="#D9B86E"/>
+              <circle cx="38" cy="25" r="2.5" fill="#D9B86E"/>
+            </svg>
           </div>
-          <div className="absolute bottom-0 right-0 w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10 bg-[#FAF6EE] flex items-center justify-center z-10">
-            <div className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 border sm:border-2 border-[#C89753] rounded flex items-center justify-center"><div className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-[#D87B32] rounded-full"></div></div>
+          {/* Bottom Right */}
+          <div className="absolute bottom-1 right-1 md:bottom-3 md:right-3 w-12 h-12 md:w-16 md:h-16 bg-[#FAF6EE] z-20 pointer-events-none flex items-center justify-center">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 md:w-12 md:h-12">
+              <rect x="5" y="5" width="40" height="40" stroke="#D9B86E" strokeWidth="3"/>
+              <circle cx="25" cy="25" r="14" stroke="#6B1A2A" strokeWidth="2"/>
+              <rect x="18" y="18" width="14" height="14" transform="rotate(45 25 25)" fill="#D9B86E"/>
+              <circle cx="25" cy="25" r="3" fill="#FAF6EE"/>
+              <circle cx="25" cy="12" r="2.5" fill="#D9B86E"/>
+              <circle cx="25" cy="38" r="2.5" fill="#D9B86E"/>
+              <circle cx="12" cy="25" r="2.5" fill="#D9B86E"/>
+              <circle cx="38" cy="25" r="2.5" fill="#D9B86E"/>
+            </svg>
           </div>
 
           <div className="relative z-10">

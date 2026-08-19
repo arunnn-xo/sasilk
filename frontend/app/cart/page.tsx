@@ -65,12 +65,12 @@ function CartPageContent() {
       <Header />
       <main className="relative z-10 flex-grow overflow-hidden bg-[var(--ivory)]">
         <div
-          className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.12] mix-blend-multiply"
-          style={{ backgroundImage: "url('/bgabstractimage/cartabstract.png')" }}
+          className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.22] mix-blend-multiply"
+          style={{ backgroundImage: "url('/bgabstractimage/cartabstract.png')", backgroundAttachment: 'fixed' }}
           aria-hidden="true"
         />
-        <div className="pointer-events-none absolute inset-0 bg-[var(--ivory)]/78" aria-hidden="true" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-[var(--ivory)]/25 via-[var(--ivory)]/64 to-transparent" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-[#FAF6EE]/70" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[380px] bg-gradient-to-b from-[#FAF6EE]/40 via-[#FAF6EE]/70 to-transparent" aria-hidden="true" />
 
         <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 py-12 sm:px-6 md:py-16 lg:px-8">
           <Link href="/shop" className="mb-8 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[var(--charcoal)] transition hover:text-[var(--burgundy)]">
