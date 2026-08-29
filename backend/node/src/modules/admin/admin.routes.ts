@@ -8,7 +8,7 @@ import { UPLOADS_DIR } from './controllers/upload.controller.js'
 
 // Import controllers
 import { getDashboardStats, getSalesStats, getSalesBreakdown, getTopSellingProducts } from './controllers/dashboard.controller.js'
-import { uploadFile, deleteUploadedFile } from './controllers/upload.controller.js'
+import { uploadFile, deleteUploadedFile, uploadVideoFile } from './controllers/upload.controller.js'
 import {
   getProductVariants,
   createProductVariant,
@@ -117,6 +117,19 @@ const uploadExcel = multer({
   },
 })
 
+const uploadVideo = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new AppError(422, 'Only MP4, WebM, and MOV video files are allowed.'))
+    }
+  },
+})
+
 const router = Router()
 
 router.use(requireAdminAuth)
@@ -129,6 +142,7 @@ router.get('/dashboard/top-products', asyncHandler(getTopSellingProducts))
 
 // Uploads
 router.post('/uploads', upload.single('file'), asyncHandler(uploadFile))
+router.post('/uploads/video', uploadVideo.single('file'), asyncHandler(uploadVideoFile))
 router.delete('/uploads/:filename', asyncHandler(deleteUploadedFile))
 
 // Variant Endpoints

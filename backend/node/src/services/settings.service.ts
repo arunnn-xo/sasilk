@@ -17,6 +17,11 @@ export interface ShippingConfig {
   freeShippingThreshold: number
 }
 
+export interface HomeNewArrivalsConfig {
+  enabled: boolean
+  limit: number
+}
+
 export interface GuestDiscountPopupConfig {
   enabled: boolean
   discountPercentage: number
@@ -46,9 +51,15 @@ const defaultGuestDiscountPopup: GuestDiscountPopupConfig = {
   message: 'Register now and get {percentage}% OFF on your purchase!',
 }
 
+const defaultHomeNewArrivals: HomeNewArrivalsConfig = {
+  enabled: true,
+  limit: 4,
+}
+
 let cachedCompany: CompanyInfo | null = null
 let cachedShipping: ShippingConfig | null = null
 let cachedGuestDiscountPopup: GuestDiscountPopupConfig | null = null
+let cachedHomeNewArrivals: HomeNewArrivalsConfig | null = null
 
 export async function getCompanyInfo(): Promise<CompanyInfo> {
   if (cachedCompany) return cachedCompany
@@ -94,4 +105,20 @@ export async function getGuestDiscountPopupConfig(): Promise<GuestDiscountPopupC
 
 export function invalidateGuestDiscountPopupCache() {
   cachedGuestDiscountPopup = null
+}
+
+export async function getHomeNewArrivalsConfig(): Promise<HomeNewArrivalsConfig> {
+  if (cachedHomeNewArrivals) return cachedHomeNewArrivals
+  const setting = await Setting.findOne({ where: { key: 'home_new_arrivals_config' } })
+  if (!setting) return defaultHomeNewArrivals
+  const value = setting.get('value') as Record<string, unknown>
+  cachedHomeNewArrivals = {
+    enabled: Boolean(value.enabled),
+    limit: Math.min(12, Math.max(1, Number(value.limit) || 4)),
+  }
+  return cachedHomeNewArrivals
+}
+
+export function invalidateHomeNewArrivalsCache() {
+  cachedHomeNewArrivals = null
 }

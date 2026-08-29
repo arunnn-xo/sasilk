@@ -63,30 +63,30 @@ export default function LoginPage() {
           noValidate
         >
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-5 w-52 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center overflow-hidden">
+            <div className="mx-auto mb-5 w-52 h-24 bg-white rounded-2xl shadow-lg border border-[#D9B86E]/30 flex items-center justify-center overflow-hidden">
               <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain scale-[1.85]" />
             </div>
-            <p className="text-[11.5px] font-extrabold uppercase tracking-[0.3em] text-blue-300 drop-shadow-md">
+            <p className="text-[11.5px] font-extrabold uppercase tracking-[0.3em] text-[#D9B86E] drop-shadow-md">
               Admin Portal
             </p>
-            <h2 className="mt-2 font-display text-3xl font-bold text-white drop-shadow-md">
+            <h2 className="mt-2 font-display text-3xl font-bold text-white drop-shadow-md font-serif">
               Welcome Back
             </h2>
-            <p className="mt-1 text-[13px] text-slate-300">
+            <p className="mt-1 text-[13px] text-[#FAF6EE]/80">
               Sign in to manage orders & inventory
             </p>
           </div>
 
           {/* Email */}
           <label className="mb-5 block">
-            <span className="mb-2 block text-[12.5px] font-bold uppercase tracking-wider text-slate-300">
+            <span className="mb-2 block text-[12.5px] font-bold uppercase tracking-wider text-[#E8D4A8]">
               Email Address <span className="text-red-400">*</span>
             </span>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className={`w-full rounded-xl !pl-[38px] py-3 text-[14.5px] bg-white/5 border text-white placeholder-slate-400 transition-all focus:bg-white/10 focus:ring-2 focus:ring-blue-400/50 ${
-                  fieldErrors.email ? 'border-red-500' : 'border-white/20'
+                className={`w-full rounded-xl !pl-[38px] py-3 text-[14.5px] bg-white/10 border text-white placeholder-slate-400 transition-all focus:bg-white/15 focus:ring-2 focus:ring-[#D9B86E]/50 ${
+                  fieldErrors.email ? 'border-red-500' : 'border-white/20 focus:border-[#D9B86E]'
                 }`}
                 type="email"
                 value={email}
@@ -105,14 +105,14 @@ export default function LoginPage() {
 
           {/* Password */}
           <label className="mb-7 block">
-            <span className="mb-2 block text-[12.5px] font-bold uppercase tracking-wider text-slate-300">
+            <span className="mb-2 block text-[12.5px] font-bold uppercase tracking-wider text-[#E8D4A8]">
               Password <span className="text-red-400">*</span>
             </span>
             <div className="relative">
               <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className={`w-full rounded-xl !pl-[38px] !pr-[38px] py-3 text-[14.5px] bg-white/5 border text-white placeholder-slate-400 transition-all focus:bg-white/10 focus:ring-2 focus:ring-blue-400/50 ${
-                  fieldErrors.password ? 'border-red-500' : 'border-white/20'
+                className={`w-full rounded-xl !pl-[38px] !pr-[38px] py-3 text-[14.5px] bg-white/10 border text-white placeholder-slate-400 transition-all focus:bg-white/15 focus:ring-2 focus:ring-[#D9B86E]/50 ${
+                  fieldErrors.password ? 'border-red-500' : 'border-white/20 focus:border-[#D9B86E]'
                 }`}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
@@ -149,7 +149,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl px-5 py-3.5 text-[14.5px] font-bold tracking-wide text-white shadow-lg transition-all duration-200 hover:brightness-110 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 bg-gradient-to-r from-blue-600 to-blue-800 border border-blue-400/30"
+            className="admin-btn-primary !w-full !py-3.5 !rounded-xl !text-[15px]"
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>

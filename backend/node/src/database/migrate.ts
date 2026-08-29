@@ -566,6 +566,17 @@ export async function runMigrations() {
     ...timestamps,
   })
 
+  await createTableIfMissing(qi, 'reels', {
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    image_url: { type: DataTypes.STRING(255), allowNull: false },
+    video_url: { type: DataTypes.STRING(512), allowNull: true },
+    title: { type: DataTypes.STRING(180), allowNull: true },
+    views: { type: DataTypes.STRING(20), allowNull: false, defaultValue: '0' },
+    sort_order: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    ...timestamps,
+  })
+
   // ─── Column migrations (adds new columns to existing tables) ────
   // customers
   await safeAddColumn('customers', 'last_login_at', { type: DataTypes.DATE, allowNull: true })

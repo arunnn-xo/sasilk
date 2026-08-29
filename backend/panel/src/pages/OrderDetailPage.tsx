@@ -407,7 +407,7 @@ export default function OrderDetailPage() {
                 }
               }}
               disabled={recoverySending || Number(((order.metadata as Record<string, unknown>) || {}).recoveryEmailCount || 0) >= 3}
-              className="inline-flex items-center gap-1.5 rounded bg-[var(--gold)] px-4 py-2 text-xs font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+              className="admin-btn-primary !text-xs !py-2 !px-3.5"
             >
               {recoverySending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
               {recoverySending ? 'Sending...' : 'Send Recovery Email'}
@@ -423,20 +423,13 @@ export default function OrderDetailPage() {
           {invoiceLoading ? (
             <div className="flex items-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-[var(--gold)]" />
-              <p className="text-sm text-[var(--muted)]">Loading invoice...</p>
+              <p className="text-xs text-[var(--muted)]">Checking invoice…</p>
             </div>
           ) : invoice ? (
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-[var(--text)]">
-                  {String(invoice.invoiceNumber || '')}
-                </p>
-                <p className="text-xs text-[var(--muted)]">
-                  Date: {String(invoice.invoiceDate || '')} &middot; Status:{' '}
-                  <span className={`font-semibold ${invoice.status === 'paid' ? 'text-green-600' : invoice.status === 'cancelled' ? 'text-red-500' : 'text-amber-600'}`}>
-                    {invoice.status === 'unpaid' ? 'PENDING' : String(invoice.status || '').toUpperCase()}
-                  </span>
-                </p>
+              <div>
+                <p className="text-sm font-semibold text-[var(--text)]">Tax invoice available</p>
+                <p className="text-xs text-[var(--muted)]">Standard GST invoice for this order.</p>
               </div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={async () => {
@@ -451,7 +444,7 @@ export default function OrderDetailPage() {
                     setInvoiceRegenerating(false)
                   }
                 }} disabled={invoiceRegenerating}
-                  className="inline-flex items-center gap-1.5 rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold text-[var(--muted)] transition-colors hover:bg-[var(--panel-strong)] disabled:opacity-50"
+                  className="admin-btn-secondary !text-xs !py-1.5 !px-3"
                 >
                   {invoiceRegenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
                   Regenerate
@@ -459,7 +452,7 @@ export default function OrderDetailPage() {
                 <button
                   type="button"
                   onClick={() => downloadBlob(`/admin/orders/${id}/invoice/pdf`, `${invoice?.invoiceNumber || `invoice-${id}`}.pdf`).catch(() => {})}
-                  className="inline-flex items-center gap-1.5 rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+                  className="admin-btn-secondary !text-xs !py-1.5 !px-3"
                 >
                   <Download className="h-3.5 w-3.5" /> Download Invoice
                 </button>
@@ -472,7 +465,7 @@ export default function OrderDetailPage() {
                 type="button"
                 onClick={handleGenerateInvoice}
                 disabled={invoiceGenerating}
-                className="inline-flex items-center gap-1.5 rounded bg-[var(--gold)] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                className="admin-btn-primary !text-xs !py-1.5 !px-3"
               >
                 {invoiceGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
                 {invoiceGenerating ? 'Generating...' : 'Generate Invoice'}
@@ -657,7 +650,7 @@ export default function OrderDetailPage() {
             {nextAction ? (
               <button type="button"
                 onClick={() => setShowConfirm(true)}
-                className="inline-flex items-center gap-2 rounded bg-[var(--gold)] px-6 py-2.5 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:opacity-90">
+                className="admin-btn-primary">
                 <Check className="h-4 w-4" /> {nextAction.label}
               </button>
             ) : null}

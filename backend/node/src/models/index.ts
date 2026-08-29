@@ -477,6 +477,16 @@ export const WishlistItem = sequelize.define('WishlistItem', {
   ],
 })
 
+export const Reel = sequelize.define('Reel', {
+  id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+  imageUrl: { type: DataTypes.STRING(255), allowNull: false, field: 'image_url' },
+  videoUrl: { type: DataTypes.STRING(512), allowNull: true, field: 'video_url' },
+  title: { type: DataTypes.STRING(180), allowNull: true },
+  views: { type: DataTypes.STRING(20), allowNull: false, defaultValue: '0' },
+  sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'sort_order' },
+  active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+}, { tableName: 'reels' })
+
 export const models = {
   Admin,
   Customer,
@@ -508,6 +518,7 @@ export const models = {
   StockNotification,
   GuestSession,
   WishlistItem,
+  Reel,
 }
 
 export function initAssociations() {

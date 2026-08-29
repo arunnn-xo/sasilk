@@ -5,6 +5,9 @@ import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { EffectCoverflow, Pagination, Autoplay, Navigation } from 'swiper/modules'
 import { Play, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { fetchReels } from '@/lib/api/storefront'
+import { resolveImageUrl } from '@/lib/api/client'
+import type { StorefrontReel } from '@/lib/api/types'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -12,46 +15,26 @@ import 'swiper/css/effect-coverflow'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 
-// Mock Data for the reels
-const reelsData = [
-  {
-    id: 1,
-    videoThumbnail: '/saree1.png',
-    views: '1L',
-  },
-  {
-    id: 2,
-    videoThumbnail: '/saree2.png',
-    views: '52K',
-  },
-  {
-    id: 3,
-    videoThumbnail: '/saree3.png',
-    views: '36K',
-  },
-  {
-    id: 4,
-    videoThumbnail: '/saree4.png',
-    views: '27K',
-  },
-  {
-    id: 5,
-    videoThumbnail: '/saree5.png',
-    views: '19K',
-  },
-  {
-    id: 6,
-    videoThumbnail: '/saree6.png',
-    views: '31K',
-  },
+// Static fallback when admin has not added any reels
+const staticFallback: StorefrontReel[] = [
+  { id: 1, imageUrl: '/saree1.png', views: '1L', sortOrder: 0 },
+  { id: 2, imageUrl: '/saree2.png', views: '52K', sortOrder: 1 },
+  { id: 3, imageUrl: '/saree3.png', views: '36K', sortOrder: 2 },
+  { id: 4, imageUrl: '/saree4.png', views: '27K', sortOrder: 3 },
+  { id: 5, imageUrl: '/saree5.png', views: '19K', sortOrder: 4 },
+  { id: 6, imageUrl: '/saree6.png', views: '31K', sortOrder: 5 },
 ]
 
 export default function InstaReels() {
   const [mounted, setMounted] = useState(false)
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null)
+  const [reelsData, setReelsData] = useState<StorefrontReel[]>([])
+
+  const displayData = reelsData.length > 0 ? reelsData : staticFallback
 
   useEffect(() => {
     setMounted(true)
+    fetchReels().then(setReelsData)
   }, [])
 
   // Lock body scroll when modal is open
@@ -107,7 +90,7 @@ export default function InstaReels() {
               modules={[Autoplay, Navigation]}
               className="w-full pt-4 pb-12 px-4 md:px-0"
             >
-              {reelsData.map((reel, index) => (
+              {displayData.map((reel, index) => (
                 <SwiperSlide 
                   key={reel.id} 
                   onClick={() => setActiveSlideIndex(index)}
@@ -116,7 +99,7 @@ export default function InstaReels() {
                   <div className="w-full h-full relative block">
                     {/* Thumbnail */}
                     <Image
-                      src={reel.videoThumbnail}
+                      src={resolveImageUrl(reel.imageUrl)}
                       alt={`Instagram Reel ${reel.id}`}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -200,36 +183,46 @@ export default function InstaReels() {
               modules={[EffectCoverflow, Pagination, Navigation]}
               className="w-full h-full pt-10 pb-16"
             >
-              {reelsData.map((reel) => (
+              {displayData.map((reel) => (
                 <SwiperSlide 
                   key={reel.id} 
                   className="!w-[280px] sm:!w-[340px] md:!w-[420px] !h-[500px] sm:!h-[600px] md:!h-[720px] rounded-2xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] bg-black border border-white/10"
                 >
                   <div className="w-full h-full relative block">
-                    <Image
-                      src={reel.videoThumbnail}
-                      alt={`Instagram Reel ${reel.id}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 340px, 420px"
-                    />
-                    
-                    {/* Darker Gradient for Cinematic Feel */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 pointer-events-none"></div>
+                    {reel.videoUrl ? (
+                      <video
+                        src={resolveImageUrl(reel.videoUrl)}
+                        poster={resolveImageUrl(reel.imageUrl)}
+                        controls
+                        autoPlay
+                        muted
+                        loop
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <>
+                        <Image
+                          src={resolveImageUrl(reel.imageUrl)}
+                          alt={`Instagram Reel ${reel.id}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 340px, 420px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 pointer-events-none"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 shadow-[0_0_30px_rgba(255,255,255,0.2)] pointer-events-none">
+                          <Play size={36} className="text-white ml-2 fill-white" />
+                        </div>
+                      </>
+                    )}
 
                     {/* Views Badge */}
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-sm font-bold px-4 py-2 rounded-full flex items-center gap-2 border border-white/20 pointer-events-none">
+                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-sm font-bold px-4 py-2 rounded-full flex items-center gap-2 border border-white/20 pointer-events-none z-10">
                       <Eye size={16} />
                       {reel.views}
                     </div>
 
-                    {/* Play Button - Always visible in modal center */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50 cursor-pointer hover:scale-110 hover:bg-[#800020]/80 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                      <Play size={36} className="text-white ml-2 fill-white" />
-                    </div>
-
                     {/* Brand Footer */}
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none">
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none z-10">
                       <div className="w-10 h-10 mx-auto mb-3 opacity-90">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[var(--gold)]">
                           <path d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z" fill="currentColor"/>

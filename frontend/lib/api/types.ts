@@ -143,3 +143,12 @@ export type CustomerAddress = {
   isDefault: boolean
   createdAt?: string
 }
+
+export type StorefrontReel = {
+  id: number
+  imageUrl: string
+  videoUrl?: string | null
+  title?: string | null
+  views: string
+  sortOrder: number
+}

@@ -5,12 +5,12 @@ import { adminLogout, getAdminMe, getOrderPipelineCounts } from '../services/api
 import { isSidebarSection, sidebarItems } from '../app/resources'
 
 const stageBadgeClass: Record<string, string> = {
-  'pending-payment': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  new: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  packing: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  dispatched: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  'out-for-delivery': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-  delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  'pending-payment': 'bg-yellow-100 text-yellow-800',
+  new: 'bg-[#FAF4E8] text-[#8B6B1F] border border-[#D9B86E]/40',
+  packing: 'bg-amber-100 text-amber-800',
+  dispatched: 'bg-[#FBF7F8] text-[#6B1A2A] border border-[#6B1A2A]/20',
+  'out-for-delivery': 'bg-amber-50 text-amber-900',
+  delivered: 'bg-emerald-100 text-emerald-800',
 }
 
 export default function AdminLayout() {
@@ -47,20 +47,16 @@ export default function AdminLayout() {
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#1E40AF] text-white">
+    <div className="flex flex-col h-full bg-[#1A050B] text-white">
       {/* Brand */}
-      <div className="px-6 pt-7 pb-6 flex flex-col gap-4 items-center text-center">
-        <div className="w-52 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center overflow-hidden">
-          <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain scale-[1.85]" />
-        </div>
-        <div>
-          <h2 className="text-lg font-black tracking-tight text-white leading-tight">Soil Goddess</h2>
-          <p className="text-[11px] font-bold text-blue-200 tracking-wider uppercase mt-1">Admin Portal</p>
+      <div className="px-4 pt-5 pb-5 flex items-center justify-center border-b border-white/[0.08]">
+        <div className="w-full max-w-[224px] h-[84px] bg-white rounded-2xl shadow-md border border-[#D9B86E]/40 flex items-center justify-center p-2 overflow-hidden">
+          <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain scale-[1.95]" />
         </div>
       </div>
 
       {/* Nav items */}
-      <nav className="flex flex-1 flex-col gap-1 px-3.5 pb-6 overflow-y-auto custom-scrollbar">
+      <nav className="flex flex-1 flex-col gap-1 px-3 pt-4 pb-6 overflow-y-auto custom-scrollbar">
         {sidebarItems.map(entry => {
           if (isSidebarSection(entry)) {
             const isOpen = sectionsOpen[entry.label] ?? false
@@ -69,18 +65,18 @@ export default function AdminLayout() {
                 <button
                   type="button"
                   onClick={() => setSectionsOpen(prev => ({ ...prev, [entry.label]: !isOpen }))}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-[12px] font-bold uppercase tracking-widest text-blue-200/80 hover:bg-white/10 hover:text-white transition-all duration-300"
+                  className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-[11.5px] font-bold uppercase tracking-[0.18em] text-[#D9B86E]/90 hover:bg-white/[0.06] hover:text-white transition-all duration-200"
                 >
-                  <entry.Icon className="h-4 w-4 shrink-0 text-blue-200" />
+                  <entry.Icon className="h-4 w-4 shrink-0 text-[#D9B86E]" />
                   <span className="flex-1 text-left">{entry.label}</span>
                   {isOpen ? (
-                    <ChevronDown className="h-3.5 w-3.5 text-blue-200" />
+                    <ChevronDown className="h-3.5 w-3.5 text-[#D9B86E]" />
                   ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-blue-200" />
+                    <ChevronRight className="h-3.5 w-3.5 text-[#D9B86E]" />
                   )}
                 </button>
                 {isOpen ? (
-                  <div className="ml-3 mt-1 space-y-1 border-l border-white/20 pl-3">
+                  <div className="ml-3 mt-1 space-y-1 border-l border-[#D9B86E]/20 pl-2.5">
                     {entry.children.map(child => {
                       const count = child.badgeKey ? (counts[child.badgeKey] ?? 0) : 0
                       return (
@@ -89,17 +85,17 @@ export default function AdminLayout() {
                           to={child.path}
                           onClick={closeMobile}
                           className={({ isActive }) =>
-                            `group flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-[13px] font-medium transition-all duration-300 ${
+                            `group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
                               isActive
-                                ? 'bg-white text-[#1E40AF] shadow-md shadow-blue-900/20 font-bold translate-x-1'
-                                : 'text-blue-50/90 hover:bg-white/15 hover:text-white hover:translate-x-1 hover:shadow-sm'
+                                ? 'bg-[#6B1A2A] text-white font-bold shadow-sm border-l-2 border-[#D9B86E]'
+                                : 'text-[#FAF6EE]/75 hover:bg-white/[0.06] hover:text-white'
                             }`
                           }
                         >
-                          <child.Icon className="h-4 w-4 shrink-0" />
+                          <child.Icon className="h-4 w-4 shrink-0 text-[#D9B86E]/80 group-hover:text-[#D9B86E]" />
                           <span className="flex-1">{child.label}</span>
                           {count > 0 && child.badgeKey ? (
-                            <span className="rounded-md bg-amber-400 text-slate-950 px-2 py-0.5 text-[10px] font-black leading-none shadow-sm">
+                            <span className="rounded-full bg-[#D9B86E] text-[#1A050B] px-2 py-0.5 text-[10px] font-black leading-none shadow-sm">
                               {count}
                             </span>
                           ) : null}
@@ -119,14 +115,14 @@ export default function AdminLayout() {
               end={entry.path === '/'}
               onClick={closeMobile}
               className={({ isActive }) =>
-                `group flex items-center gap-3.5 rounded-lg px-4 py-3 text-[14px] font-medium transition-all duration-300 ${
+                `group flex items-center gap-3.5 rounded-lg px-3.5 py-2.5 text-[13.5px] font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-white text-[#1E40AF] shadow-md shadow-blue-900/20 font-bold translate-x-1'
-                    : 'text-blue-50/90 hover:bg-white/15 hover:text-white hover:translate-x-1 hover:shadow-sm'
+                    ? 'bg-[#6B1A2A] text-white font-bold shadow-sm border-l-2 border-[#D9B86E]'
+                    : 'text-[#FAF6EE]/75 hover:bg-white/[0.06] hover:text-white'
                 }`
               }
             >
-              <entry.Icon className="h-4 w-4 shrink-0" />
+              <entry.Icon className="h-4 w-4 shrink-0 text-[#D9B86E]/80 group-hover:text-[#D9B86E]" />
               <span className="flex-1">{entry.label}</span>
             </NavLink>
           )
@@ -136,30 +132,30 @@ export default function AdminLayout() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F4F6FB] text-slate-800 relative">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#1F080D] relative">
       {/* Desktop Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#1E40AF] shadow-2xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col bg-[#1A050B] shadow-xl border-r border-[#D9B86E]/20 lg:flex">
         {sidebarContent}
       </aside>
 
       {/* Mobile Backdrop */}
       {mobileOpen ? (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden"
           onClick={closeMobile}
         />
       ) : null}
 
       {/* Mobile Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col bg-[#1E40AF] shadow-2xl transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col bg-[#1A050B] shadow-2xl border-r border-[#D9B86E]/20 transition-transform duration-300 lg:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <button
           type="button"
           onClick={closeMobile}
-          className="absolute right-3 top-3 rounded-lg p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute right-3 top-3 rounded-lg p-2 text-[#FAF6EE]/80 transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Close menu"
         >
           <X className="h-5 w-5" />
@@ -170,9 +166,9 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="lg:pl-[260px] relative z-10">
         {/* Desktop Top Header */}
-        <header className="sticky top-0 z-20 hidden lg:flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-md px-8 py-3.5 shadow-sm">
+        <header className="sticky top-0 z-20 hidden lg:flex items-center justify-between border-b border-[#EFE8DA] bg-[#FAF6EE]/90 backdrop-blur-md px-8 py-3.5 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Store Management</span>
+            <span className="text-xs font-bold text-[#7A6065] uppercase tracking-wider">Store Management</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -181,16 +177,16 @@ export default function AdminLayout() {
               href="/"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold px-4 py-2 rounded-lg shadow-md shadow-amber-500/20 text-xs transition-all transform hover:-translate-y-0.5"
+              className="admin-btn-primary !px-4 !py-2 !rounded-lg !text-xs !no-underline"
             >
               View Storefront
             </a>
 
-            <div className="h-6 w-px bg-slate-200" />
+            <div className="h-6 w-px bg-[#EFE8DA]" />
 
             {/* User Avatar */}
             <div 
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white shadow-md bg-[#1E40AF] border border-blue-200"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white shadow-sm bg-[#6B1A2A] border border-[#D9B86E]/50"
             >
               {initial}
             </div>
@@ -199,29 +195,29 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={logout}
-              className="group flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
+              className="group flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#1F080D] bg-white border border-[#EFE8DA] hover:bg-[#FAF6EE] hover:text-[#6B1A2A] transition-all duration-200"
             >
-              <LogOut className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+              <LogOut className="h-3.5 w-3.5 text-[#6B1A2A] transition-transform group-hover:scale-110" />
               <span>Logout</span>
             </button>
           </div>
         </header>
 
         {/* Mobile Top Header */}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/90 backdrop-blur-md px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#EFE8DA] bg-[#FAF6EE]/95 backdrop-blur-md px-4 py-3 lg:hidden">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100"
+              className="rounded-xl p-2 text-[#6B1A2A] transition-colors hover:bg-black/5"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="h-10 w-24 shrink-0 bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center overflow-hidden">
+            <div className="h-10 w-24 shrink-0 bg-white rounded-lg shadow-sm border border-[#EFE8DA] flex items-center justify-center overflow-hidden">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-contain scale-[1.85]" />
             </div>
-            <span className="font-bold text-slate-800 text-sm">Soil Goddess Admin</span>
+            <span className="font-bold text-[#300D14] text-sm">Soil Goddess Admin</span>
           </div>
         </header>
 

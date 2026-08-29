@@ -1,4 +1,4 @@
-# Taste (Continuously Learned by [CommandCode][cmd])
-
-[cmd]: https://commandcode.ai/
-
+- Prefers receiving a clear, correct implementation plan before code changes begin. Confidence: 0.9
+- Prefers dynamic frontend content to be manageable through an admin interface rather than hardcoded. Confidence: 0.9
+- Requires proper, end-to-end validation for configurable features, including admin input and data handling. Confidence: 0.9
+- Prefers minimal, scoped changes that preserve existing functionality and avoid unrelated modifications. Confidence: 0.9

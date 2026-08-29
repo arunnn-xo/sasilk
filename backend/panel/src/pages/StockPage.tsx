@@ -143,7 +143,7 @@ export default function StockPage() {
               type="button"
               onClick={() => saveMutation.mutate()}
               disabled={!hasChanges() || saveMutation.isPending}
-              className="admin-btn inline-flex items-center gap-2 px-4 py-2.5 text-sm"
+              className="admin-btn-primary"
             >
               {saveMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -52,14 +52,14 @@ export default function WizardContainer({
       <section className="admin-card overflow-hidden rounded-lg">
         <div className="border-b border-[var(--line)] bg-gradient-to-r from-[var(--burgundy-soft)]/40 to-transparent px-6 py-5 md:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--gold)] text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#6B1A2A] text-white border border-[#D9B86E]/40 shadow-sm">
               <Check className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--burgundy)]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#6B1A2A]">
                 {steps[currentStep].label}
               </p>
-              <h1 className="font-display text-xl font-semibold text-[var(--gold)] md:text-2xl">
+              <h1 className="font-display text-xl font-bold text-[#1F080D] md:text-2xl">
                 {steps[currentStep].description}
               </h1>
             </div>
@@ -81,7 +81,7 @@ export default function WizardContainer({
                   type="button"
                   onClick={onPrev}
                   disabled={isSubmitting}
-                  className="rounded border border-[var(--line)] px-5 py-2.5 text-sm font-bold text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)] disabled:opacity-50"
+                  className="admin-btn-secondary"
                 >
                   <span className="flex items-center gap-2">
                     <ArrowLeft className="h-4 w-4" />
@@ -96,7 +96,7 @@ export default function WizardContainer({
                   type="button"
                   onClick={onNext}
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 rounded bg-[var(--gold)] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                  className="admin-btn-primary"
                 >
                   Next
                   <ArrowRight className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default function WizardContainer({
                   type="button"
                   onClick={onSubmit}
                   disabled={isSubmitting || isPending}
-                  className="inline-flex items-center justify-center gap-2 rounded bg-[var(--gold)] px-6 py-2.5 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                  className="admin-btn-primary"
                 >
                   {isSubmitting || isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

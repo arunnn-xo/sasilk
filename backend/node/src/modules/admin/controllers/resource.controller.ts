@@ -19,6 +19,7 @@ import {
   VariantImage,
   ContactEnquiry,
   WishlistItem,
+  Reel,
 } from '../../../models/index.js'
 import { writeAuditLog } from '../../../services/audit.service.js'
 import { expireOldCoupons } from '../../../services/coupon-expiry.service.js'
@@ -28,7 +29,7 @@ import { triggerPriceDropNotification } from '../../../services/price-drop.servi
 import { sendBackInStockEmail, sendNotifyMessageEmail } from '../../../services/email.service.js'
 import { StockNotification } from '../../../models/index.js'
 import { syncInvoiceStatus } from '../../../services/invoice.service.js'
-import { invalidateCompanyCache, invalidateShippingCache, invalidateGuestDiscountPopupCache } from '../../../services/settings.service.js'
+import { invalidateCompanyCache, invalidateShippingCache, invalidateGuestDiscountPopupCache, invalidateHomeNewArrivalsCache } from '../../../services/settings.service.js'
 import {
   cleanupFile,
   filePathFromUrl,
@@ -73,6 +74,49 @@ export const contactEnquirySchema = z.object({
   email: z.string().email('Invalid email address.').max(190, 'Email is too long.'),
   phonenumber: z.string().min(10, 'Phone number must be at least 10 digits.').max(32, 'Phone number is too long.'),
   message: z.string().min(5, 'Message must be at least 5 characters.').max(2000, 'Message is too long.'),
+})
+
+export const settingsSchema = z.object({
+  key: z.string().min(1, 'Setting key is required.').max(120),
+  value: z.record(z.any()),
+  // Key-specific validation
+}).superRefine((data, ctx) => {
+  if (data.key === 'shipping_config') {
+    const v = data.value
+    if (typeof v.freeShippingEnabled !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'freeShippingEnabled'], message: 'freeShippingEnabled must be a boolean.' })
+    }
+    if (typeof v.freeShippingThreshold !== 'number' || v.freeShippingThreshold < 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'freeShippingThreshold'], message: 'freeShippingThreshold must be a non-negative number.' })
+    }
+  }
+  if (data.key === 'guest_discount_popup') {
+    const v = data.value
+    if (typeof v.enabled !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'enabled'], message: 'enabled must be a boolean.' })
+    }
+    if (typeof v.discountPercentage !== 'number' || v.discountPercentage < 0 || v.discountPercentage > 100) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'discountPercentage'], message: 'discountPercentage must be a number between 0 and 100.' })
+    }
+  }
+  if (data.key === 'home_new_arrivals_config') {
+    const v = data.value
+    if (typeof v.enabled !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'enabled'], message: 'enabled must be a boolean.' })
+    }
+    if (typeof v.limit !== 'number' || !Number.isInteger(v.limit) || v.limit < 1 || v.limit > 12) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'limit'], message: 'limit must be an integer between 1 and 12.' })
+    }
+  }
+})
+
+export const reelCreateSchema = z.object({
+  imageUrl: z.string().min(1, 'Reel image is required.').max(255, 'Image URL is too long.'),
+  videoUrl: z.union([z.string().max(512, 'Video URL is too long.'), z.null()]).optional(),
+  title: z.union([z.string().max(180, 'Title is too long.'), z.null()]).optional(),
+  views: z.string().min(1, 'Views display text is required.').max(20, 'Views text is too long.'),
+  sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
+  active: z.boolean().optional().default(true),
 })
 
 export const resourceConfig: Record<string, ResourceConfig> = {
@@ -205,6 +249,15 @@ export const resourceConfig: Record<string, ResourceConfig> = {
     entity: 'setting',
     writable: ['key', 'value'],
     defaultOrder: [['key', 'ASC']],
+    validationSchema: settingsSchema,
+  },
+  reels: {
+    model: Reel,
+    entity: 'reel',
+    writable: ['imageUrl', 'videoUrl', 'title', 'views', 'sortOrder', 'active'],
+    imageFields: ['imageUrl'],
+    defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
+    validationSchema: reelCreateSchema,
   },
 }
 
@@ -478,6 +531,9 @@ export const createResource = async (req: Request, res: Response) => {
     if (settingKey === 'guest_discount_popup') {
       invalidateGuestDiscountPopupCache()
     }
+    if (settingKey === 'home_new_arrivals_config') {
+      invalidateHomeNewArrivalsCache()
+    }
   }
 
   await writeAuditLog({
@@ -617,6 +673,9 @@ export const updateResource = async (req: Request, res: Response) => {
     if (settingKey === 'guest_discount_popup') {
       invalidateGuestDiscountPopupCache()
     }
+    if (settingKey === 'home_new_arrivals_config') {
+      invalidateHomeNewArrivalsCache()
+    }
   }
 
   await writeAuditLog({
@@ -698,6 +757,9 @@ export const deleteResource = async (req: Request, res: Response) => {
     }
     if (settingKey === 'guest_discount_popup') {
       invalidateGuestDiscountPopupCache()
+    }
+    if (settingKey === 'home_new_arrivals_config') {
+      invalidateHomeNewArrivalsCache()
     }
   }
 

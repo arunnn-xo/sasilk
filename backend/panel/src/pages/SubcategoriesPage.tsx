@@ -209,7 +209,7 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
               <button
                 type="button"
                 onClick={() => navigate(`/${basePath}/new`)}
-                className="mt-4 inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2.5 text-sm font-bold text-white"
+                className="admin-btn-primary !mt-4"
               >
                 {isChild ? 'New Child Category' : 'New Sub Category'}
               </button>
@@ -238,7 +238,7 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
               <button
                 type="button"
                 onClick={() => navigate(`/${basePath}/new`)}
-                className="mt-4 inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2.5 text-sm font-bold text-white"
+                className="admin-btn-primary !mt-4"
               >
                 <Plus className="h-4 w-4" />
                 {isChild ? 'Create Child Category' : 'Create Sub Category'}
@@ -442,7 +442,7 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
         <button
           type="submit"
           disabled={saveMutation.isPending}
-          className="inline-flex items-center gap-2 rounded bg-[var(--burgundy)] px-6 py-2.5 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#430000] disabled:opacity-50"
+          className="admin-btn-primary"
         >
           {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {isEdit ? 'Save Changes' : 'Save'}

@@ -152,7 +152,7 @@ export default function ReviewsPage() {
             <button
               type="button"
               onClick={handleSearch}
-              className="inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2 text-sm font-bold text-white transition-colors hover:opacity-90"
+              className="admin-btn-primary"
             >
               <Search className="h-4 w-4" />
               Search

@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Check, Loader2, Truck, Info } from 'lucide-react'
+import { ArrowLeft, Check, Loader2, Package, Truck, Info } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch, listResource } from '../services/api'
 
@@ -19,12 +19,25 @@ export default function SettingsPage() {
   const [freeShippingEnabled, setFreeShippingEnabled] = useState(false)
   const [freeShippingThreshold, setFreeShippingThreshold] = useState('')
 
+  const existingNewArrivals = listData?.items?.find((i: any) => i.key === 'home_new_arrivals_config')
+  const newArrivalsValue = (existingNewArrivals?.value || {}) as Record<string, any>
+
+  const [newArrivalsEnabled, setNewArrivalsEnabled] = useState(false)
+  const [newArrivalsLimit, setNewArrivalsLimit] = useState('')
+  const [newArrivalsTouched, setNewArrivalsTouched] = useState(false)
+
+  const newArrivalsLimitNum = parseInt(newArrivalsLimit, 10)
+  const newArrivalsLimitValid = !isNaN(newArrivalsLimitNum) && newArrivalsLimitNum >= 1 && newArrivalsLimitNum <= 12
+
   useEffect(() => {
     if (!isFetching) {
       setFreeShippingEnabled(Boolean(shippingValue.freeShippingEnabled))
       setFreeShippingThreshold(shippingValue.freeShippingThreshold ? String(shippingValue.freeShippingThreshold) : '')
+
+      setNewArrivalsEnabled(Boolean(newArrivalsValue.enabled))
+      setNewArrivalsLimit(newArrivalsValue.limit != null ? String(newArrivalsValue.limit) : '4')
     }
-  }, [isFetching, existingShipping])
+  }, [isFetching, existingShipping, existingNewArrivals])
 
   const saveShipping = useMutation({
     mutationFn: async () => {
@@ -55,9 +68,44 @@ export default function SettingsPage() {
     }
   }, [saveShipping.isSuccess, saveShipping])
 
+  const saveNewArrivals = useMutation({
+    mutationFn: async () => {
+      const body = {
+        key: 'home_new_arrivals_config',
+        value: {
+          enabled: newArrivalsEnabled,
+          limit: parseInt(newArrivalsLimit, 10) || 4,
+        },
+      }
+      if (existingNewArrivals?.id) {
+        return apiFetch(`/admin/settings/${existingNewArrivals.id}`, { method: 'PUT', body: JSON.stringify(body) })
+      }
+      return apiFetch('/admin/settings', { method: 'POST', body: JSON.stringify(body) })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resource', 'settings'] })
+    },
+  })
+
+  useEffect(() => {
+    if (saveNewArrivals.isSuccess) {
+      const timer = setTimeout(() => {
+        saveNewArrivals.reset()
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [saveNewArrivals.isSuccess, saveNewArrivals])
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     saveShipping.mutate()
+  }
+
+  function handleNewArrivalsSubmit(e: FormEvent) {
+    e.preventDefault()
+    setNewArrivalsTouched(true)
+    if (!newArrivalsLimitValid) return
+    saveNewArrivals.mutate()
   }
 
   const effectiveThreshold = freeShippingEnabled ? (Number(freeShippingThreshold) || 0) : 0
@@ -153,10 +201,10 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saveShipping.isPending}
-            className="inline-flex items-center gap-2 rounded bg-[var(--burgundy)] px-5 py-2 text-sm font-medium text-white transition hover:bg-[var(--burgundy-dark)] disabled:opacity-50"
+            className="admin-btn-primary"
           >
             {saveShipping.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-            Save
+            Save Settings
           </button>
           {saveShipping.isSuccess && <span className="text-sm text-green-600 font-medium">Saved!</span>}
           {saveShipping.isError && <span className="text-sm text-red-500">{saveShipping.error.message}</span>}

@@ -56,6 +56,17 @@ router.get('/home', asyncHandler(catalogController.getHome))
 router.get('/shipping-config', asyncHandler(catalogController.getShippingConfiguration))
 router.get('/guest-discount-popup', asyncHandler(catalogController.getGuestDiscountPopupConfiguration))
 
+/* ── Reels Route ─── */
+router.get('/reels', asyncHandler(async (_req, res) => {
+  const { Reel } = await import('../../models/index.js')
+  const reels = await Reel.findAll({
+    where: { active: true },
+    attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder'],
+    order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+  })
+  res.json({ reels })
+}))
+
 /* ── Order / Payment / Shipping Routes ─── */
 router.post('/orders', optionalCustomerAuth, asyncHandler(orderController.createOrder))
 router.get('/orders', requireCustomerAuth, asyncHandler(orderController.getOrders))

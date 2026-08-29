@@ -58,8 +58,8 @@ const cardConfig: Record<StoreStatKey, CardStyle> = {
       outOfStock: '/stock',
       lowStock: '/stock',
     },
-    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(122,92,250,0.5)]',
-    style: { background: 'linear-gradient(to bottom right, #7a5cfa, #6042db)' },
+    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(107,26,42,0.45)]',
+    style: { background: 'linear-gradient(135deg, #6B1A2A, #300D14)' },
     SvgBackground: (
       <svg className="absolute bottom-0 right-0 w-32 opacity-20 pointer-events-none" viewBox="0 0 100 50">
         <path d="M0,50 Q25,20 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor"/>
@@ -72,8 +72,8 @@ const cardConfig: Record<StoreStatKey, CardStyle> = {
       parents: '/categories',
       subcategories: '/subcategories',
     },
-    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(62,165,251,0.5)]',
-    style: { background: 'linear-gradient(to bottom right, #3ea5fb, #258bf7)' },
+    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(217,184,110,0.45)]',
+    style: { background: 'linear-gradient(135deg, #D9B86E, #B4882F)' },
     SvgBackground: (
       <svg className="absolute bottom-4 right-0 w-40 h-10 opacity-30 pointer-events-none" viewBox="0 0 100 30" preserveAspectRatio="none">
         <path d="M0,25 C15,25 20,5 35,15 C50,25 60,5 75,20 C85,30 95,10 100,15" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
@@ -82,8 +82,8 @@ const cardConfig: Record<StoreStatKey, CardStyle> = {
   },
   customers: {
     to: '/customers',
-    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(44,194,183,0.5)]',
-    style: { background: 'linear-gradient(to bottom right, #2cc2b7, #12a69d)' },
+    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(139,58,74,0.45)]',
+    style: { background: 'linear-gradient(135deg, #8B3A4A, #5A1624)' },
     SvgBackground: (
       <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-40">
         <div className="w-1 h-6 bg-white rounded-full"/>
@@ -101,8 +101,8 @@ const cardConfig: Record<StoreStatKey, CardStyle> = {
       delivered: '/orders/delivered',
       abandoned: '/orders/pending-payment',
     },
-    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(255,154,61,0.5)]',
-    style: { background: 'linear-gradient(to bottom right, #ff9a3d, #fa7a00)' },
+    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(16,48,66,0.45)]',
+    style: { background: 'linear-gradient(135deg, #1A4056, #103042)' },
     SvgBackground: (
       <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 opacity-40">
         <div className="h-1.5 w-10 bg-white rounded-full"/>
@@ -116,8 +116,8 @@ const cardConfig: Record<StoreStatKey, CardStyle> = {
   banners: {
     to: '/banners',
     metaLinks: { inactive: '/banners' },
-    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(255,91,131,0.5)]',
-    style: { background: 'linear-gradient(to bottom right, #ff5b83, #e63e66)' },
+    shadowClass: 'shadow-[0_8px_20px_-6px_rgba(197,154,63,0.45)]',
+    style: { background: 'linear-gradient(135deg, #C59A3F, #926E22)' },
     SvgBackground: (
       <svg className="absolute -right-4 -bottom-4 w-28 h-28 opacity-20 pointer-events-none" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="4"/>
@@ -134,28 +134,28 @@ const quickActions = [
     Icon: Package,
     title: 'Products',
     description: 'Add, edit, or manage your saree catalog.',
-    colorStyle: { color: '#ff5b83', backgroundColor: 'rgba(255, 91, 131, 0.1)' },
+    colorStyle: { color: '#6B1A2A', backgroundColor: 'rgba(107, 26, 42, 0.08)' },
   },
   {
     to: '/orders',
     Icon: ShoppingBag,
     title: 'Orders',
     description: 'View and process customer orders.',
-    colorStyle: { color: '#7a5cfa', backgroundColor: 'rgba(122, 92, 250, 0.1)' },
+    colorStyle: { color: '#BF9A4B', backgroundColor: 'rgba(217, 184, 110, 0.15)' },
   },
   {
     to: '/banners',
     Icon: ImageIcon,
     title: 'Banners',
     description: 'Update hero banners and promotions.',
-    colorStyle: { color: '#3ea5fb', backgroundColor: 'rgba(62, 165, 251, 0.1)' },
+    colorStyle: { color: '#103042', backgroundColor: 'rgba(16, 48, 66, 0.08)' },
   },
   {
     to: '/categories',
     Icon: Boxes,
     title: 'Categories',
     description: 'Organize product categories and sections.',
-    colorStyle: { color: '#ff9a3d', backgroundColor: 'rgba(255, 154, 61, 0.1)' },
+    colorStyle: { color: '#8B3A4A', backgroundColor: 'rgba(139, 58, 74, 0.08)' },
   },
 ]
 

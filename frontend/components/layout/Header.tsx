@@ -105,52 +105,52 @@ export default function Header() {
       )}
 
       {/* Mobile Top Row */}
-      {/* Mobile Top Row */}
-      <div className="flex lg:hidden w-full items-center justify-between px-2.5 sm:px-4 py-4 relative" style={{ background: '#FAF6EE' }}>
-        {/* Search Box */}
-        <button
-          type="button"
-          aria-label="Toggle search"
-          onClick={() => setMobileSearchOpen(prev => !prev)}
-          className={`icon-btn w-9 h-9 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${
-            mobileSearchOpen
-              ? 'bg-[var(--burgundy)] text-gold border-[var(--burgundy)] shadow-md'
-              : 'bg-[#F6EED8] text-[#5A1827] border-[#D9B86E]/70 hover:bg-[#5A1827] hover:text-[#FAF6EE]'
-          }`}
-        >
-          <Search size={18} strokeWidth={2.2} />
-        </button>
+      <div className="flex lg:hidden w-full items-center justify-between px-2 sm:px-4 py-2 relative h-[72px] sm:h-[82px]" style={{ background: '#FAF6EE' }}>
+        {/* Search Box (Left) */}
+        <div className="flex-shrink-0 z-10">
+          <button
+            type="button"
+            aria-label="Toggle search"
+            onClick={() => setMobileSearchOpen(prev => !prev)}
+            className={`icon-btn w-9 h-9 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95 ${
+              mobileSearchOpen
+                ? 'bg-[var(--burgundy)] text-gold border-[var(--burgundy)] shadow-md'
+                : 'bg-[#F6EED8] text-[#5A1827] border-[#D9B86E]/70 hover:bg-[#5A1827] hover:text-[#FAF6EE]'
+            }`}
+          >
+            <Search size={18} strokeWidth={2.2} />
+          </button>
+        </div>
 
-        {/* Logo */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
-          <Link href="/" className="flex items-center justify-center no-underline flex-shrink-0 pointer-events-auto">
+        {/* Logo (Center - Prominent, Clear & Centered) */}
+        <div className="flex-1 flex items-center justify-center min-w-0 px-1 z-10">
+          <Link href="/" className="flex items-center justify-center no-underline max-w-[200px] xs:max-w-[240px] sm:max-w-[280px] w-full">
             <Image 
               src="/logo.png" 
               alt="Soil Goddess" 
               width={260} 
-              height={220} 
+              height={180} 
               style={{ 
-                height: '175px', 
+                height: 'auto',
+                maxHeight: '144px',
                 width: 'auto', 
-                marginTop: '-35px', 
-                marginBottom: '-35px',
-                filter: 'drop-shadow(0px 3px 10px rgba(107,26,42,0.15)) contrast(1.1)'
+                filter: 'drop-shadow(0px 2px 8px rgba(107,26,42,0.12)) contrast(1.08)'
               }} 
-              className="object-contain" 
+              className="object-contain w-auto h-auto max-h-[144px]" 
               priority 
             />
           </Link>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Actions (Right) */}
+        <div className="flex-shrink-0 flex items-center gap-1 sm:gap-1.5 z-10">
           {/* Mobile Home */}
           <Link href="/" className="icon-btn group relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-[#D9B86E]/70 bg-[#F6EED8] text-[#5A1827] shadow-sm transition-all duration-300 hover:scale-105 hover:bg-[#5A1827] hover:text-[#FAF6EE] no-underline">
             <Home size={18} strokeWidth={2.2} />
           </Link>
           
           <a href="https://wa.me/" className="icon-btn group w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-[#25D366]/40 bg-[#196C45] flex items-center justify-center text-white shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-[#25D366] active:scale-95">
-            <svg width="19" height="19" fill="currentColor" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path><path d="M16.48 14.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-1.3-.65-2.26-1.2-3.1-2.65-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42H8.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.34.98 2.5c.12.16 1.7 2.6 4.12 3.64 1.54.66 2.14.72 2.92.6.86-.14 2.14-.88 2.44-1.72.3-.84.3-1.56.2-1.72-.1-.16-.36-.24-.6-.36z"></path></svg>
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path><path d="M16.48 14.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-1.3-.65-2.26-1.2-3.1-2.65-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42H8.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.34.98 2.5c.12.16 1.7 2.6 4.12 3.64 1.54.66 2.14.72 2.92.6.86-.14 2.14-.88 2.44-1.72.3-.84.3-1.56.2-1.72-.1-.16-.36-.24-.6-.36z"></path></svg>
           </a>
           <button
             type="button"

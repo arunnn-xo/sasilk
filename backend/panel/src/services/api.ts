@@ -208,6 +208,16 @@ export async function uploadImage(file: File, dimensionHint?: string) {
   })
 }
 
+export async function uploadVideo(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiFetch<{ file: { filename: string; originalName: string; path: string } }>('/admin/uploads/video', {
+    method: 'POST',
+    body: formData,
+    timeoutMs: 60000,
+  })
+}
+
 export function deleteUpload(filename: string) {
   return apiFetch<{ ok: boolean }>(`/admin/uploads/${filename}`, {
     method: 'DELETE',

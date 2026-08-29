@@ -515,7 +515,7 @@ export default function ProductFormPage() {
           <button
             type="button"
             onClick={() => navigate(config.path)}
-            className="rounded px-4 py-2 text-sm font-semibold text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+            className="admin-btn-secondary"
           >
             Discard
           </button>
@@ -523,7 +523,7 @@ export default function ProductFormPage() {
             type="button"
             onClick={() => submit()}
             disabled={saveMutation.isPending || (!isEdit && noSubcategories)}
-            className="inline-flex items-center gap-2 rounded bg-[var(--burgundy)] px-6 py-2.5 text-sm font-bold tracking-wide text-white transition-all hover:bg-[#430000] hover:shadow-md disabled:opacity-50"
+            className="admin-btn-primary"
           >
             {saveMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -734,7 +734,7 @@ export default function ProductFormPage() {
                  <button
                    type="button"
                    onClick={() => navigate(`/variants?productId=${id}`)}
-                   className="mt-2 inline-flex items-center gap-2 rounded bg-[var(--gold)] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-[var(--gold-soft)] hover:shadow-md"
+                   className="admin-btn-primary !mt-2"
                  >
                    <Layers className="h-4 w-4" />
                    Open Variants Manager
@@ -743,12 +743,12 @@ export default function ProductFormPage() {
              ) : (
                /* CREATE mode — inline first variant form */
                <div className="space-y-5">
-                 <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
-                   <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
-                     <Info className="h-3.5 w-3.5 flex-shrink-0" />
-                     Fill in the first variant details below. When you save, both the product and its first variant will be created together.
-                   </p>
-                 </div>
+                 <div className="rounded-lg border border-[#D9B86E]/40 bg-[#FAF4E8] px-4 py-3">
+                    <p className="text-xs font-semibold text-[#8B6B1F] flex items-center gap-1.5">
+                      <Info className="h-3.5 w-3.5 flex-shrink-0 text-[#8B6B1F]" />
+                      Fill in the first variant details below. When you save, both the product and its first variant will be created together.
+                    </p>
+                  </div>
 
                   {/* ── Variant Identity ── */}
                   <div className="grid gap-4 sm:grid-cols-2">

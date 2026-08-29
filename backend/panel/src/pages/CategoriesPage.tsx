@@ -126,7 +126,7 @@ export default function CategoriesPage() {
             <button
               type="button"
               onClick={() => navigate('/categories/new')}
-              className="inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"
+              className="admin-btn-primary"
             >
               <Plus className="h-4 w-4" />
               Add New
@@ -188,7 +188,7 @@ export default function CategoriesPage() {
             <button
               type="button"
               onClick={() => navigate('/categories/new')}
-              className="mt-1 inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2 text-xs font-bold text-white transition-colors hover:opacity-90"
+              className="admin-btn-primary !text-xs !py-2 !px-4"
             >
               <Plus className="h-3.5 w-3.5" />
               Create First Category

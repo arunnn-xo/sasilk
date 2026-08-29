@@ -207,6 +207,17 @@ async function seed() {
   })
 
   await Setting.findOrCreate({
+    where: { key: 'home_new_arrivals_config' },
+    defaults: {
+      key: 'home_new_arrivals_config',
+      value: {
+        enabled: true,
+        limit: 4,
+      },
+    },
+  })
+
+  await Setting.findOrCreate({
     where: { key: 'company_info' },
     defaults: {
       key: 'company_info',

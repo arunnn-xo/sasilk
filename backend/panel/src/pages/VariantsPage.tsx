@@ -483,7 +483,7 @@ export default function VariantsPage() {
             <button
               type="button"
               onClick={() => { setShowImportModal(true); setImportFile(null); setImportResult(null) }}
-              className="admin-btn-outline inline-flex items-center gap-2 px-4 py-2.5 text-sm"
+              className="admin-btn-secondary"
             >
               <FileUp className="h-4 w-4" />
               Import
@@ -491,7 +491,7 @@ export default function VariantsPage() {
             <button
               type="button"
               onClick={openAdd}
-              className="admin-btn inline-flex items-center gap-2 px-4 py-2.5 text-sm"
+              className="admin-btn-primary"
             >
               <Plus className="h-4 w-4" />
               Add Variant
@@ -1292,7 +1292,7 @@ export default function VariantsPage() {
               <button
                 type="button"
                 onClick={() => { setShowModal(false); setEditingVariant(null); setSizeInput(''); setVariantImageUrl(''); setVariantImages([]); setImageError(''); setFormFieldErrors({}) }}
-                className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)]"
+                className="admin-btn-secondary"
               >
                 {editingVariant ? 'Close' : 'Cancel'}
               </button>
@@ -1300,7 +1300,7 @@ export default function VariantsPage() {
                 type="button"
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="admin-btn inline-flex items-center gap-2 px-4 py-2 text-sm"
+                className="admin-btn-primary"
               >
                 {saveMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1348,14 +1348,14 @@ export default function VariantsPage() {
                 <button
                   type="button"
                   onClick={() => { setShowImportModal(false); setImportResult(null); setImportFile(null) }}
-                  className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)]"
+                  className="admin-btn-secondary"
                 >
                   Close
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700 space-y-2">
+                <div className="rounded-lg border border-[#D9B86E]/40 bg-[#FAF4E8] px-4 py-3 text-xs text-[#8B6B1F] space-y-2">
                   <p>Upload an Excel (.xlsx, .xls) or CSV file.
                   Required (one of): <strong>productId</strong> or <strong>productCode</strong>.
                   Optional columns: variantType, colorName, colorHex, size, sku, price, originalPrice, stockQty, lowStockThreshold, gstRate, isDefault.</p>
@@ -1363,7 +1363,7 @@ export default function VariantsPage() {
                   <a
                     href={downloadVariantImportSampleUrl()}
                     download
-                    className="inline-flex items-center gap-1.5 rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                    className="inline-flex items-center gap-1.5 rounded border border-[#D9B86E]/60 bg-white px-3 py-1.5 text-xs font-semibold text-[#8B6B1F] transition-colors hover:bg-[#FAF6EE]"
                   >
                     Download Sample Excel
                   </a>
@@ -1377,8 +1377,10 @@ export default function VariantsPage() {
                     </div>
                   ) : (
                     <div>
-                      <p className="text-sm font-bold text-[var(--text)]">Click to select file</p>
-                      <p className="mt-1 text-xs text-[var(--muted)]">.xlsx, .xls, or .csv</p>
+                      <p className="text-sm font-semibold text-[var(--text)]">
+                        Drop your Excel or CSV file here, or <span className="font-bold text-[var(--burgundy)]">browse</span>
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--muted)]">.xlsx, .xls, .csv</p>
                     </div>
                   )}
                   <input
@@ -1392,7 +1394,7 @@ export default function VariantsPage() {
                   <button
                     type="button"
                     onClick={() => { setShowImportModal(false); setImportResult(null); setImportFile(null) }}
-                    className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)]"
+                    className="admin-btn-secondary"
                   >
                     Cancel
                   </button>
@@ -1400,7 +1402,7 @@ export default function VariantsPage() {
                     type="button"
                     onClick={() => { if (importFile) importMutation.mutate(importFile) }}
                     disabled={!importFile || importMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded bg-[var(--burgundy)] px-4 py-2 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                    className="admin-btn-primary"
                   >
                     {importMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

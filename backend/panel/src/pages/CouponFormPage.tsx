@@ -221,14 +221,14 @@ export default function CouponFormPage() {
       <section className="admin-card overflow-hidden rounded-lg">
         <div className="border-b border-[var(--line)] bg-gradient-to-r from-[var(--burgundy-soft)]/40 to-transparent px-6 py-5 md:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--gold)] text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#6B1A2A] text-white border border-[#D9B86E]/40 shadow-sm">
               {isEdit ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--burgundy)]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#6B1A2A]">
                 {config.eyebrow}
               </p>
-              <h1 className="font-display text-2xl font-semibold text-[var(--gold)] md:text-3xl">
+              <h1 className="font-display text-2xl font-bold text-[#1F080D] md:text-3xl">
                 {isEdit ? 'Update' : 'Create'} Coupon
               </h1>
             </div>
@@ -512,14 +512,14 @@ export default function CouponFormPage() {
             <button
               type="button"
               onClick={() => navigate(config.path)}
-              className="rounded border border-[var(--line)] px-5 py-2.5 text-sm font-bold text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+              className="admin-btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid || saveMutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded bg-[var(--gold)] px-6 py-2.5 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:opacity-90 disabled:opacity-50"
+              className="admin-btn-primary"
             >
               {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {saveMutation.isPending ? 'Saving…' : isEdit ? 'Update Coupon' : 'Create Coupon'}

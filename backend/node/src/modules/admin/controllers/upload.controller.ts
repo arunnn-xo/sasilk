@@ -76,3 +76,15 @@ export const deleteUploadedFile = async (req: Request, res: Response) => {
   cleanupFile(fp)
   res.json({ ok: true })
 }
+
+export const uploadVideoFile = async (req: Request, res: Response) => {
+  if (!req.file) throw new AppError(422, 'Video file is required.')
+
+  res.status(201).json({
+    file: {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      path: `/uploads/${req.file.filename}`,
+    },
+  })
+}

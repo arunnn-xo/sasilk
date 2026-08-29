@@ -11,7 +11,7 @@ import {
   MarqueeMessage,
 } from '../../../models/index.js'
 import { plain, mapCategory, mapProduct } from './helpers.js'
-import { getShippingConfig, getGuestDiscountPopupConfig } from '../../../services/settings.service.js'
+import { getShippingConfig, getGuestDiscountPopupConfig, getHomeNewArrivalsConfig } from '../../../services/settings.service.js'
 
 export const getCategories = async (req: Request, res: Response) => {
   const section = typeof req.query.section === 'string' ? req.query.section : undefined
@@ -260,6 +260,8 @@ export const search = async (req: Request, res: Response) => {
 }
 
 export const getHome = async (_req: Request, res: Response) => {
+  const homeConfig = await getHomeNewArrivalsConfig()
+
   const [
     announcements,
     banners,
@@ -273,7 +275,7 @@ export const getHome = async (_req: Request, res: Response) => {
     Category.findAll({ where: { active: true, parentId: null }, order: [['sortOrder', 'ASC']] }),
     Category.findAll({ where: { active: true, parentId: { [Op.ne]: null } }, order: [['sortOrder', 'ASC']] }),
     Product.findAll({
-      where: { status: 'active' },
+      where: { status: 'active', isNew: true },
       attributes: {
         include: [[
           Sequelize.literal(`(
@@ -284,8 +286,8 @@ export const getHome = async (_req: Request, res: Response) => {
           'averageRating'
         ]]
       },
-      order: [['id', 'DESC']],
-      limit: 20,
+      order: [['sortOrder', 'ASC'], ['id', 'DESC']],
+      limit: homeConfig.limit,
       include: [{ model: ProductVariant, as: 'variants', attributes: ['id', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'], required: false }],
     }),
     MarqueeMessage.findAll({ where: { active: true }, order: [['sortOrder', 'ASC']] }),
@@ -311,6 +313,8 @@ export const getHome = async (_req: Request, res: Response) => {
     kidsCategories: [],
     fabricCategories: browseAllCategories,
     newArrivals: products.map(mapProduct),
+    newArrivalsEnabled: homeConfig.enabled,
+    newArrivalsLimit: homeConfig.limit,
     marqueeMessages: marqueeMessages.map(row => plain(row)),
   })
 }

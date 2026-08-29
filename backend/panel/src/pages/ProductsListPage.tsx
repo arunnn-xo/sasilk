@@ -190,7 +190,7 @@ export default function ProductsListPage() {
             <button
               type="button"
               onClick={() => navigate('/products/new')}
-              className="inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90"
+              className="admin-btn-primary"
             >
               <Plus className="h-4 w-4" />
               Add New
@@ -252,7 +252,7 @@ export default function ProductsListPage() {
             <button
               type="button"
               onClick={() => navigate('/products/new')}
-              className="mt-1 inline-flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2 text-xs font-bold text-white transition-colors hover:opacity-90"
+              className="admin-btn-primary !text-xs !py-2 !px-4"
             >
               <Plus className="h-3.5 w-3.5" />
               Create First Product
@@ -362,7 +362,7 @@ export default function ProductsListPage() {
                               type="button"
                               onClick={() => toggleProduct(item.id)}
                               title="Toggle variants"
-                              className={`rounded border border-[var(--line)] p-2 transition-colors ${isExpanded ? 'bg-blue-50 text-blue-700' : 'text-blue-600 hover:bg-blue-50'}`}
+                              className={`rounded border border-[var(--line)] p-2 transition-colors ${isExpanded ? 'bg-[#FBF7F8] text-[#6B1A2A]' : 'text-[#6B1A2A] hover:bg-[#FBF7F8]'}`}
                             >
                               <Layers className="h-4 w-4" />
                             </button>
@@ -554,14 +554,14 @@ export default function ProductsListPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700 space-y-2">
+                <div className="rounded-lg border border-[#D9B86E]/40 bg-[#FAF4E8] px-4 py-3 text-xs text-[#8B6B1F] space-y-2">
                   <p>Upload an Excel (.xlsx, .xls) or CSV file. Required column: <strong>name</strong>.
-                                     Optional columns: code, categoryId, subCategoryId, gender, color, price, originalPrice, stockQty, lowStockThreshold, enableBackInStockNotify, description, tag, washCare, gstRate, featured, isNew, isBestSeller, weightKg, lengthCm, breadthCm, heightCm.</p>
+                                      Optional columns: code, categoryId, subCategoryId, gender, color, price, originalPrice, stockQty, lowStockThreshold, enableBackInStockNotify, description, tag, washCare, gstRate, featured, isNew, isBestSeller, weightKg, lengthCm, breadthCm, heightCm.</p>
                   <p>Imported products are added as <strong>Draft</strong> (hidden from the storefront) since they have no images yet — add images and set them Active from the product edit page when ready.</p>
                   <a
                     href={downloadSampleImportUrl()}
                     download
-                    className="inline-flex items-center gap-1.5 rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                    className="inline-flex items-center gap-1.5 rounded border border-[#D9B86E]/60 bg-white px-3 py-1.5 text-xs font-semibold text-[#8B6B1F] transition-colors hover:bg-[#FAF6EE]"
                   >
                     Download Sample Excel
                   </a>
@@ -590,7 +590,7 @@ export default function ProductsListPage() {
                   <button
                     type="button"
                     onClick={() => { setShowImportModal(false); setImportResult(null); setImportFile(null) }}
-                    className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)]"
+                    className="admin-btn-secondary"
                   >
                     Cancel
                   </button>
@@ -598,7 +598,7 @@ export default function ProductsListPage() {
                     type="button"
                     onClick={() => { if (importFile) importMutation.mutate(importFile) }}
                     disabled={!importFile || importMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded bg-[var(--burgundy)] px-4 py-2 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                    className="admin-btn-primary"
                   >
                     {importMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -635,7 +635,7 @@ export default function ProductsListPage() {
                 type="button"
                 onClick={() => setBulkDeleteConfirm(false)}
                 disabled={bulkDeleteMutation.isPending}
-                className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
+                className="admin-btn-secondary"
               >
                 Cancel
               </button>

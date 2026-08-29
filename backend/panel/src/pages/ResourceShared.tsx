@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { AlertTriangle, Loader2 } from 'lucide-react'
 import type { ResourceField } from '../app/resources'
-import { resolveImageUrl, uploadImage } from '../services/api'
+import { resolveImageUrl, uploadImage, uploadVideo } from '../services/api'
 
 // ─── Value Helpers ───────────────────────────────────────────────
 
@@ -164,6 +164,21 @@ export function ImagePreview({
 
 // ─── Image Upload Field ──────────────────────────────────────────
 
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024
+
+export function validateVideoFile(
+  file: File,
+): { valid: true } | { valid: false; reason: string } {
+  if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return { valid: false, reason: 'Only MP4, WebM, and MOV video files are allowed.' }
+  }
+  if (file.size > MAX_VIDEO_SIZE) {
+    return { valid: false, reason: 'Video file size must be under 50 MB.' }
+  }
+  return { valid: true }
+}
+
 export function ImageField({ field, item }: { field: ResourceField; item?: Record<string, unknown> | null }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const existingValue = typeof item?.[field.name] === 'string' ? String(item?.[field.name]) : ''
@@ -260,6 +275,103 @@ export function ImageField({ field, item }: { field: ResourceField; item?: Recor
   )
 }
 
+// ─── Video Upload Field ─────────────────────────────────────────
+
+export function VideoField({ field, item }: { field: ResourceField; item?: Record<string, unknown> | null }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const existingValue = typeof item?.[field.name] === 'string' ? String(item?.[field.name]) : ''
+  const [previewValue, setPreviewValue] = useState(existingValue)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+
+  const currentValue = previewValue || existingValue || ''
+
+  async function handleFile(file: File) {
+    setUploadError('')
+    const clientCheck = validateVideoFile(file)
+    if (!clientCheck.valid) {
+      setUploadError(clientCheck.reason)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    setUploading(true)
+    try {
+      const data = await uploadVideo(file)
+      setPreviewValue(data.file.path)
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed.')
+      if (fileRef.current) fileRef.current.value = ''
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      {currentValue ? (
+        <div className="relative mb-3 overflow-hidden rounded border border-[var(--line)]">
+          <div
+            className="flex items-center justify-center bg-[var(--panel-strong)]"
+            style={{ minHeight: '12rem' }}
+          >
+            <video
+              src={resolveImageUrl(currentValue)}
+              controls
+              className="w-full max-h-80 object-contain"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--panel-strong)] px-3 py-2">
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+              className="rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
+            >
+              {uploading ? 'Uploading…' : 'Change'}
+            </button>
+            <span className="truncate text-[10px] text-[var(--muted)]">{currentValue}</span>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileRef.current?.click()}
+          className={`flex w-full cursor-pointer flex-col items-center gap-2 rounded border-2 border-dashed bg-[var(--panel-strong)] px-4 py-8 text-center transition-colors disabled:opacity-50 ${
+            uploadError ? 'border-red-400' : 'border-[var(--line)] hover:border-[var(--gold)]'
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+            {uploading ? 'Uploading…' : 'Click to Upload Video'}
+          </span>
+          <span className="text-[10px] text-[var(--muted)]/60">MP4, WebM, or MOV — Max 50 MB</span>
+          {field.dimensionLabel ? (
+            <span className="text-[10px] font-semibold text-[var(--gold)]">{field.dimensionLabel}</span>
+          ) : null}
+        </button>
+      )}
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="video/mp4,video/webm,video/ogg,video/quicktime"
+        className="hidden"
+        onChange={event => {
+          const file = event.target.files?.[0]
+          if (file) handleFile(file)
+        }}
+      />
+      <input type="hidden" name={field.name} value={currentValue} />
+
+      {uploadError ? (
+        <p className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:bg-red-950/30 dark:text-red-300">
+          {uploadError}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 // ─── Field Control ───────────────────────────────────────────────
 
 export function FieldControl({ field, item }: { field: ResourceField; item?: Record<string, unknown> | null }) {
@@ -315,6 +427,10 @@ export function FieldControl({ field, item }: { field: ResourceField; item?: Rec
 
   if (field.kind === 'image') {
     return <ImageField field={field} item={item} />
+  }
+
+  if (field.kind === 'video') {
+    return <VideoField field={field} item={item} />
   }
 
   if (field.kind === 'datetime') {

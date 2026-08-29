@@ -2,36 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Color Palette ─────────────────────────────────────── */
+/* ─── Color Palette (Soil Goddess Brand) ────────────────────────── */
 
 :root {
   color-scheme: light;
-  --bg: #F4F6FB;
+  --bg: #FDFBF7;
   --panel: #ffffff;
-  --panel-strong: #f8fafc;
-  --text: #1e293b;
-  --muted: #64748b;
-  --line: #f1f5f9;
-  --gold: #F59E0B;
-  --gold-soft: #fef3c7;
-  --burgundy: #2563EB;
-  --burgundy-dark: #1D4ED8;
-  --burgundy-soft: #eff6ff;
+  --panel-strong: #FAF6EE;
+  --text: #1F080D;
+  --muted: #7A6065;
+  --line: #EFE8DA;
+  --gold: #8B6B1F;         /* High-contrast Antique Gold for text & accents */
+  --gold-accent: #D9B86E;  /* Bright Gold for icons/borders */
+  --gold-dark: #6B5215;
+  --gold-soft: #FAF4E8;
+  --burgundy: #6B1A2A;     /* Primary Brand Burgundy */
+  --burgundy-dark: #300D14;
+  --burgundy-soft: #FBF7F8;
 }
 
 .dark {
   color-scheme: light;
-  --bg: #F4F6FB;
+  --bg: #FDFBF7;
   --panel: #ffffff;
-  --panel-strong: #f8fafc;
-  --text: #1e293b;
-  --muted: #64748b;
-  --line: #f1f5f9;
-  --gold: #F59E0B;
-  --gold-soft: #fef3c7;
-  --burgundy: #2563EB;
-  --burgundy-dark: #1D4ED8;
-  --burgundy-soft: #eff6ff;
+  --panel-strong: #FAF6EE;
+  --text: #1F080D;
+  --muted: #7A6065;
+  --line: #EFE8DA;
+  --gold: #8B6B1F;
+  --gold-accent: #D9B86E;
+  --gold-dark: #6B5215;
+  --gold-soft: #FAF4E8;
+  --burgundy: #6B1A2A;
+  --burgundy-dark: #300D14;
+  --burgundy-soft: #FBF7F8;
 }
 
 /* ─── Base Resets ───────────────────────────────────────── */
@@ -74,6 +78,88 @@ select {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+/* ─── Buttons ───────────────────────────────────────────── */
+
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #6B1A2A;
+  background-image: linear-gradient(135deg, #6B1A2A, #300D14);
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(217, 184, 110, 0.4);
+  box-shadow: 0 4px 12px rgba(107, 26, 42, 0.25);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-btn-primary:hover {
+  background-color: #841920;
+  background-image: linear-gradient(135deg, #841920, #45101A);
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 16px rgba(107, 26, 42, 0.35);
+  transform: translateY(-1px);
+}
+
+.admin-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #FFFFFF;
+  color: #300D14 !important;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid #EFE8DA;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-btn-secondary:hover {
+  background-color: #FAF6EE;
+  border-color: #D9B86E;
+  color: #6B1A2A !important;
+}
+
+.admin-btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #D9B86E;
+  background-image: linear-gradient(135deg, #D9B86E, #BF9A4B);
+  color: #1A050B !important;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(217, 184, 110, 0.3);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-btn-gold:hover {
+  background-color: #E5C378;
+  background-image: linear-gradient(135deg, #E5C378, #C9A458);
+  color: #1A050B !important;
+  transform: translateY(-1px);
 }
 
 /* ─── Admin Card ────────────────────────────────────────── */

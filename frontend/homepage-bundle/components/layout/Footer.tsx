@@ -165,12 +165,14 @@ export default function Footer() {
     setNavMenu(STATIC_NAV_MENU)
   }, [])
 
-  const trustBadges = [
-    { src: '/footer-icons/badge-handcrafted-luxury.jpg', label: 'Luxury Handcrafted' },
-    { src: '/footer-icons/badge-traditional-weaving.jpg', label: 'Traditional Weaving' },
-    { src: '/footer-icons/badge-silk-thread.jpg', label: 'Natural Silk & Leaf' },
-    { src: '/footer-icons/badge-affordable-luxury.jpg', label: 'Affordable Luxury' },
-    { src: '/footer-icons/badge-pure-silk.jpg', label: 'Pure Silk Cocoon' },
+  const footerLogos = [
+    { src: '/images/footerlogos/1.png', alt: 'Handloom Weaving', scale: 'scale-[2.4] sm:scale-[2.5] md:scale-[2.6]' },
+    { src: '/images/footerlogos/2.png', alt: 'Traditional Silk Saree', scale: 'scale-[1.6] sm:scale-[1.7] md:scale-[1.8]' },
+    { src: '/images/footerlogos/3.png', alt: 'Temple Jewellery', scale: 'scale-[1.05] sm:scale-[1.1] md:scale-[1.15]' },
+    { src: '/images/footerlogos/4.png', alt: 'Bridal Clutch', scale: 'scale-[2.4] sm:scale-[2.5] md:scale-[2.6]' },
+    { src: '/images/footerlogos/5.png', alt: 'Bangles & Accessories', scale: 'scale-[2.4] sm:scale-[2.5] md:scale-[2.6]' },
+    { src: '/images/footerlogos/6.png', alt: 'Luxury Silk Serums', scale: 'scale-[1.3] sm:scale-[1.35] md:scale-[1.4]' },
+    { src: '/images/footerlogos/7.png', alt: 'Royal Silk Bedding', scale: 'scale-[1.4] sm:scale-[1.45] md:scale-[1.5]' },
   ]
 
   const themeColors = {
@@ -265,8 +267,8 @@ export default function Footer() {
 
         {/* ── Trust & Craftsmanship Badges Container (Custom Gold Kolam Loop Border) ── */}
         <div className="w-full pt-12 pb-4">
-          <div className="max-w-[1350px] mx-auto px-2 sm:px-6">
-            <div className="relative p-5 sm:p-8 rounded-2xl bg-[#FAF6EE] shadow-[0_12px_40px_rgba(0,0,0,0.15)] overflow-hidden border border-[#D9B86E]/40">
+          <div className="max-w-[1400px] mx-auto px-2 sm:px-6">
+            <div className="relative p-3 sm:p-5 md:p-6 rounded-2xl bg-transparent shadow-[0_12px_40px_rgba(0,0,0,0.25)] overflow-hidden border-2 border-[#D9B86E]/60">
               
               {/* Custom Top Gold Kolam Pattern */}
               <div className="absolute top-0 left-0 right-0 z-10">
@@ -293,27 +295,25 @@ export default function Footer() {
               </div>
 
               {/* Inner Fine Gold Line Frame */}
-              <div className="absolute inset-2 sm:inset-3 border border-[#D9B86E]/25 rounded-xl pointer-events-none z-10"></div>
+              <div className="absolute inset-2 sm:inset-3 border border-[#D9B86E]/35 rounded-xl pointer-events-none z-10"></div>
 
-              {/* 5 Badges Grid with Vertical Divider Lines */}
-              <div className="relative z-20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 items-start justify-items-center gap-3 sm:gap-4 lg:gap-0 py-4">
-                {trustBadges.map((badge, idx) => (
+              {/* 7 Logos in a Single Line (1-7 Order) */}
+              <div className="relative z-20 grid grid-cols-7 items-center justify-items-center gap-1 sm:gap-2 md:gap-3 py-3 sm:py-4 w-full">
+                {footerLogos.map((logo, idx) => (
                   <div 
                     key={idx} 
-                    className="relative flex flex-col items-center justify-start group cursor-pointer transition-transform duration-300 hover:scale-105 w-full text-center px-2 lg:px-4 lg:border-r last:border-r-0 border-[#D9B86E]/40"
+                    className="relative flex items-center justify-center group cursor-pointer w-full text-center px-1 sm:px-2 border-r last:border-r-0 border-[#D9B86E]/40"
                   >
-                    <div className="relative w-full max-w-[90px] sm:max-w-[115px] md:max-w-[125px] aspect-square rounded-2xl overflow-hidden border border-[#D9B86E]/40 bg-[#FAF6EE] shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 group-hover:shadow-[0_8px_24px_rgba(217,184,110,0.25)]">
+                    <div className="relative w-full h-[65px] xs:h-[80px] sm:h-[105px] md:h-[130px] lg:h-[145px] max-w-[170px] flex items-center justify-center overflow-hidden">
                       <Image 
-                        src={badge.src} 
-                        alt={badge.label} 
+                        src={logo.src} 
+                        alt={logo.alt} 
                         fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 150px"
+                        unoptimized
+                        className={`object-contain ${logo.scale} transition-transform duration-500 group-hover:scale-[1.15] drop-shadow-[0_6px_16px_rgba(0,0,0,0.3)]`}
+                        sizes="(max-width: 640px) 14vw, (max-width: 1024px) 14vw, 170px"
                       />
                     </div>
-                    <span className="mt-2 text-[10.5px] sm:text-[11px] md:text-[11.5px] font-bold tracking-wider uppercase text-[#300D14] leading-tight">
-                      {badge.label}
-                    </span>
                   </div>
                 ))}
               </div>

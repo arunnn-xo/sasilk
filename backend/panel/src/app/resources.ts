@@ -21,10 +21,11 @@ import {
   Users,
   XCircle,
   Mail,
+  Film,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-export type FieldKind = 'text' | 'number' | 'textarea' | 'boolean' | 'json' | 'select' | 'image' | 'datetime'
+export type FieldKind = 'text' | 'number' | 'textarea' | 'boolean' | 'json' | 'select' | 'image' | 'video' | 'datetime'
 
 export type ResourceField = {
   name: string
@@ -71,6 +72,7 @@ export function isSidebarSection(entry: SidebarEntry): entry is SidebarSection {
 export const sidebarItems: SidebarEntry[] = [
   { path: '/', label: 'Dashboard', Icon: LayoutDashboard },
   { path: '/announcements', label: 'Announcement Bar', Icon: Megaphone },
+  { path: '/reels', label: 'Reel the Weave', Icon: Film },
   { path: '/marquee-messages', label: 'Marquee Messages', Icon: ScrollText },
   { path: '/banners', label: 'Banners', Icon: Image },
   {
@@ -121,6 +123,34 @@ export const resources: ResourceConfig[] = [
     columns: ['text', 'active'],
     fields: [
       { name: 'text', label: 'Message', required: true },
+      { name: 'active', label: 'Active', kind: 'boolean' },
+    ],
+  },
+  {
+    path: '/reels',
+    api: 'reels',
+    title: 'Reel the Weave',
+    eyebrow: 'Homepage Reels Section',
+    Icon: Film,
+    columns: ['id', 'imageUrl', 'title', 'views', 'sortOrder', 'active'],
+    fields: [
+      {
+        name: 'imageUrl',
+        label: 'Reel Image',
+        kind: 'image',
+        required: true,
+        dimensionHint: 'reel-card',
+        dimensionLabel: 'Recommended: 400×700px, 9:16 ratio. Minimum: 300×530px.',
+      },
+      {
+        name: 'videoUrl',
+        label: 'Reel Video (plays on click, optional)',
+        kind: 'video',
+        dimensionLabel: 'MP4, WebM, or MOV — Max 50 MB.',
+      },
+      { name: 'title', label: 'Title' },
+      { name: 'views', label: 'Views Display (e.g. 1L, 52K)', required: true },
+      { name: 'sortOrder', label: 'Sort Order', kind: 'number' },
       { name: 'active', label: 'Active', kind: 'boolean' },
     ],
   },

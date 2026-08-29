@@ -49,11 +49,11 @@ interface Stats {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; text: string; label: string }> = {
-    done: { bg: 'bg-green-50', text: 'text-green-700', label: 'Done' },
+    done: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Done' },
     pending: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Pending' },
-    processing: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Processing' },
-    failed: { bg: 'bg-red-50', text: 'text-red-700', label: 'Failed' },
-    sent: { bg: 'bg-green-50', text: 'text-green-700', label: 'Sent' },
+    processing: { bg: 'bg-[#FAF4E8]', text: 'text-[#8B6B1F]', label: 'Processing' },
+    failed: { bg: 'bg-rose-50', text: 'text-rose-700', label: 'Failed' },
+    sent: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Sent' },
   }
   const s = map[status] || { bg: 'bg-gray-50', text: 'text-gray-600', label: status }
   return (
@@ -251,7 +251,7 @@ export default function PriceDropReportsPage() {
                 icon={CheckCircle}
                 label="Success Rate"
                 value={`${stats.successRate}%`}
-                color="bg-blue-50 text-blue-700"
+                color="bg-emerald-50 text-emerald-700"
               />
             </>
           ) : null}

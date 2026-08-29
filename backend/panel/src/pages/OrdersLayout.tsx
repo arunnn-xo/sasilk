@@ -34,12 +34,12 @@ const stageLabels: Record<string, string> = {
 }
 
 const stageBadgeClass: Record<string, string> = {
-  'pending-payment': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  pending: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  confirmed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  packing: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  dispatched: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  'out-for-delivery': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  'pending-payment': 'bg-yellow-100 text-yellow-800',
+  pending: 'bg-[#FAF4E8] text-[#8B6B1F] border border-[#D9B86E]/40',
+  confirmed: 'bg-emerald-100 text-emerald-800',
+  packing: 'bg-amber-100 text-amber-800',
+  dispatched: 'bg-[#FBF7F8] text-[#6B1A2A] border border-[#6B1A2A]/20',
+  'out-for-delivery': 'bg-amber-50 text-amber-900',
   delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   rto: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
@@ -314,7 +314,7 @@ export default function OrdersLayout() {
                             type="button"
                             onClick={() => handleAdvanceClick(item)}
                             disabled={advanceMut.isPending}
-                            className="rounded bg-[var(--gold)] px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                            className="admin-btn-primary !text-[11px] !py-1 !px-2.5"
                           >
                             {advanceMut.isPending ? '…' : advanceSteps[activeTab].label}
                           </button>
@@ -448,7 +448,7 @@ export default function OrdersLayout() {
                 type="button"
                 onClick={() => { setAgentModal(null); setAgentName(''); setAgentPhone(''); setTrackingNumber('') }}
                 disabled={advanceMut.isPending}
-                className="rounded border border-[var(--line)] px-4 py-2 text-sm font-bold text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
+                className="admin-btn-secondary"
               >
                 Cancel
               </button>
@@ -456,7 +456,7 @@ export default function OrdersLayout() {
                 type="button"
                 onClick={handleAgentConfirm}
                 disabled={advanceMut.isPending}
-                className="flex items-center gap-2 rounded bg-[var(--gold)] px-4 py-2 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                className="admin-btn-primary"
               >
                 {advanceMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {advanceMut.isPending ? 'Proceeding…' : 'Proceed'}
