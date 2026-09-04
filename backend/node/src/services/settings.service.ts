@@ -29,15 +29,15 @@ export interface GuestDiscountPopupConfig {
 }
 
 const defaultCompany: CompanyInfo = {
-  name: 'Threads of TN',
-  address: '123, Rangapuri Street, Kanchipuram',
-  city: 'Tamil Nadu — 631501',
+  name: 'Soil Goddess',
+  address: '108, Heritage Handloom Arcade, Temple Road, Kanchipuram',
+  city: 'Tamil Nadu — 631502',
   gstin: '33ABCDE1234F1Z5',
   pan: 'ABCDE1234F',
   phone: '+91 8822664432',
-  email: 'hello@threadsoftn.com',
-  invoicePrefix: 'INV',
-  logoUrl: '/uploads/threads-of-tn-logo.png',
+  email: 'care@soilgoddess.com',
+  invoicePrefix: 'SG',
+  logoUrl: '/logo.png',
 }
 
 const defaultShipping: ShippingConfig = {

@@ -28,7 +28,7 @@ export function apiFetch(path: string, init?: RequestInit) {
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
-  return fetch(apiProxyUrl(path), { ...init, headers })
+  return fetch(apiUrl(path), { ...init, headers })
 }
 
 export async function apiGet<T = unknown>(path: string, opts?: { responseType?: 'json' | 'blob' }): Promise<T> {

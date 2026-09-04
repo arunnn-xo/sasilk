@@ -1,4 +1,3 @@
-import AnnouncementBar from '@/components/layout/AnnouncementBar'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import HeroSection from '@/components/home/HeroSection'
@@ -12,7 +11,7 @@ import {
   ProductGrid,
   OffersStrip,
   LoyaltyBanner,
-  VideoPlaceholder,
+  ArtWaveSection,
 } from '@/components/home/HomeComponents'
 
 export default function HomePage() {
@@ -20,7 +19,6 @@ export default function HomePage() {
     <>
       <CartNavigationHandler />
       <IntroVideo />
-      <AnnouncementBar />
       <Header />
 
       <main>
@@ -29,7 +27,7 @@ export default function HomePage() {
         <InstaReels />
         <OffersStrip />
         <LoyaltyBanner />
-        <VideoPlaceholder />
+        <ArtWaveSection />
       </main>
 
       <Footer />

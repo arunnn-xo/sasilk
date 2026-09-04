@@ -176,7 +176,7 @@ export default function ResourceFormPage({ config }: { config: ResourceConfig })
         <form onSubmit={submit} className="p-6 md:p-8">
           <div className="grid gap-5 md:grid-cols-2">
             {config.fields.map(field => {
-              const isFullWidth = field.kind === 'textarea' || field.kind === 'json' || field.kind === 'image'
+              const isFullWidth = field.kind === 'textarea' || field.kind === 'json' || field.kind === 'image' || field.kind === 'video'
               const isBoolean = field.kind === 'boolean'
               return (
                 <div

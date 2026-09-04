@@ -10,6 +10,7 @@ import stockNotificationRoutes from '../modules/admin/stock-notification.routes.
 import webhookRoutes from '../modules/webhook/webhook.routes.js'
 import cartRoutes from '../modules/cart/cart.routes.js'
 import wishlistRoutes from '../modules/wishlist/wishlist.routes.js'
+import eventsRoutes from '../modules/events/events.routes.js'
 
 const router = Router()
 
@@ -22,6 +23,7 @@ router.use('/storefront/cart', cartRoutes)
 router.use('/storefront/wishlist', wishlistRoutes)
 router.use('/auth', authRoutes)
 router.use('/auth/addresses', addressRoutes)
+router.use('/storefront/events', eventsRoutes)
 router.use('/admin/auth', adminAuthRoutes)
 router.use('/admin/price-drops', priceDropRoutes)
 router.use('/admin/email-campaigns', emailCampaignRoutes)

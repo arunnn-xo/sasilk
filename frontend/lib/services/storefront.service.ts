@@ -114,7 +114,127 @@ export async function searchProducts(query: string): Promise<{ products: Product
 }
 
 export async function fetchAnnouncementBar(): Promise<AnnouncementData[]> {
-  return apiGet<AnnouncementData[]>('/storefront/announcement-bar')
+  const res = await apiFetch<{ messages: AnnouncementData[] }>('/storefront/announcement-bar')
+  return res.messages
+}
+
+export type EventItem = {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  eventDate: string
+  startTime: string
+  endTime: string
+  price: number
+  mode: 'offline' | 'online' | 'both'
+  venueAddress: string | null
+  zoomLink: string | null
+  capacity: number | null
+  seatsLeft?: number
+  isUpcoming: boolean
+  isPast: boolean
+  bookingClosed: boolean
+  closesAt: string
+  images?: string[] | null
+  videoUrl?: string | null
+}
+
+export type BookingResult = {
+  bookingId: number
+  bookingNumber: string
+  razorpayOrderId: string | null
+  amount: number
+  currency: string
+  status: string
+}
+
+export type BookingDetail = {
+  id: number
+  bookingNumber: string
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+  mode: 'offline' | 'online'
+  quantity: number
+  total: number
+  customerName: string
+  qrToken: string | null
+  qrImage: string | null
+  zoomLink: string | null
+  event: {
+    name: string
+    eventDate: string
+    startTime: string
+    endTime: string
+    venueAddress: string | null
+  } | null
+}
+
+export async function fetchEvents(): Promise<EventItem[]> {
+  const res = await apiFetch<{ events: EventItem[] }>('/storefront/events')
+  return res.events
+}
+
+export async function fetchEventBySlug(slug: string): Promise<EventItem> {
+  const res = await apiFetch<{ event: EventItem }>(`/storefront/events/${encodeURIComponent(slug)}`)
+  return res.event
+}
+
+export async function bookEvent(slug: string, data: {
+  customerName: string
+  customerEmail: string
+  customerMobile: string
+  mode: 'offline' | 'online'
+  quantity: number
+}): Promise<BookingResult> {
+  const res = await apiFetch<BookingResult>(`/storefront/events/${encodeURIComponent(slug)}/book`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+  return res
+}
+
+export async function verifyEventBooking(data: {
+  razorpayPaymentId: string
+  razorpayOrderId: string
+  razorpaySignature: string
+  bookingId: number
+}): Promise<BookingDetail> {
+  const res = await apiFetch<{ booking: BookingDetail }>(`/storefront/events/bookings/${data.bookingId}/verify`, {
+    method: 'POST',
+    timeoutMs: 30000,
+    body: JSON.stringify(data),
+  })
+  return res.booking
+}
+
+export async function fetchEventBooking(bookingId: number): Promise<BookingDetail> {
+  const res = await apiFetch<{ booking: BookingDetail }>(`/storefront/events/bookings/${bookingId}`)
+  return res.booking
+}
+
+export type EventBookingListItem = {
+  id: number
+  bookingNumber: string
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+  mode: 'offline' | 'online'
+  quantity: number
+  total: number
+  createdAt: string
+  qrImage: string | null
+  zoomLink: string | null
+  event: {
+    name: string
+    eventDate: string
+    startTime: string
+    endTime: string
+    venueAddress: string | null
+  } | null
+}
+
+export async function fetchMyEventBookings(): Promise<EventBookingListItem[]> {
+  const res = await apiFetch<{ bookings: EventBookingListItem[] }>('/storefront/events/my-bookings')
+  return res.bookings
 }
 
 export async function fetchNavMenu(): Promise<NavMenuItem[]> {

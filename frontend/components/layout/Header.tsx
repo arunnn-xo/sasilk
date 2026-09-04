@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, ShoppingBag } from 'lucide-react'
+import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, ShoppingBag, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
+import AnnouncementBar from '@/components/layout/AnnouncementBar'
 import { useCart } from '@/components/cart/CartContext'
-import { fetchNavMenu, type NavMenuItem } from '@/lib/services/storefront.service'
+import { fetchEvents, type NavMenuItem, type EventItem } from '@/lib/services/storefront.service'
 import { STATIC_NAV_MENU } from '@/lib/data/navigation'
+import { formatEventDateTime } from '@/lib/utils/eventFormat'
 
 function filteredCollectionHref(baseHref: string, filter: string) {
   return `${baseHref}?filter=${encodeURIComponent(filter)}`
@@ -25,18 +27,29 @@ export default function Header() {
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [accountReady, setAccountReady] = useState(false)
-  const [navMenu, setNavMenu] = useState<NavMenuItem[]>(STATIC_NAV_MENU)
+  const navMenu = STATIC_NAV_MENU
+  const [activeEventsCount, setActiveEventsCount] = useState(0)
+  const [featuredEvent, setFeaturedEvent] = useState<EventItem | null>(null)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     let cancelled = false
-    fetchNavMenu()
-      .then(menu => {
+    fetchEvents()
+      .then(events => {
         if (cancelled) return
-        setNavMenu(menu ? menu : STATIC_NAV_MENU)
+        const bookable = (events || []).filter(e => !e.bookingClosed && !e.isPast)
+        setActiveEventsCount(bookable.length)
+        if (bookable.length > 0) {
+          setFeaturedEvent(bookable[0])
+        } else {
+          setFeaturedEvent(null)
+        }
       })
       .catch(() => {
-        if (!cancelled) setNavMenu(STATIC_NAV_MENU)
+        if (!cancelled) {
+          setActiveEventsCount(0)
+          setFeaturedEvent(null)
+        }
       })
     return () => { cancelled = true }
   }, [])
@@ -74,13 +87,15 @@ export default function Header() {
   }, [mobileSearchOpen])
 
   return (
-    <header
-      className="sticky top-0 z-[100]"
-      style={{
-        background: 'white',
-        boxShadow: '0 2px 20px rgba(107,26,42,0.06)',
-      }}
-    >
+    <>
+      <AnnouncementBar />
+      <header
+        className="sticky top-0 z-[100]"
+        style={{
+          background: 'white',
+          boxShadow: '0 2px 20px rgba(107,26,42,0.06)',
+        }}
+      >
       {/* Mobile App Download Banner */}
       {showMobileBanner && (
         <div className="flex lg:hidden w-full items-center justify-between px-4 py-2 bg-gradient-to-r from-[#F6E9D5] to-[#E2C792] shadow-sm relative z-[101]">
@@ -130,6 +145,7 @@ export default function Header() {
               alt="Soil Goddess" 
               width={260} 
               height={180} 
+              unoptimized
               style={{ 
                 height: 'auto',
                 maxHeight: '144px',
@@ -152,6 +168,30 @@ export default function Header() {
           <a href="https://wa.me/" className="icon-btn group w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-[#25D366]/40 bg-[#196C45] flex items-center justify-center text-white shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md hover:bg-[#25D366] active:scale-95">
             <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="transition-transform duration-300 group-hover:scale-110 group-active:scale-90"><path d="M12.01 2C6.48 2 2 6.48 2 12c0 1.76.45 3.42 1.25 4.87L2 22l5.34-1.19c1.42.74 3.03 1.16 4.67 1.16 5.53 0 10.01-4.48 10.01-10S17.54 2 12.01 2zM12 20c-1.46 0-2.87-.38-4.1-1.07l-.3-.17-3.14.7.72-3.07-.19-.3A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"></path><path d="M16.48 14.8c-.24-.12-1.41-.7-1.63-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-1.3-.65-2.26-1.2-3.1-2.65-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42H8.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.34.98 2.5c.12.16 1.7 2.6 4.12 3.64 1.54.66 2.14.72 2.92.6.86-.14 2.14-.88 2.44-1.72.3-.84.3-1.56.2-1.72-.1-.16-.36-.24-.6-.36z"></path></svg>
           </a>
+          <Link
+            href="/events"
+            className={`group relative flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 no-underline ${
+              activeEventsCount > 0
+                ? 'border-[#D9B86E] luxury-event-shimmer text-[#FAF6EE] shadow-[0_2px_8px_rgba(107,26,42,0.3)]'
+                : 'border-[#D9B86E]/60 bg-[var(--burgundy)] text-gold'
+            }`}
+          >
+            <CalendarCheck
+              size={14}
+              className={`${activeEventsCount > 0 ? 'text-[#FAF6EE]' : 'text-gold'}`}
+              strokeWidth={2}
+            />
+            <span className="hidden xs:inline sm:inline">Book Now</span>
+            {activeEventsCount > 0 && (
+              <span className="flex items-center gap-1 rounded-full bg-[#FAF6EE]/20 px-1.5 py-0.5 text-[7.5px] font-extrabold uppercase tracking-wider text-[#E8C87A] border border-[#D9B86E]/60">
+                <span className="relative flex h-1.5 w-1.5 items-center justify-center">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8C87A] opacity-80" />
+                  <span className="relative inline-flex h-1 w-1 rounded-full bg-[#FAF6EE]" />
+                </span>
+                LIVE
+              </span>
+            )}
+          </Link>
           <button
             type="button"
             aria-label={accountReady ? 'Open my account' : 'Create or sign in to account'}
@@ -230,13 +270,13 @@ export default function Header() {
         className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[152px]"
       >
         {/* Search */}
-        <div className="flex-1 flex justify-start items-center">
-          <div className="w-full max-w-[360px] xl:max-w-[420px]">
+        <div className="flex-1 flex justify-start items-center z-10">
+          <div className="w-full max-w-[280px] xl:max-w-[340px] 2xl:max-w-[400px]">
             <SearchBar />
           </div>
         </div>
 
-        {/* Logo */}
+        {/* Logo — Exact Original Prominent Luxury Dimensions */}
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
           <Link href="/" className="flex items-center justify-center no-underline flex-shrink-0 pointer-events-auto">
             <Image 
@@ -244,12 +284,11 @@ export default function Header() {
               alt="Soil Goddess" 
               width={600} 
               height={480} 
+              unoptimized
               style={{ 
-                height: '350px', 
+                height: '173px', 
                 width: 'auto', 
-                marginTop: '-85px', 
-                marginBottom: '-85px',
-                filter: 'drop-shadow(0px 6px 20px rgba(107,26,42,0.22)) contrast(1.12) brightness(1.03)'
+                filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
               }} 
               className="object-contain" 
               priority 
@@ -257,49 +296,175 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Actions with Reduced Gap & Elegant Vertical Divider Lines */}
-        <div className="flex-1 flex items-center justify-end gap-1 xl:gap-2">
-          {/* Home */}
-          <Link href="/" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Home size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+        {/* Actions — Positioned to the right with zero overlap into the logo */}
+        <div className="flex-1 flex items-center justify-end gap-1 xl:gap-2 z-10">
+          {/* Home (Visible on wide screens to prevent center encroachment) */}
+          <Link href="/" className="action-item group hidden 2xl:flex flex-col items-center gap-1 px-1.5 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <Home size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11px] tracking-wide whitespace-nowrap" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Home
             </span>
             {pathname === '/' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="hidden 2xl:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
-          {/* Shop */}
-          <Link href="/shop" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <ShoppingBag size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+          {/* Shop (Visible on wide screens to prevent center encroachment) */}
+          <Link href="/shop" className="action-item group hidden 2xl:flex flex-col items-center gap-1 px-1.5 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
+            <ShoppingBag size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11px] tracking-wide whitespace-nowrap" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Shop
             </span>
             {pathname === '/shop' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="hidden 2xl:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
           {/* Track Order */}
           <Link href="/track-order" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Truck size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+            <Truck size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
               Track Order
             </span>
             {pathname === '/track-order' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+
+          {/* Book Now */}
+          <div className="relative group/event flex items-center h-full">
+            <Link
+              href="/events"
+              className="action-item flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline"
+              title={featuredEvent ? `✨ Live Event: ${featuredEvent.name} — Click to Book Spot` : 'Book Events'}
+            >
+              <div className="relative flex items-center justify-center">
+                {/* Subtle warm gold ambient aura when live */}
+                {activeEventsCount > 0 && (
+                  <span
+                    className="absolute inset-[-4px] rounded-full opacity-60 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(217, 184, 110, 0.35) 0%, transparent 70%)',
+                    }}
+                  />
+                )}
+
+                <CalendarCheck
+                  size={26}
+                  color="var(--burgundy)"
+                  strokeWidth={1.6}
+                  className="fill-transparent transition-transform duration-300 group-hover/event:fill-[#9c1a21] group-active/event:fill-[#9c1a21]"
+                />
+
+                {/* Impressive Professional Luxury Event Badge */}
+                {activeEventsCount > 0 && (
+                  <span className="absolute -top-2.5 -right-5 flex items-center gap-1 px-1.5 py-0.5 rounded-full luxury-event-shimmer text-[#FAF6EE] shadow-[0_2px_8px_rgba(107,26,42,0.35)] pointer-events-none z-20">
+                    <span className="relative flex h-1.5 w-1.5 items-center justify-center">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8C87A] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1 w-1 bg-[#FAF6EE]" />
+                    </span>
+                    <span className="font-montserrat text-[7.5px] font-extrabold uppercase tracking-[0.18em] leading-none text-[#FAF6EE]">
+                      LIVE
+                    </span>
+                  </span>
+                )}
+              </div>
+
+              <span
+                className="text-[11px] tracking-wide whitespace-nowrap hidden md:block"
+                style={{
+                  color: activeEventsCount > 0 ? 'var(--burgundy)' : 'var(--muted)',
+                  fontWeight: activeEventsCount > 0 ? 600 : 500,
+                }}
+              >
+                Book Now
+              </span>
+
+              {(pathname === '/events' || pathname?.startsWith('/events/')) && (
+                <span
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full"
+                  style={{ background: 'var(--burgundy)' }}
+                />
+              )}
+            </Link>
+
+            {/* Luxury Live Event Hover Preview Flyout */}
+            {featuredEvent && (
+              <div className="absolute top-[85%] right-0 pt-3 w-[290px] opacity-0 invisible translate-y-3 group-hover/event:opacity-100 group-hover/event:visible group-hover/event:translate-y-0 transition-all duration-300 ease-out z-[250] pointer-events-none group-hover/event:pointer-events-auto">
+                <div className="bg-white rounded-2xl shadow-[0_20px_40px_rgba(107,26,42,0.18)] p-4 border border-[#D9B86E] relative before:absolute before:-top-2 before:right-6 before:border-b-8 before:border-b-white before:border-l-8 before:border-l-transparent before:border-r-8 before:border-r-transparent">
+                  {/* Header Ribbon */}
+                  <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#D9B86E]/40">
+                    <div className="flex items-center gap-1.5">
+                      <span className="relative flex h-2 w-2 items-center justify-center">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8C87A] opacity-80" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#8B1A2B]" />
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A6D4B]">
+                        Soil Goddess Event
+                      </span>
+                    </div>
+                    {typeof featuredEvent.seatsLeft === 'number' && featuredEvent.seatsLeft > 0 && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#8B1A2B] bg-[#8B1A2B]/10 px-1.5 py-0.5 rounded">
+                        {featuredEvent.seatsLeft} Spots Left
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Event Content */}
+                  <div className="mt-2.5">
+                    <h4 className="font-serif text-sm font-bold text-[#300D14] leading-snug line-clamp-2">
+                      {featuredEvent.name}
+                    </h4>
+                    <div className="font-sans mt-2 space-y-1 text-xs text-[#5A4A3F]">
+                      <p className="flex items-center gap-1.5">
+                        <CalendarDays size={13} className="text-[#8A6D4B] shrink-0" />
+                        <span>{formatEventDateTime(featuredEvent.eventDate, featuredEvent.startTime)}</span>
+                      </p>
+                      {featuredEvent.mode === 'online' ? (
+                        <p className="flex items-center gap-1.5 text-[#2B4C9B]">
+                          <Video size={13} className="shrink-0" /> Join Live on Zoom
+                        </p>
+                      ) : featuredEvent.venueAddress ? (
+                        <p className="flex items-start gap-1.5 line-clamp-1">
+                          <MapPin size={13} className="text-[#8A6D4B] shrink-0 mt-0.5" />
+                          <span>{featuredEvent.venueAddress}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* Footer with Price & Action */}
+                  <div className="mt-3 pt-2.5 border-t border-[#D9B86E]/40 flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-[#7A6065] block uppercase font-medium">Price</span>
+                      <span className="font-serif text-base font-bold text-[var(--burgundy)]">
+                        ₹{Number(featuredEvent.price).toFixed(2)}
+                      </span>
+                    </div>
+                    <Link
+                      href={`/events/${featuredEvent.slug || ''}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--burgundy)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#E8C87A] shadow-sm transition-all hover:bg-[#6E1220] no-underline"
+                    >
+                      <span>Book Now</span>
+                      <ArrowRight size={11} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
           {/* Get App */}
           <div className="relative group/app flex items-center h-full">
             <Link href="#" className="action-item flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:bg-[#FDFBF7] relative no-underline">
-              <Smartphone size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover/app:fill-[#9c1a21]" />
-              <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--burgundy)', fontWeight: 700 }}>
+              <Smartphone size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover/app:fill-[#9c1a21]" />
+              <span className="text-[11px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--burgundy)', fontWeight: 700 }}>
                 Get App
               </span>
               {/* Notification dot */}
@@ -369,27 +534,27 @@ export default function Header() {
           </div>
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
           <LoginDropdown />
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
           {/* Wishlist */}
           <Link href="/wishlist" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <Heart size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Wishlist</span>
+            <Heart size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Wishlist</span>
             {pathname === '/wishlist' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
           {/* Divider */}
-          <div className="hidden md:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
+          <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
           {/* Cart */}
           <Link href="/cart" className="action-item group flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <ShoppingCart size={28} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Cart</span>
+            <ShoppingCart size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
+            <span className="text-[11px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>Cart</span>
             {pathname === '/cart' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
             <span
               className="absolute top-0 right-0 w-[19px] h-[19px] rounded-full flex items-center justify-center text-[9.5px] font-bold text-gold"
@@ -555,8 +720,8 @@ export default function Header() {
                                 className="mt-4 inline-flex w-max items-center gap-2 text-[13px] font-bold uppercase tracking-[0.15em] text-[var(--burgundy)] no-underline transition-all duration-300 hover:gap-3"
                               >
                                 Explore {activeSubcatData.name} <span className="text-[var(--gold)]">›</span>
-                              </Link>
-                            )}
+</Link>
+)}
                           </div>
                             )
                           }
@@ -574,5 +739,6 @@ export default function Header() {
       )}
 
     </header>
+    </>
   )
 }

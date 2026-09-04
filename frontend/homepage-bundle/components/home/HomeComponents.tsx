@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Shield, Clock, Globe, Truck } from 'lucide-react'
 import ProductCard from '@/components/product/ProductCard'
-import { fetchProducts, fetchCategories } from '@/lib/services/storefront.service'
+import { fetchCategories } from '@/lib/services/storefront.service'
+import { fetchStorefrontHome, fetchProducts as fetchApiProducts } from '@/lib/api/storefront'
+import { resolveImageUrl } from '@/lib/api/client'
 import { newArrivals } from '@/lib/data'
 
 /* ── Summer Sufiana Collection Banner ─────────────── */
@@ -703,8 +705,28 @@ export function ProductGrid() {
   const [products, setProducts] = useState<any[]>([])
 
   useEffect(() => {
-    // Show static new arrivals directly
-    setProducts(newArrivals.slice(0, 4))
+    let cancelled = false
+    async function loadDynamicProducts() {
+      try {
+        const homeData = await fetchStorefrontHome()
+        if (!cancelled && homeData?.newArrivals && homeData.newArrivals.length > 0) {
+          setProducts(homeData.newArrivals.slice(0, 4))
+          return
+        }
+        const prods = await fetchApiProducts()
+        if (!cancelled && prods && prods.length > 0) {
+          setProducts(prods.slice(0, 4))
+          return
+        }
+      } catch (err) {
+        console.warn('Could not load dynamic products, using fallback:', err)
+      }
+      if (!cancelled) {
+        setProducts(newArrivals.slice(0, 4))
+      }
+    }
+    loadDynamicProducts()
+    return () => { cancelled = true }
   }, [])
 
   return (
@@ -807,9 +829,20 @@ export function ProductGrid() {
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
               {products.map(p => {
                 const meta = p.metadata || {}
-                const fabric = (meta.fabric as string) || 'Silk'
-                const occasion = (meta.occasion as string) || 'Festive'
-                const badge = p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller'
+                const fabric = (meta.fabric as string) || p.type || 'Pure Silk'
+                const occasion = (meta.occasion as string) || 'Bridal & Festive'
+                const badge = p.tag || (p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller')
+                const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || '/saree1.png'
+                const rawColors = (p.variants || [])
+                  .filter((v: any) => v.colorName)
+                  .map((v: any) => ({
+                    name: v.colorName,
+                    hex: v.colorHex || '#8B1A2B',
+                    image: resolveImageUrl(v.imageUrl || v.images?.[0]?.imageUrl) || img,
+                  }))
+
+                const slug = p.slug || p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+                const href = `/products/${slug}`
 
                 return (
                   <ProductCard
@@ -817,15 +850,19 @@ export function ProductGrid() {
                     product={{
                       id: p.id,
                       name: p.name,
-                      category: p.category || 'Sarees',
+                      category: p.category || 'Kanchipuram Silk',
                       fabric,
                       occasion,
-                      image: p.image,
-                      price: p.price,
-                      oldPrice: p.originalPrice,
+                      image: img,
+                      price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
+                      oldPrice: p.originalPrice ? (typeof p.originalPrice === 'string' ? parseFloat(p.originalPrice) : p.originalPrice) : null,
                       badge,
-                      rating: (meta.rating as number) || 4.8,
-                      reviews: (meta.reviews as number) || 14,
+                      rating: (meta.rating as number) || 4.9,
+                      reviews: (meta.reviews as number) || 18,
+                      href,
+                      colors: rawColors.length > 0 ? rawColors : undefined,
+                      variantId: p.variants?.[0]?.id,
+                      stock: p.stockQty,
                     }}
                   />
                 )

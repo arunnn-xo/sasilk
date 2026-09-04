@@ -20,6 +20,7 @@ import {
   ContactEnquiry,
   WishlistItem,
   Reel,
+  ArtWaveItem,
 } from '../../../models/index.js'
 import { writeAuditLog } from '../../../services/audit.service.js'
 import { expireOldCoupons } from '../../../services/coupon-expiry.service.js'
@@ -115,6 +116,17 @@ export const reelCreateSchema = z.object({
   videoUrl: z.union([z.string().max(512, 'Video URL is too long.'), z.null()]).optional(),
   title: z.union([z.string().max(180, 'Title is too long.'), z.null()]).optional(),
   views: z.string().min(1, 'Views display text is required.').max(20, 'Views text is too long.'),
+  sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
+  active: z.boolean().optional().default(true),
+})
+
+export const artWaveCreateSchema = z.object({
+  title: z.string().min(1, 'Title is required.').max(180, 'Title is too long.'),
+  subtitle: z.union([z.string().max(255, 'Subtitle is too long.'), z.null()]).optional(),
+  description: z.union([z.string().max(4000, 'Description is too long.'), z.null()]).optional(),
+  imageUrl: z.union([z.string().max(255, 'Image URL is too long.'), z.null()]).optional().default(''),
+  videoUrl: z.string().min(1, 'Video URL is required.').max(512, 'Video URL is too long.'),
+  mediaType: z.enum(['image', 'video']).optional().default('video'),
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
   active: z.boolean().optional().default(true),
 })
@@ -258,6 +270,14 @@ export const resourceConfig: Record<string, ResourceConfig> = {
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
     validationSchema: reelCreateSchema,
+  },
+  'art-wave': {
+    model: ArtWaveItem,
+    entity: 'art_wave_item',
+    writable: ['title', 'subtitle', 'description', 'imageUrl', 'videoUrl', 'mediaType', 'sortOrder', 'active'],
+    imageFields: ['imageUrl'],
+    defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
+    validationSchema: artWaveCreateSchema,
   },
 }
 

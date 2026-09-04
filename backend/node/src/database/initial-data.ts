@@ -395,3 +395,20 @@ export const defaultBanners = [
     ctaUrl: '/shop',
   },
 ]
+
+export const defaultArtWaveItems = [
+  {
+    title: 'Handloom Heritage',
+    subtitle: 'Looms that live',
+    description: 'Every weave carries generations of skill, patience and pride of the Tamil soil.',
+    imageUrl: '/artisan_weaver.png',
+    mediaType: 'image',
+  },
+  {
+    title: 'The Art of Weaving',
+    subtitle: 'A film in the making',
+    description: 'Space reserved for the brand video. Once provided, it will automatically play here.',
+    imageUrl: '/new_hero_bg_saree.png',
+    mediaType: 'video',
+  },
+]

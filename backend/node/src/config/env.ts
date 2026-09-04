@@ -42,6 +42,22 @@ const envSchema = z.object({
   RAZORPAY_KEY_SECRET: z.string().min(1),
   RAZORPAY_WEBHOOK_SECRET: z.string().optional().default(''),
   SHIPPING_ENV: z.enum(['test', 'production']).default('test'),
+  WHATSAPP_ENABLED: z
+    .preprocess(
+      val => (typeof val === 'string' ? val.toLowerCase() === 'true' || val === '1' : Boolean(val)),
+      z.boolean()
+    )
+    .default(false),
+  WHATSAPP_PROVIDER: z
+    .enum(['mock', 'meta', 'webhook', 'interakt', 'aisensy', 'wati', 'twilio', 'ultramsg', 'fast2sms'])
+    .default('mock'),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional().default(''),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional().default(''),
+  WHATSAPP_API_URL: z.string().optional().default(''),
+  WHATSAPP_API_KEY: z.string().optional().default(''),
+  WHATSAPP_INSTANCE_ID: z.string().optional().default(''),
+  WHATSAPP_TOKEN: z.string().optional().default(''),
+  WHATSAPP_TEMPLATE_NAME: z.string().optional().default(''),
 })
 
 export const env = envSchema.parse(process.env)

@@ -63,8 +63,8 @@ export default function LoginPage() {
           noValidate
         >
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-5 w-52 h-24 bg-white rounded-2xl shadow-lg border border-[#D9B86E]/30 flex items-center justify-center overflow-hidden">
-              <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain scale-[1.85]" />
+            <div className="mx-auto mb-5 w-56 h-24 bg-white rounded-2xl shadow-lg border border-[#D9B86E]/30 flex items-center justify-center p-2.5 overflow-hidden">
+              <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain" />
             </div>
             <p className="text-[11.5px] font-extrabold uppercase tracking-[0.3em] text-[#D9B86E] drop-shadow-md">
               Admin Portal

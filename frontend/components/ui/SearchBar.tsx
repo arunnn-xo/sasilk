@@ -3,7 +3,10 @@
 import { useState, useEffect, forwardRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Sparkles } from 'lucide-react'
-import { searchProducts } from '@/lib/services/storefront.service'
+import Image from 'next/image'
+import { searchStorefront } from '@/lib/api/storefront'
+import type { StorefrontProduct } from '@/lib/api/types'
+import { resolveImageUrl } from '@/lib/api/client'
 
 const placeholders = [
   'Search by color - E.g. red color sarees...',
@@ -19,7 +22,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
   const router = useRouter()
   const [focused, setFocused] = useState(false)
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<{ name: string; price: number }[]>([])
+  const [results, setResults] = useState<StorefrontProduct[]>([])
   const [placeholderText, setPlaceholderText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [loopNum, setLoopNum] = useState(0)
@@ -52,8 +55,8 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
     if (!query.trim()) { setResults([]); return }
     const timer = setTimeout(async () => {
       try {
-        const data = await searchProducts(query.trim())
-        setResults(data.products.slice(0, 5).map(p => ({ name: p.name, price: p.price })))
+        const data = await searchStorefront(query.trim())
+        setResults(data.products.slice(0, 5))
       } catch {
         setResults([])
       }
@@ -70,6 +73,12 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
   function goToCollection(filter: string) {
     setFocused(false)
     router.push(`/collections/organic-sarees?filter=${encodeURIComponent(filter)}`)
+  }
+
+  function goToProduct(p: StorefrontProduct) {
+    setFocused(false)
+    const slug = p.slug || p.id
+    router.push(`/products/${slug}`)
   }
 
   return (
@@ -149,21 +158,31 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
           </div>
 
           <div className="flex flex-col">
-            {results.length > 0 ? results.map((p, i) => (
-              <div
-                key={p.name}
-                onMouseDown={e => { e.preventDefault(); goToShop(p.name) }}
-                className="flex items-center gap-3 py-2 cursor-pointer"
-                style={{ borderBottom: i < results.length - 1 ? '1px solid var(--ivory-dark)' : 'none' }}
-              >
-                <span className="flex-1 text-sm font-medium" style={{ color: 'var(--charcoal)' }}>
-                  {p.name}
-                </span>
-                <span className="text-sm font-semibold" style={{ color: 'var(--burgundy)' }}>
-                  ₹{p.price.toLocaleString('en-IN')}
-                </span>
-              </div>
-            )) : query.trim() ? (
+            {results.length > 0 ? results.map((p) => {
+              const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl)
+              return (
+                <div
+                  key={p.id}
+                  onMouseDown={e => { e.preventDefault(); goToProduct(p) }}
+                  className="flex items-center gap-3 py-2 px-1 cursor-pointer rounded-lg transition-colors hover:bg-[#FDF6EE]"
+                  style={{ borderBottom: '1px solid var(--ivory-dark)' }}
+                >
+                  <div className="relative w-12 h-14 shrink-0 rounded-md overflow-hidden" style={{ background: 'var(--ivory)' }}>
+                    {img ? (
+                      <Image src={img} alt={p.name} fill sizes="48px" style={{ objectFit: 'cover' }} unoptimized />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-[var(--muted)]">No img</div>
+                    )}
+                  </div>
+                  <span className="flex-1 text-sm font-medium leading-tight" style={{ color: 'var(--charcoal)' }}>
+                    {p.name}
+                  </span>
+                  <span className="text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--burgundy)' }}>
+                    ₹{(p.price ?? 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              )
+            }) : query.trim() ? (
               <p className="py-3 text-sm text-center" style={{ color: 'var(--muted)' }}>
                 No results found
               </p>

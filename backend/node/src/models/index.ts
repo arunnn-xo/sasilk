@@ -487,6 +487,91 @@ export const Reel = sequelize.define('Reel', {
   active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 }, { tableName: 'reels' })
 
+export const ArtWaveItem = sequelize.define('ArtWaveItem', {
+  id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+  title: { type: DataTypes.STRING(180), allowNull: false },
+  subtitle: { type: DataTypes.STRING(255), allowNull: true },
+  description: { type: DataTypes.TEXT, allowNull: true },
+  imageUrl: { type: DataTypes.STRING(255), allowNull: true, defaultValue: '', field: 'image_url' },
+  videoUrl: { type: DataTypes.STRING(512), allowNull: true, field: 'video_url' },
+  mediaType: { type: DataTypes.ENUM('image', 'video'), allowNull: false, defaultValue: 'video', field: 'media_type' },
+  sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'sort_order' },
+  active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+}, { tableName: 'art_wave_items' })
+
+export const Event = sequelize.define('Event', {
+  id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+  name: { type: DataTypes.STRING(180), allowNull: false },
+  slug: { type: DataTypes.STRING(200), allowNull: false, unique: true },
+  description: { type: DataTypes.TEXT, allowNull: true },
+  imageUrl: { type: DataTypes.STRING(255), allowNull: true, field: 'image_url' },
+  images: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+    field: 'images',
+    get(this: any) {
+      const raw = this.getDataValue('images') as unknown
+      if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw)
+          return Array.isArray(parsed) ? parsed : (parsed ? [parsed] : [])
+        } catch {
+          return []
+        }
+      }
+      return Array.isArray(raw) ? raw : (raw ? [raw] : [])
+    },
+    set(this: any, value: unknown) {
+      if (typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value)
+          this.setDataValue('images', Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []))
+          return
+        } catch {
+          this.setDataValue('images', value ? [value] : [])
+          return
+        }
+      }
+      this.setDataValue('images', Array.isArray(value) ? value : (value ? [value] : []))
+    },
+  },
+  videoUrl: { type: DataTypes.STRING(512), allowNull: true, field: 'video_url' },
+  eventDate: { type: DataTypes.DATEONLY, allowNull: false, field: 'event_date' },
+  startTime: { type: DataTypes.STRING(10), allowNull: false, field: 'start_time' },
+  endTime: { type: DataTypes.STRING(10), allowNull: false, field: 'end_time' },
+  price: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },
+  mode: { type: DataTypes.ENUM('offline', 'online', 'both'), allowNull: false, defaultValue: 'both' },
+  venueAddress: { type: DataTypes.TEXT, allowNull: true, field: 'venue_address' },
+  zoomLink: { type: DataTypes.STRING(512), allowNull: true, field: 'zoom_link' },
+  capacity: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+  isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'is_active' },
+  deletedAt: { type: DataTypes.DATE, allowNull: true, field: 'deleted_at' },
+}, { tableName: 'events', paranoid: true })
+
+export const EventBooking = sequelize.define('EventBooking', {
+  id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+  bookingNumber: { type: DataTypes.STRING(80), allowNull: false, unique: true, field: 'booking_number' },
+  eventId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, field: 'event_id' },
+  customerId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, field: 'customer_id' },
+  customerName: { type: DataTypes.STRING(140), allowNull: false, field: 'customer_name' },
+  customerEmail: { type: DataTypes.STRING(190), allowNull: false, field: 'customer_email' },
+  customerMobile: { type: DataTypes.STRING(32), allowNull: false, field: 'customer_mobile' },
+  mode: { type: DataTypes.ENUM('offline', 'online'), allowNull: false },
+  quantity: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 1 },
+  unitPrice: { type: DataTypes.DECIMAL(12, 2), allowNull: false, field: 'unit_price' },
+  total: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+  paymentStatus: { type: DataTypes.ENUM('pending', 'paid', 'failed', 'refunded'), allowNull: false, defaultValue: 'pending', field: 'payment_status' },
+  razorpayOrderId: { type: DataTypes.STRING(120), allowNull: true, field: 'razorpay_order_id' },
+  razorpayPaymentId: { type: DataTypes.STRING(120), allowNull: true, field: 'razorpay_payment_id' },
+  qrToken: { type: DataTypes.STRING(255), allowNull: true, unique: true, field: 'qr_token' },
+  qrImage: { type: DataTypes.TEXT, allowNull: true, field: 'qr_image' },
+  zoomLink: { type: DataTypes.STRING(512), allowNull: true, field: 'zoom_link' },
+  checkedIn: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false, field: 'checked_in' },
+  checkInAt: { type: DataTypes.DATE, allowNull: true, field: 'check_in_at' },
+  refundedAt: { type: DataTypes.DATE, allowNull: true, field: 'refunded_at' },
+}, { tableName: 'event_bookings' })
+
 export const models = {
   Admin,
   Customer,
@@ -519,6 +604,9 @@ export const models = {
   GuestSession,
   WishlistItem,
   Reel,
+  ArtWaveItem,
+  Event,
+  EventBooking,
 }
 
 export function initAssociations() {
@@ -575,4 +663,10 @@ export function initAssociations() {
   // Stock notification associations
   StockNotification.belongsTo(Product, { foreignKey: 'product_id', as: 'product' })
   StockNotification.belongsTo(ProductVariant, { foreignKey: 'variant_id', as: 'variant' })
+
+  // Event associations
+  Event.hasMany(EventBooking, { foreignKey: 'event_id', as: 'bookings' })
+  EventBooking.belongsTo(Event, { foreignKey: 'event_id', as: 'event' })
+  Customer.hasMany(EventBooking, { foreignKey: 'customer_id', as: 'eventBookings' })
+  EventBooking.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' })
 }

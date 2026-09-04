@@ -186,7 +186,7 @@ export function ImageField({ field, item }: { field: ResourceField; item?: Recor
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
 
-  const currentValue = previewValue || existingValue || ''
+  const currentValue = previewValue !== '' ? previewValue : (existingValue || '')
 
   async function handleFile(file: File) {
     setUploadError('')
@@ -224,14 +224,29 @@ export function ImageField({ field, item }: { field: ResourceField; item?: Recor
             />
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--panel-strong)] px-3 py-2">
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              className="rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
-            >
-              {uploading ? 'Uploading…' : 'Change'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                className="rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
+              >
+                {uploading ? 'Uploading…' : 'Change'}
+              </button>
+              {!field.required && (
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => {
+                    setPreviewValue('')
+                    if (fileRef.current) fileRef.current.value = ''
+                  }}
+                  className="rounded border border-red-200 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
             <span className="truncate text-[10px] text-[var(--muted)]">{currentValue}</span>
           </div>
         </div>
@@ -284,7 +299,7 @@ export function VideoField({ field, item }: { field: ResourceField; item?: Recor
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
 
-  const currentValue = previewValue || existingValue || ''
+  const currentValue = previewValue !== '' ? previewValue : (existingValue || '')
 
   async function handleFile(file: File) {
     setUploadError('')
@@ -321,14 +336,27 @@ export function VideoField({ field, item }: { field: ResourceField; item?: Recor
             />
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] bg-[var(--panel-strong)] px-3 py-2">
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              className="rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
-            >
-              {uploading ? 'Uploading…' : 'Change'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                className="rounded border border-[var(--line)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--burgundy)] transition-colors hover:bg-[var(--gold-soft)] disabled:opacity-50"
+              >
+                {uploading ? 'Uploading…' : 'Change'}
+              </button>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => {
+                  setPreviewValue('')
+                  if (fileRef.current) fileRef.current.value = ''
+                }}
+                className="rounded border border-red-200 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
             <span className="truncate text-[10px] text-[var(--muted)]">{currentValue}</span>
           </div>
         </div>
@@ -548,15 +576,26 @@ export function TableCell({ column, item, items }: { column: string; item: Recor
   }
 
   if (isImageColumn(column)) {
+    const videoSrc = (!value && typeof item.videoUrl === 'string' && item.videoUrl) ? resolveImageUrl(item.videoUrl) : null
     return (
       <td className="border border-[var(--line)] px-5 py-4">
-        <div className="flex h-14 w-12 shrink-0 items-center justify-center overflow-hidden rounded border border-[var(--line)] bg-[var(--panel-strong)]">
-          <ImagePreview
-            value={value}
-            alt={`${String(item.name || item.title || 'Image')} preview`}
-            className="h-14 w-12"
-            mode="contain"
-          />
+        <div className="flex h-14 w-12 shrink-0 items-center justify-center overflow-hidden rounded border border-[var(--line)] bg-[var(--panel-strong)] relative">
+          {videoSrc ? (
+            <video
+              src={videoSrc}
+              className="h-14 w-12 object-cover"
+              muted
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <ImagePreview
+              value={value}
+              alt={`${String(item.name || item.title || 'Image')} preview`}
+              className="h-14 w-12"
+              mode="contain"
+            />
+          )}
         </div>
       </td>
     )

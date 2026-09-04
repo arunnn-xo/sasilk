@@ -50,8 +50,8 @@ export default function AdminLayout() {
     <div className="flex flex-col h-full bg-[#1A050B] text-white">
       {/* Brand */}
       <div className="px-4 pt-5 pb-5 flex items-center justify-center border-b border-white/[0.08]">
-        <div className="w-full max-w-[224px] h-[84px] bg-white rounded-2xl shadow-md border border-[#D9B86E]/40 flex items-center justify-center p-2 overflow-hidden">
-          <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain scale-[1.95]" />
+        <div className="w-full max-w-[230px] h-[84px] bg-white rounded-2xl shadow-md border border-[#D9B86E]/40 flex items-center justify-center p-2.5 overflow-hidden">
+          <img src="/logo.png" alt="Soil Goddess Logo" className="w-full h-full object-contain" />
         </div>
       </div>
 
@@ -214,8 +214,8 @@ export default function AdminLayout() {
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="h-10 w-24 shrink-0 bg-white rounded-lg shadow-sm border border-[#EFE8DA] flex items-center justify-center overflow-hidden">
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain scale-[1.85]" />
+            <div className="h-10 w-28 shrink-0 bg-white rounded-lg shadow-sm border border-[#EFE8DA] flex items-center justify-center p-1 overflow-hidden">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-bold text-[#300D14] text-sm">Soil Goddess Admin</span>
           </div>

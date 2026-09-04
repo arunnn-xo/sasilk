@@ -25,6 +25,9 @@ import ReviewsPage from '../pages/ReviewsPage'
 import EmailCampaignsPage from '../pages/EmailCampaignsPage'
 import NotificationsPage from '../pages/NotificationsPage'
 import SettingsPage from '../pages/SettingsPage'
+import EventsPage from '../pages/EventsPage'
+import EventFormPage from '../pages/EventFormPage'
+import EventBookingsPage from '../pages/EventBookingsPage'
 import { getAdminMe } from '../services/api'
 import { resources } from './resources'
 
@@ -118,6 +121,10 @@ export default function App() {
           <Route path="variants" element={<VariantsPage />} />
           <Route path="stock" element={<StockPage />} />
           <Route path="email-campaigns" element={<EmailCampaignsPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="events/new" element={<EventFormPage />} />
+        <Route path="events/:id" element={<EventFormPage />} />
+        <Route path="events/:eventId/bookings" element={<EventBookingsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           {/* Order pipeline routes */}

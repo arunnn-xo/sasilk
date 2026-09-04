@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Shield, Clock, Globe, Truck } from 'lucide-react'
+import { Shield, Clock, Globe, Truck, Play, Pause, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react'
 import ProductCard from '@/components/product/ProductCard'
 import { useCart } from '@/components/cart/CartContext'
-import { fetchProducts, fetchCategories } from '@/lib/services/storefront.service'
+import { fetchCategories } from '@/lib/services/storefront.service'
+import { fetchArtWave, fetchStorefrontHome, fetchProducts as fetchApiProducts } from '@/lib/api/storefront'
+import { resolveImageUrl } from '@/lib/api/client'
+import type { StorefrontArtWaveItem } from '@/lib/api/types'
 import { newArrivals } from '@/lib/data'
 
 /* ── Summer Sufiana Collection Banner ─────────────── */
@@ -705,21 +708,41 @@ export function ProductGrid() {
   const { addItem, setDrawerOpen } = useCart()
 
   useEffect(() => {
-    // Show static new arrivals directly
-    setProducts(newArrivals.slice(0, 4))
+    let cancelled = false
+    async function loadDynamicProducts() {
+      try {
+        const homeData = await fetchStorefrontHome()
+        if (!cancelled && homeData?.newArrivals && homeData.newArrivals.length > 0) {
+          setProducts(homeData.newArrivals.slice(0, 4))
+          return
+        }
+        const prods = await fetchApiProducts()
+        if (!cancelled && prods && prods.length > 0) {
+          setProducts(prods.slice(0, 4))
+          return
+        }
+      } catch (err) {
+        console.warn('Could not load dynamic products, using fallback:', err)
+      }
+      if (!cancelled) {
+        setProducts(newArrivals.slice(0, 4))
+      }
+    }
+    loadDynamicProducts()
+    return () => { cancelled = true }
   }, [])
 
   const handleAddToCart = (product: any) => {
     addItem({
       id: product.id,
       name: product.name,
-      slug: product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      slug: product.href?.replace('/products/', '') || product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       image: product.image,
       price: product.price,
       originalPrice: product.oldPrice,
       variantId: product.variantId,
       color: product.color,
-      size: product.size,
+      size: product.size || 'Free Size',
       qty: 1,
     })
     setDrawerOpen(true)
@@ -825,9 +848,20 @@ export function ProductGrid() {
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
               {products.map(p => {
                 const meta = p.metadata || {}
-                const fabric = (meta.fabric as string) || 'Silk'
-                const occasion = (meta.occasion as string) || 'Festive'
-                const badge = p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller'
+                const fabric = (meta.fabric as string) || p.type || 'Pure Silk'
+                const occasion = (meta.occasion as string) || 'Bridal & Festive'
+                const badge = p.tag || (p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller')
+                const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || '/saree1.png'
+                const rawColors = (p.variants || [])
+                  .filter((v: any) => v.colorName)
+                  .map((v: any) => ({
+                    name: v.colorName,
+                    hex: v.colorHex || '#8B1A2B',
+                    image: resolveImageUrl(v.imageUrl || v.images?.[0]?.imageUrl) || img,
+                  }))
+
+                const slug = p.slug || p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+                const href = `/products/${slug}`
 
                 return (
                   <ProductCard
@@ -835,15 +869,19 @@ export function ProductGrid() {
                     product={{
                       id: p.id,
                       name: p.name,
-                      category: p.category || 'Sarees',
+                      category: p.category || 'Kanchipuram Silk',
                       fabric,
                       occasion,
-                      image: p.image,
-                      price: p.price,
-                      oldPrice: p.originalPrice,
+                      image: img,
+                      price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
+                      oldPrice: p.originalPrice ? (typeof p.originalPrice === 'string' ? parseFloat(p.originalPrice) : p.originalPrice) : null,
                       badge,
-                      rating: (meta.rating as number) || 4.8,
-                      reviews: (meta.reviews as number) || 14,
+                      rating: (meta.rating as number) || 4.9,
+                      reviews: (meta.reviews as number) || 18,
+                      href,
+                      colors: rawColors.length > 0 ? rawColors : undefined,
+                      variantId: p.variants?.[0]?.id,
+                      stock: p.stockQty,
                     }}
                     onAddToCart={handleAddToCart}
                   />
@@ -1236,8 +1274,18 @@ export function LoyaltyBanner() {
   return null
 }
 
-/* ── Video Placeholder Section ─────────────────────── */
-export function VideoPlaceholder() {
+/* ── The Art of Weaving Section (Video Placeholder) ─── */
+export function ArtWaveSection() {
+  const [items, setItems] = useState<StorefrontArtWaveItem[]>([])
+
+  useEffect(() => {
+    fetchArtWave()
+      .then(data => setItems(data || []))
+      .catch(() => setItems([]))
+  }, [])
+
+  const featured = items.find(item => item.videoUrl) || items[0] || null
+
   return (
     <section className="w-full bg-[#FAF6EE] pt-16 lg:pt-24 pb-16 lg:pb-24 relative overflow-hidden flex flex-col justify-center min-h-[500px] lg:min-h-[600px]">
       {/* Decorative Top Border */}
@@ -1245,11 +1293,21 @@ export function VideoPlaceholder() {
 
       {/* Pillars compactly fitted and vertically centered */}
       <div className="hidden lg:block absolute top-1/2 -translate-y-1/2 -left-10 xl:-left-16 2xl:-left-20 z-10 pointer-events-none h-[85%] max-h-[700px]">
-        <img src="/custom-pillar-transparent.png" alt="Decorative Pillar Left" className="h-full w-auto object-contain drop-shadow-2xl" style={{ objectPosition: 'left center' }} />
+        <img
+          src="/custom-pillar-transparent.png"
+          alt="Decorative Pillar Left"
+          className="h-full w-auto object-contain drop-shadow-2xl"
+          style={{ objectPosition: 'left center' }}
+        />
       </div>
       
       <div className="hidden lg:block absolute top-1/2 -translate-y-1/2 -right-10 xl:-right-16 2xl:-right-20 z-10 pointer-events-none h-[85%] max-h-[700px]">
-        <img src="/custom-pillar-transparent.png" alt="Decorative Pillar Right" className="h-full w-auto object-contain drop-shadow-2xl" style={{ transform: 'scaleX(-1)', objectPosition: 'left center' }} />
+        <img
+          src="/custom-pillar-transparent.png"
+          alt="Decorative Pillar Right"
+          className="h-full w-auto object-contain drop-shadow-2xl"
+          style={{ transform: 'scaleX(-1)', objectPosition: 'left center' }}
+        />
       </div>
 
       <div className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 relative z-20">
@@ -1273,35 +1331,74 @@ export function VideoPlaceholder() {
           </div>
         </div>
         
-        {/* Compact Video Card Container */}
-        <div className="w-full max-w-3xl mx-auto flex items-center justify-center">
-          <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(90,24,39,0.15)] group bg-burgundy/5 border border-[#D9B86E] flex items-center justify-center cursor-pointer">
-          {/* Subtle floral watermark behind video placeholder */}
-          <div className="absolute inset-0 opacity-[0.05] bg-[url('/borderdesign/flower-motif.png')] bg-repeat"></div>
-          
-          {/* Placeholder Message */}
-          <div className="text-center z-10 p-8">
-            <div className="w-20 h-20 mx-auto rounded-full bg-burgundy/80 backdrop-blur-sm flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 group-hover:bg-burgundy transition-all duration-300">
-              <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
+        {!featured ? (
+          <StaticArtFallback />
+        ) : (
+          <div className="w-full max-w-3xl mx-auto">
+            {/* Featured media with video playback */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(90,24,39,0.15)] bg-burgundy/5 border border-[#D9B86E] group">
+              {/* Subtle floral watermark */}
+              <div className="absolute inset-0 opacity-[0.05] bg-[url('/borderdesign/flower-motif.png')] bg-repeat pointer-events-none"></div>
+              {featured.videoUrl ? (
+                <video
+                  key={featured.id}
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  poster={featured.imageUrl ? resolveImageUrl(featured.imageUrl) : undefined}
+                >
+                  <source src={resolveImageUrl(featured.videoUrl)} />
+                </video>
+              ) : (
+                <img
+                  src={resolveImageUrl(featured.imageUrl || '')}
+                  alt={featured.title || 'The Art of Weaving'}
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                  loading="lazy"
+                />
+              )}
+
+              {/* Decorative Corner Elements */}
+              <svg className="absolute top-4 left-4 w-10 h-10 opacity-30 text-[#C29B57] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10,50 Q10,10 50,10" /></svg>
+              <svg className="absolute top-4 right-4 w-10 h-10 opacity-30 text-[#C29B57] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M90,50 Q90,10 50,10" /></svg>
+              <svg className="absolute bottom-4 left-4 w-10 h-10 opacity-30 text-[#C29B57] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10,50 Q10,90 50,90" /></svg>
+              <svg className="absolute bottom-4 right-4 w-10 h-10 opacity-30 text-[#C29B57] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M90,50 Q90,90 50,90" /></svg>
             </div>
-            <p className="font-montserrat text-[var(--charcoal)] font-medium tracking-widest uppercase text-sm">
-              Client Video Coming Soon
-            </p>
-            <p className="font-montserrat text-gold text-xs mt-2 max-w-md mx-auto leading-relaxed">
-              Space reserved for the brand video. Once provided, it will automatically play here.
-            </p>
           </div>
-          
-          {/* Decorative Corner Elements */}
-          <svg className="absolute top-4 left-4 w-10 h-10 opacity-30 text-[#C29B57]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10,50 Q10,10 50,10" /></svg>
-          <svg className="absolute top-4 right-4 w-10 h-10 opacity-30 text-[#C29B57]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M90,50 Q90,10 50,10" /></svg>
-          <svg className="absolute bottom-4 left-4 w-10 h-10 opacity-30 text-[#C29B57]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10,50 Q10,90 50,90" /></svg>
-          <svg className="absolute bottom-4 right-4 w-10 h-10 opacity-30 text-[#C29B57]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2"><path d="M90,50 Q90,90 50,90" /></svg>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   )
 }
+
+function StaticArtFallback() {
+  return (
+    <div className="w-full max-w-3xl mx-auto flex items-center justify-center">
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(90,24,39,0.15)] group bg-burgundy/5 border border-[#D9B86E] flex items-center justify-center cursor-pointer">
+        {/* Subtle floral watermark behind video placeholder */}
+        <div className="absolute inset-0 opacity-[0.05] bg-[url('/borderdesign/flower-motif.png')] bg-repeat"></div>
+        
+        {/* Placeholder Message */}
+        <div className="text-center z-10 p-8">
+          <div className="w-20 h-20 mx-auto rounded-full bg-burgundy/80 backdrop-blur-sm flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 group-hover:bg-burgundy transition-all duration-300">
+            <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
+          </div>
+          <p className="font-montserrat text-[var(--charcoal)] font-medium tracking-widest uppercase text-sm">
+            Client Video Coming Soon
+          </p>
+          <p className="font-montserrat text-gold text-xs mt-2 max-w-md mx-auto leading-relaxed">
+            Space reserved for the brand video. Once provided, it will automatically play here.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export { ArtWaveSection as VideoPlaceholder }
+
 
 

@@ -44,6 +44,16 @@ import {
   sendRecoveryEmail,
 } from './controllers/order.controller.js'
 import {
+  listEvents,
+  getEvent,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  listBookings,
+  checkIn,
+  toggleCheckIn,
+} from './controllers/event.controller.js'
+import {
   createInvoice,
   regenerateInvoice,
   syncInvoice,
@@ -212,6 +222,16 @@ router.post('/products/import', uploadExcel.single('file'), asyncHandler(importP
 // Variant Import
 router.get('/products/variants/import/sample', asyncHandler(downloadVariantImportSample))
 router.post('/products/variants/import', uploadExcel.single('file'), asyncHandler(importVariants))
+
+// Events (Book Now) — registered before the generic /:resource catch-all
+router.get('/events', asyncHandler(listEvents))
+router.post('/events', asyncHandler(createEvent))
+router.get('/events/:id', asyncHandler(getEvent))
+router.put('/events/:id', asyncHandler(updateEvent))
+router.delete('/events/:id', asyncHandler(deleteEvent))
+router.get('/events/:id/bookings', asyncHandler(listBookings))
+router.post('/events/:id/checkin', asyncHandler(checkIn))
+router.put('/events/bookings/:bookingId/check-in', asyncHandler(toggleCheckIn))
 
 // Generic Resource Endpoints
 router.get('/:resource', asyncHandler(listResource))

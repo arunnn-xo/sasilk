@@ -106,6 +106,7 @@ export default function MobileNavDrawer({ isOpen, onClose, menuData, position = 
             alt="Soil Goddess"
             width={120}
             height={36}
+            unoptimized
             className="h-9 w-auto brightness-0 invert"
           />
           <button

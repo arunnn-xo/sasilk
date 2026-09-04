@@ -577,6 +577,20 @@ export async function runMigrations() {
     ...timestamps,
   })
 
+  await createTableIfMissing(qi, 'art_wave_items', {
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    title: { type: DataTypes.STRING(180), allowNull: false },
+    subtitle: { type: DataTypes.STRING(255), allowNull: true },
+    description: { type: DataTypes.TEXT, allowNull: true },
+    image_url: { type: DataTypes.STRING(255), allowNull: false },
+    video_url: { type: DataTypes.STRING(512), allowNull: true },
+    media_type: { type: DataTypes.ENUM('image', 'video'), allowNull: false, defaultValue: 'image' },
+    sort_order: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    ...timestamps,
+  })
+  await safeAddIndex('art_wave_items', 'idx_art_wave_active', ['active'])
+
   // ─── Column migrations (adds new columns to existing tables) ────
   // customers
   await safeAddColumn('customers', 'last_login_at', { type: DataTypes.DATE, allowNull: true })
@@ -770,6 +784,60 @@ export async function runMigrations() {
   await safeAddIndex('stock_notifications', 'idx_stock_notifications_variant_id', ['variant_id'])
   await safeAddIndex('stock_notifications', 'idx_stock_notifications_email', ['email'])
   await safeAddIndex('stock_notifications', 'idx_stock_notifications_status', ['status'])
+
+  // ── Events (Book Now) ────────────────────────────────────────────────
+  await createTableIfMissing(qi, 'events', {
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    name: { type: DataTypes.STRING(180), allowNull: false },
+    slug: { type: DataTypes.STRING(200), allowNull: false, unique: true },
+    description: { type: DataTypes.TEXT, allowNull: true },
+    image_url: { type: DataTypes.STRING(255), allowNull: true },
+    images: { type: DataTypes.JSON, allowNull: true },
+    video_url: { type: DataTypes.STRING(512), allowNull: true },
+    event_date: { type: DataTypes.DATEONLY, allowNull: false },
+    start_time: { type: DataTypes.STRING(10), allowNull: false },
+    end_time: { type: DataTypes.STRING(10), allowNull: false },
+    price: { type: DataTypes.DECIMAL(12, 2), allowNull: false, defaultValue: 0 },
+    mode: { type: DataTypes.ENUM('offline', 'online', 'both'), allowNull: false, defaultValue: 'both' },
+    venue_address: { type: DataTypes.TEXT, allowNull: true },
+    zoom_link: { type: DataTypes.STRING(512), allowNull: true },
+    capacity: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+    is_active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    deleted_at: { type: DataTypes.DATE, allowNull: true },
+    ...timestamps,
+  })
+  await safeAddIndex('events', 'idx_events_slug', ['slug'])
+  await safeAddIndex('events', 'idx_events_active', ['is_active'])
+  await safeAddColumn('events', 'images', { type: DataTypes.JSON, allowNull: true })
+  await safeAddColumn('events', 'video_url', { type: DataTypes.STRING(512), allowNull: true })
+
+  await createTableIfMissing(qi, 'event_bookings', {
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    booking_number: { type: DataTypes.STRING(80), allowNull: false, unique: true },
+    event_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, references: { model: 'events', key: 'id' }, onDelete: 'CASCADE' },
+    customer_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, references: { model: 'customers', key: 'id' }, onDelete: 'SET NULL' },
+    customer_name: { type: DataTypes.STRING(140), allowNull: false },
+    customer_email: { type: DataTypes.STRING(190), allowNull: false },
+    customer_mobile: { type: DataTypes.STRING(32), allowNull: false },
+    mode: { type: DataTypes.ENUM('offline', 'online'), allowNull: false },
+    quantity: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 1 },
+    unit_price: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+    total: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+    payment_status: { type: DataTypes.ENUM('pending', 'paid', 'failed', 'refunded'), allowNull: false, defaultValue: 'pending' },
+    razorpay_order_id: { type: DataTypes.STRING(120), allowNull: true },
+    razorpay_payment_id: { type: DataTypes.STRING(120), allowNull: true },
+    qr_token: { type: DataTypes.STRING(255), allowNull: true, unique: true },
+    qr_image: { type: DataTypes.TEXT, allowNull: true },
+    zoom_link: { type: DataTypes.STRING(512), allowNull: true },
+    checked_in: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    check_in_at: { type: DataTypes.DATE, allowNull: true },
+    refunded_at: { type: DataTypes.DATE, allowNull: true },
+    ...timestamps,
+  })
+  await safeAddIndex('event_bookings', 'idx_event_bookings_event_id', ['event_id'])
+  await safeAddIndex('event_bookings', 'idx_event_bookings_razorpay_order_id', ['razorpay_order_id'])
+  await safeAddIndex('event_bookings', 'idx_event_bookings_payment_status', ['payment_status'])
+  await safeAddIndex('event_bookings', 'idx_event_bookings_customer_email', ['customer_email'])
 
   console.log('Migration complete.')
 }

@@ -14,6 +14,8 @@ import {
   Save,
   Settings,
   ShoppingBag,
+  Ticket,
+  CalendarDays,
   Trash2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -22,12 +24,15 @@ import type { AddressInput, CustomerAddress, CustomerOrder } from '@/lib/api/aut
 import { apiFetch } from '@/lib/api/client'
 import { useAuth } from '@/components/auth/AuthContext'
 import { resolveImageUrl } from '@/lib/api/client'
+import { fetchMyEventBookings, type EventBookingListItem } from '@/lib/services/storefront.service'
+import { formatEventDateTime } from '@/lib/utils/eventFormat'
 
-type AccountTab = 'dashboard' | 'orders' | 'address' | 'settings' | 'logout'
+type AccountTab = 'dashboard' | 'orders' | 'bookings' | 'address' | 'settings' | 'logout'
 
 const tabs: Array<{ id: AccountTab; label: string; Icon: LucideIcon }> = [
   { id: 'dashboard', label: 'Dashboard', Icon: Grid2X2 },
   { id: 'orders', label: 'Orders', Icon: ShoppingBag },
+  { id: 'bookings', label: 'Event Bookings', Icon: Ticket },
   { id: 'address', label: 'Address', Icon: MapPin },
   { id: 'settings', label: 'Settings', Icon: Settings },
   { id: 'logout', label: 'Logout', Icon: LogOut },
@@ -88,6 +93,8 @@ export default function AccountDashboard() {
 
   const [orders, setOrders] = useState<CustomerOrder[]>([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+  const [bookings, setBookings] = useState<EventBookingListItem[]>([])
+  const [bookingsLoading, setBookingsLoading] = useState(false)
   const [addresses, setAddresses] = useState<CustomerAddress[]>([])
   const [addressesLoading, setAddressesLoading] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
@@ -190,6 +197,13 @@ export default function AccountDashboard() {
         .then(data => setAddresses(data.addresses))
         .catch(() => setAddresses([]))
         .finally(() => setAddressesLoading(false))
+    }
+    if (activeTab === 'bookings') {
+      setBookingsLoading(true)
+      fetchMyEventBookings()
+        .then(data => setBookings(data))
+        .catch(() => setBookings([]))
+        .finally(() => setBookingsLoading(false))
     }
   }, [activeTab])
 
@@ -443,6 +457,92 @@ export default function AccountDashboard() {
                         View Detailed Invoice &rarr;
                       </Link>
                       <p className="text-base font-extrabold text-[#6B1A2A]">Total: ₹{parseFloat(order.grandTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )
+    }
+
+    if (activeTab === 'bookings') {
+      return (
+        <section className="rounded-xl border border-[#E8DCC4] bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="font-playfair text-2xl font-semibold tracking-wide text-gray-900">
+                Event Bookings
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Your event tickets and entry passes.</p>
+            </div>
+            <span className="text-xs font-medium text-gray-500">{bookings.length} Total Booking{bookings.length === 1 ? '' : 's'}</span>
+          </div>
+
+          {bookingsLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-[#6B1A2A] border-t-transparent" />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-[#FDFBF7] p-10 text-center">
+              <Ticket className="mx-auto mb-3 h-8 w-8 text-gray-400" />
+              <p className="font-playfair text-lg font-semibold text-gray-900">No event bookings yet</p>
+              <p className="text-xs text-gray-500 mt-1">Book a workshop or event and it will show up here with your QR and Zoom access.</p>
+              <Link href="/events" className="font-montserrat mt-5 inline-flex items-center justify-center rounded-lg bg-[#6B1A2A] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#521220]">
+                Browse Events
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {bookings.map(booking => (
+                <div key={booking.id} className="overflow-hidden rounded-xl border border-gray-200 bg-[#FDFBF7] transition-all hover:border-[#D9B86E] hover:shadow-md">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50/80 px-5 py-3.5 border-b border-gray-200">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{booking.event?.name ?? 'Event booking'}</p>
+                      <p className="text-xs text-gray-500">
+                        Booking #{booking.bookingNumber} &bull; {new Date(booking.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider ${booking.mode === 'online' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>{booking.mode}</span>
+                      <span className={`rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                        booking.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' :
+                        booking.paymentStatus === 'pending' ? 'bg-amber-100 text-amber-800' :
+                        booking.paymentStatus === 'refunded' ? 'bg-purple-100 text-purple-800' :
+                        'bg-rose-100 text-rose-800'
+                      }`}>{booking.paymentStatus}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-3">
+                    {booking.event && (
+                      <p className="flex items-center gap-2 text-xs text-gray-600">
+                        <CalendarDays size={14} className="text-[#6B1A2A]" />
+                        {formatEventDateTime(booking.event.eventDate, booking.event.startTime)} – {booking.event.endTime}
+                      </p>
+                    )}
+                    {booking.mode === 'offline' && booking.event?.venueAddress && (
+                      <p className="flex items-center gap-2 text-xs text-gray-600">
+                        <MapPin size={14} className="text-[#6B1A2A]" /> {booking.event.venueAddress}
+                      </p>
+                    )}
+
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Link href={`/events/confirmation/${booking.id}`} className="text-xs font-bold uppercase tracking-wider text-[#6B1A2A] hover:underline">
+                          View Details &rarr;
+                        </Link>
+                        {booking.mode === 'online' && booking.zoomLink && booking.paymentStatus === 'paid' && (
+                          <a href={booking.zoomLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-wider text-[#2B4C9B] hover:underline">
+                            Join Zoom Link
+                          </a>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] text-gray-500">{booking.quantity} ticket{booking.quantity > 1 ? 's' : ''}</p>
+                        <p className="text-base font-extrabold text-[#6B1A2A]">₹{booking.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

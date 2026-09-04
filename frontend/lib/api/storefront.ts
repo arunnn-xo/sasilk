@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
+import type { CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontArtWaveItem, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
 
 export async function fetchAnnouncementMessages() {
   try {
@@ -228,6 +228,15 @@ export async function fetchReels(): Promise<StorefrontReel[]> {
   try {
     const data = await apiFetch<{ reels: StorefrontReel[] }>('/storefront/reels')
     return data.reels || []
+  } catch {
+    return []
+  }
+}
+
+export async function fetchArtWave(): Promise<StorefrontArtWaveItem[]> {
+  try {
+    const data = await apiFetch<{ items: StorefrontArtWaveItem[] }>('/storefront/art-wave')
+    return data.items || []
   } catch {
     return []
   }

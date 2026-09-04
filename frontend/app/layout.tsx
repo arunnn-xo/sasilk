@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import TabVisibilityHandler from '@/components/ui/TabVisibilityHandler'
 import CustomCursor from '@/components/ui/CustomCursor'
 import { CartProvider } from '@/components/cart/CartContext'
@@ -7,6 +7,14 @@ import { WishlistProvider } from '@/components/wishlist/WishlistContext'
 import CartDrawer from '@/components/cart/CartDrawer'
 import GuestDiscountPopup from '@/components/layout/GuestDiscountPopup'
 import './globals.css'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: '#103042',
+}
 
 export const metadata: Metadata = {
   title: 'SOIL GODDESS by Sri Akila',

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import QRCode from 'qrcode'
 import fs from 'node:fs'
 import path from 'node:path'
 import stream from 'node:stream'
@@ -29,19 +30,21 @@ async function pdfToBuffer(order: Record<string, unknown>, invoice: Record<strin
 }
 
 function emailFrom(companyName: string) {
-  const fromEmail = env.EMAIL_USER || 'hello@threadsoftn.com'
-  return `"${companyName}" <${fromEmail}>`
+  const brand = companyName || 'Soil Goddess'
+  const fromEmail = env.EMAIL_USER || 'care@soilgoddess.com'
+  return `"${brand}" <${fromEmail}>`
 }
 
 function resolveLogoPath(): string | null {
   const cwd = process.cwd()
   const candidates: string[] = [
-    path.join(cwd, 'uploads', 'threads-of-tn-logo.png'),
     path.join(cwd, 'public', 'logo.png'),
+    path.join(cwd, 'uploads', 'logo.png'),
+    path.join(cwd, 'uploads', 'soil-goddess-logo.png'),
+    path.join(cwd, '..', 'frontend', 'public', 'logo.png'),
+    path.join(cwd, '..', '..', 'frontend', 'public', 'logo.png'),
     path.join(cwd, '..', 'panel', 'public', 'logo.png'),
     path.join(cwd, '..', '..', 'backend', 'panel', 'public', 'logo.png'),
-    path.join(cwd, '..', '..', 'frontend', 'public', 'logo.png'),
-    path.join(cwd, '..', 'frontend', 'public', 'logo.png'),
   ]
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) return candidate
@@ -58,7 +61,7 @@ function resolveLogoAttachment(company: any): any | null {
       cid: 'logo',
     }
   }
-  if (company.logoUrl) {
+  if (company?.logoUrl) {
     const logoPath = path.resolve(company.logoUrl.replace(/^\//, ''))
     if (fs.existsSync(logoPath)) {
       return {
@@ -72,34 +75,59 @@ function resolveLogoAttachment(company: any): any | null {
 }
 
 function wrapInEmailTemplate(contentHtml: string, previewText: string, logoExists: boolean, companyName: string) {
+  const brandName = companyName || 'Soil Goddess'
+  const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000'
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${previewText}</title>
   <style>
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f5f0; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-    .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e8dcc4; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-    .header { background-color: #FBF9F6; padding: 24px 30px; text-align: center; border-bottom: 3px solid #6B1A2A; }
-    .logo { max-height: 50px; max-width: 160px; width: auto; display: inline-block; }
-    .logo-text { color: #6B1A2A; font-family: Georgia, serif; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 1px; }
-    .content { padding: 35px 30px; color: #333333; }
-    .footer { background-color: #faf7f2; padding: 20px 30px; text-align: center; font-size: 11px; color: #999999; border-top: 1px solid #e8dcc4; }
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #FAF6EE; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    .email-wrapper { background-color: #FAF6EE; padding: 28px 12px; }
+    .email-container { max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #E8DCC4; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 32px rgba(107,26,42,0.06); }
+    .top-gold-bar { height: 4px; background: linear-gradient(90deg, #6B1A2A 0%, #D9B86E 50%, #6B1A2A 100%); }
+    .header { background-color: #FFFFFF; padding: 26px 24px 20px 24px; text-align: center; }
+    .logo { max-height: 52px; max-width: 190px; width: auto; display: block; margin: 0 auto; }
+    .logo-text { color: #6B1A2A; font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+    .tagline { font-size: 10px; font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: 2.5px; color: #8C6D2B; text-transform: uppercase; margin-top: 8px; text-align: center; }
+    .header-divider { height: 1px; background: linear-gradient(90deg, transparent 0%, #E8DCC4 25%, #E8DCC4 75%, transparent 100%); margin-top: 16px; }
+    .content { padding: 30px 26px; color: #333333; }
+    .footer { background-color: #FAF7F2; padding: 22px 24px; text-align: center; font-size: 11px; color: #777777; border-top: 1px solid #E8DCC4; }
+    .footer-brand { font-family: 'Playfair Display', Georgia, serif; font-size: 13px; font-weight: bold; color: #6B1A2A; letter-spacing: 1.5px; margin-bottom: 6px; }
+    .footer-address { font-size: 11px; color: #888888; line-height: 1.6; margin-bottom: 10px; }
+    .footer-links { font-size: 11px; margin-bottom: 12px; }
+    .footer-links a { color: #6B1A2A; text-decoration: none; font-weight: 600; }
+    .footer-copy { font-size: 10px; color: #AAAAAA; line-height: 1.4; }
   </style>
 </head>
 <body>
-  <div class="email-container">
-    <div class="header">
-      ${logoExists ? '<img src="cid:logo" alt="' + companyName + '" class="logo" />' : '<h1 class="logo-text">' + companyName + '</h1>'}
-    </div>
-    <div class="content">
-      ${contentHtml}
-    </div>
-    <div class="footer">
-      This is an automated notification from ${companyName}. Please do not reply directly to this email.<br/>
-      &copy; ${new Date().getFullYear()} ${companyName}. All rights reserved.
+  <div class="email-wrapper">
+    <div class="email-container">
+      <div class="top-gold-bar"></div>
+      <div class="header">
+        ${logoExists ? '<img src="cid:logo" alt="' + brandName + '" class="logo" />' : '<h1 class="logo-text">' + brandName + '</h1>'}
+        <div class="tagline">Luxury Handloom Silk &bull; Masterclass &bull; Heritage Boutique</div>
+        <div class="header-divider"></div>
+      </div>
+      <div class="content">
+        ${contentHtml}
+      </div>
+      <div class="footer">
+        <div class="footer-brand">${brandName.toUpperCase()}</div>
+        <div class="footer-address">Heritage Handloom Boutique, Temple Road, Kanchipuram, Tamil Nadu &bull; Silk Mark Certified</div>
+        <div class="footer-links">
+          <a href="${frontendUrl}">Visit Boutique</a> &nbsp;|&nbsp; 
+          <a href="mailto:care@soilgoddess.com">Customer Care</a> &nbsp;|&nbsp; 
+          <a href="${frontendUrl}/events">Upcoming Events</a>
+        </div>
+        <div class="footer-copy">
+          This is an official transaction notification from ${brandName}. Please do not reply directly to this email.<br/>
+          &copy; ${new Date().getFullYear()} ${brandName}. All rights reserved.
+        </div>
+      </div>
     </div>
   </div>
 </body>
@@ -1864,4 +1892,473 @@ export async function sendCancellationEmail(
     throw err
   }
 }
+
+// ─── Event Date & Time Formatting Utilities ──────────────────
+
+function escapeEmailHtml(value: string | number | null | undefined): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function formatEventDate(d: string | Date | null | undefined): string {
+  if (!d) return 'To be announced'
+  const dateStr = typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? `${d}T00:00:00` : d
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return String(d)
+  return date.toLocaleDateString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function formatEventTime(time: string | null | undefined): string {
+  if (!time) return ''
+  const trimmed = String(time).trim()
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
+  if (match) {
+    let hours = parseInt(match[1], 10)
+    const minutes = match[2]
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12 || 12
+    return `${hours}:${minutes} ${ampm}`
+  }
+  return trimmed
+}
+
+function formatTimeSlot(start: string | null | undefined, end: string | null | undefined): string {
+  const formattedStart = formatEventTime(start)
+  const formattedEnd = formatEventTime(end)
+  if (formattedStart && formattedEnd) {
+    return `${formattedStart} – ${formattedEnd} IST`
+  }
+  return formattedStart || formattedEnd || 'Time to be announced'
+}
+
+// ─── Event Booking Confirmation Email (Customer) ─────────────
+
+export async function sendEventBookingConfirmationEmail(
+  to: string,
+  booking: Record<string, any>,
+  event: Record<string, any>,
+  company?: { name?: string; email?: string; phone?: string; address?: string; city?: string; [key: string]: any },
+): Promise<void> {
+  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
+    console.warn('[Email] SMTP not configured. Skipping event booking confirmation email.')
+    return
+  }
+
+  const c = company || (await getCompanyInfo())
+  const companyName = c.name || 'Soil Goddess'
+  const companyPhone = c.phone || '+91 8822664432'
+  const companyEmail = c.email || 'care@soilgoddess.com'
+
+  const bookingNumber = String(booking?.bookingNumber || '')
+  const customerName = String(booking?.customerName || 'Valued Guest')
+  const quantity = Number(booking?.quantity || 1)
+  const total = Number(booking?.total || 0)
+  const mode = String(booking?.mode || event?.mode || 'offline').toLowerCase()
+  const isOffline = mode === 'offline'
+  const isOnline = mode === 'online'
+
+  const eventName = String(event?.name || event?.title || 'Soil Goddess Masterclass & Workshop')
+  const eventDate = formatEventDate(event?.eventDate)
+  const timeSlot = formatTimeSlot(event?.startTime, event?.endTime)
+  const venueAddress = String(event?.venueAddress || 'Venue details will be announced soon.')
+  const zoomLink = String(booking?.zoomLink || event?.zoomLink || '')
+  const qrToken = String(booking?.qrToken || (bookingNumber ? `SOILGODDESS-EV-${bookingNumber}` : ''))
+  const amountDisplay = total > 0 ? `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'FREE (₹0.00)'
+
+  let qrBuffer: Buffer | null = null
+  if (isOffline) {
+    const tokenToEncode = qrToken || `SOILGODDESS-EV-${bookingNumber}`
+    try {
+      qrBuffer = await QRCode.toBuffer(tokenToEncode, {
+        type: 'png',
+        width: 320,
+        margin: 2,
+        color: {
+          dark: '#300D14',
+          light: '#FFFFFF',
+        },
+      })
+    } catch (qrErr) {
+      console.error('[Email] Failed to generate QR code buffer for event pass:', qrErr)
+    }
+  }
+
+  const logoAttachment = resolveLogoAttachment(c)
+  const attachments: any[] = []
+  if (logoAttachment) {
+    attachments.push(logoAttachment)
+  }
+
+  if (isOffline && qrBuffer) {
+    // Inline CID attachment for HTML card
+    attachments.push({
+      filename: `entry-pass-${bookingNumber || 'qr'}.png`,
+      content: qrBuffer,
+      contentType: 'image/png',
+      cid: 'entry_qr',
+      contentDisposition: 'inline',
+    })
+    // Downloadable file attachment
+    attachments.push({
+      filename: `entry-pass-${bookingNumber || 'pass'}.png`,
+      content: qrBuffer,
+      contentType: 'image/png',
+      contentDisposition: 'attachment',
+    })
+  }
+
+  const offlinePassHtml = isOffline
+    ? `
+      <!-- QR Entry Pass Section -->
+      <div style="background-color: #FAF6EE; border: 2px dashed #D9B86E; border-radius: 12px; padding: 24px 20px; text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; color: #8C6D2B; margin-bottom: 14px;">✦ OFFICIAL ADMITTANCE PASS ✦</div>
+        ${qrBuffer ? `
+        <div style="display: inline-block; padding: 12px; background: #ffffff; border: 1px solid #E8DCC4; border-radius: 10px; box-shadow: 0 4px 16px rgba(107,26,42,0.06); margin-bottom: 12px;">
+          <img src="cid:entry_qr" alt="Entry Pass QR Code" style="width: 190px; height: 190px; display: block; margin: 0 auto;" />
+        </div>
+        ` : ''}
+        <div style="font-family: monospace, Courier, sans-serif; font-size: 13px; color: #6B1A2A; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 10px;">${escapeEmailHtml(qrToken || bookingNumber)}</div>
+        <p style="margin: 0; font-size: 12px; color: #666666; line-height: 1.5; max-width: 420px; margin: 0 auto;">
+          ⚡ <strong>Admission Instructions:</strong> Please present this QR code at the event entrance on your mobile device for immediate admission.
+        </p>
+      </div>
+
+      <!-- Venue Details Card -->
+      <div style="background-color: #FAF8F5; border: 1px solid #E8DCC4; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px; color: #6B1A2A; margin-bottom: 6px;">📍 Venue Location & Directions</div>
+        <div style="font-size: 13.5px; color: #333333; line-height: 1.6; white-space: pre-line;">${escapeEmailHtml(venueAddress)}</div>
+      </div>
+    `
+    : ''
+
+  const onlineAccessHtml = isOnline
+    ? `
+      <!-- Online Webinar Access Section -->
+      <div style="background-color: #F0F7FA; border: 1px solid #BEE0EC; border-radius: 12px; padding: 24px 20px; text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #1A4056; margin-bottom: 8px;">🌐 Live Online Masterclass Access</div>
+        <div style="font-size: 13.5px; color: #334155; margin-bottom: 18px; line-height: 1.5;">
+          Your masterclass session will be streamed live online. Click below to join the virtual room:
+        </div>
+        ${zoomLink ? `
+          <div style="margin-bottom: 18px;">
+            <a href="${escapeEmailHtml(zoomLink)}" style="display: inline-block; background: linear-gradient(135deg, #4A0F1C, #6B1A2A); color: #FAF6EE; padding: 13px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; letter-spacing: 0.8px; border: 1px solid #D9B86E; box-shadow: 0 4px 14px rgba(107,26,42,0.2);">Join Live Masterclass →</a>
+          </div>
+          <div style="font-size: 12px; color: #64748b; line-height: 1.5; word-break: break-all;">
+            Direct Joining Link:<br/>
+            <a href="${escapeEmailHtml(zoomLink)}" style="color: #6B1A2A; text-decoration: underline;">${escapeEmailHtml(zoomLink)}</a>
+          </div>
+        ` : `
+          <div style="padding: 12px; background: #ffffff; border: 1px dashed #93c5fd; border-radius: 6px; font-size: 13px; color: #1A4056;">
+            The webinar joining link will be activated and emailed prior to the session start.
+          </div>
+        `}
+        <p style="margin: 16px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.4;">
+          💡 <em>Tip: We recommend joining 5–10 minutes early to verify your audio and video connection.</em>
+        </p>
+      </div>
+    `
+    : ''
+
+  const htmlContent = `
+    <div style="font-size: 20px; font-family: 'Playfair Display', Georgia, serif; color: #300D14; font-weight: bold; margin-bottom: 6px;">
+      Booking Confirmed ✨
+    </div>
+    <div style="font-size: 14px; line-height: 1.6; color: #555555; margin-bottom: 22px;">
+      Dear <strong>${escapeEmailHtml(customerName)}</strong>, thank you for reserving with Soil Goddess. Your booking for <strong style="color: #6B1A2A;">${escapeEmailHtml(eventName)}</strong> has been confirmed.
+    </div>
+
+    <!-- Booking Details Highlight Card -->
+    <div style="background-color: #FFFFFF; border: 1px solid #E8DCC4; border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(107,26,42,0.04);">
+      <div style="background: linear-gradient(135deg, #4A0F1C, #6B1A2A); padding: 12px 20px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="color: #FAF6EE; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px;">Booking Reference</td>
+            <td style="text-align: right; color: #D9B86E; font-family: monospace, Courier, sans-serif; font-size: 15px; font-weight: bold; letter-spacing: 1.5px;">${escapeEmailHtml(bookingNumber)}</td>
+          </tr>
+        </table>
+      </div>
+      <div style="padding: 20px 22px;">
+        <h2 style="margin: 0 0 10px 0; color: #300D14; font-size: 19px; font-family: 'Playfair Display', Georgia, serif; font-weight: 600;">${escapeEmailHtml(eventName)}</h2>
+        
+        <div style="margin-bottom: 16px;">
+          ${isOffline 
+            ? '<span style="display: inline-block; background: #FAF0F2; border: 1px solid #E8C4C4; color: #6B1A2A; padding: 4px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.6px;">📍 In-Person Masterclass</span>'
+            : '<span style="display: inline-block; background: #F0F7FA; border: 1px solid #BEE0EC; color: #1A4056; padding: 4px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.6px;">🌐 Online Live Webinar</span>'
+          }
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 9px 0; color: #777777; width: 130px;">🗓️ Date</td>
+            <td style="padding: 9px 0; color: #333333; font-weight: 600;">${escapeEmailHtml(eventDate)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 9px 0; color: #777777;">⏰ Time Slot</td>
+            <td style="padding: 9px 0; color: #333333; font-weight: 600;">${escapeEmailHtml(timeSlot)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 9px 0; color: #777777;">🎟️ Seats Booked</td>
+            <td style="padding: 9px 0; color: #333333; font-weight: 600;">${quantity} ${quantity === 1 ? 'Seat' : 'Seats'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 9px 0; color: #777777;">💰 Amount Paid</td>
+            <td style="padding: 9px 0; color: #6B1A2A; font-weight: bold; font-size: 16px;">${amountDisplay}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    ${offlinePassHtml}
+    ${onlineAccessHtml}
+
+    <!-- Support & Customer Care Section -->
+    <div style="background-color: #FAF8F5; border: 1px solid #E8DCC4; padding: 16px 20px; margin-bottom: 22px; border-radius: 10px;">
+      <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #6B1A2A; margin-bottom: 6px;">Need Assistance?</div>
+      <div style="font-size: 13px; color: #555555; line-height: 1.6;">
+        Our boutique customer care team is here to assist you.<br/>
+        📞 Phone: <strong style="color: #333333;">${escapeEmailHtml(companyPhone)}</strong> (Mon – Sat, 9:30 AM – 6:30 PM IST)<br/>
+        ✉️ Email: <a href="mailto:${escapeEmailHtml(companyEmail)}" style="color: #6B1A2A; text-decoration: underline;">${escapeEmailHtml(companyEmail)}</a>
+      </div>
+    </div>
+
+    <div style="font-size: 13.5px; color: #555555; line-height: 1.6;">
+      Warm regards,<br/>
+      <strong style="color: #300D14; font-family: 'Playfair Display', Georgia, serif;">Team ${escapeEmailHtml(companyName)}</strong>
+    </div>
+  `
+
+  const html = wrapInEmailTemplate(
+    htmlContent,
+    `Booking Confirmed — ${bookingNumber} | ${eventName}`,
+    Boolean(logoAttachment),
+    companyName,
+  )
+
+  const plainText = [
+    `Dear ${customerName},`,
+    ``,
+    `Your booking for "${eventName}" is confirmed!`,
+    ``,
+    `--- BOOKING DETAILS ---`,
+    `Booking Reference: ${bookingNumber}`,
+    `Event: ${eventName}`,
+    `Date: ${eventDate}`,
+    `Time: ${timeSlot}`,
+    `Mode: ${isOffline ? 'In-Person (Offline)' : 'Online / Live Webinar'}`,
+    `Seats: ${quantity}`,
+    `Amount Paid: ${amountDisplay}`,
+    ``,
+    isOffline
+      ? [
+          `--- VENUE & ENTRY PASS ---`,
+          `Venue: ${venueAddress}`,
+          `Entry Pass Token: ${qrToken || bookingNumber}`,
+          `Your entry QR code pass is attached as entry-pass-${bookingNumber}.png. Please present it at the venue entrance.`,
+          ``,
+        ].join('\n')
+      : [
+          `--- WEBINAR ACCESS ---`,
+          zoomLink ? `Join Link: ${zoomLink}` : `Join Link: Will be sent prior to session start`,
+          `Please join 5-10 minutes before the scheduled start time.`,
+          ``,
+        ].join('\n'),
+    `--- CUSTOMER CARE ---`,
+    `Phone: ${companyPhone} (Mon-Sat, 9:30 AM - 6:30 PM IST)`,
+    `Email: ${companyEmail}`,
+    ``,
+    `Warm regards,`,
+    `${companyName}`,
+  ].join('\n')
+
+  try {
+    await transporter.sendMail({
+      from: emailFrom(companyName),
+      to,
+      subject: `Booking Confirmed: ${eventName} (${bookingNumber}) | ${companyName}`,
+      text: plainText,
+      html,
+      attachments,
+    })
+    console.log(`[Email] Event booking confirmation sent to ${to} for booking ${bookingNumber}`)
+  } catch (err) {
+    console.error(`[Email] Failed to send event booking confirmation to ${to}:`, err)
+  }
+}
+
+// ─── Admin Event Booking Alert Email ──────────────────────────
+
+export async function sendAdminEventBookingAlert(
+  to: string,
+  booking: Record<string, any>,
+  event: Record<string, any>,
+  company?: { name?: string; email?: string; phone?: string; [key: string]: any },
+): Promise<void> {
+  const recipient = to || env.ADMIN_EMAIL || 'admin@soilgoddess.com'
+  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
+    console.warn('[Email] SMTP not configured. Skipping admin event booking alert.')
+    return
+  }
+
+  const c = company || (await getCompanyInfo())
+  const companyName = c.name || 'Soil Goddess'
+
+  const bookingNumber = String(booking?.bookingNumber || 'N/A')
+  const customerName = String(booking?.customerName || 'N/A')
+  const customerEmail = String(booking?.customerEmail || 'N/A')
+  const customerMobile = String(booking?.customerMobile || 'N/A')
+  const quantity = Number(booking?.quantity || 1)
+  const total = Number(booking?.total || 0)
+  const mode = String(booking?.mode || event?.mode || 'offline').toLowerCase()
+  const modeLabel = mode === 'offline' ? 'In-Person (Offline)' : 'Online / Webinar'
+
+  const eventName = String(event?.name || event?.title || 'Soil Goddess Event')
+  const eventDate = formatEventDate(event?.eventDate)
+  const timeSlot = formatTimeSlot(event?.startTime, event?.endTime)
+  const paymentId = String(booking?.razorpayPaymentId || (total === 0 ? 'Free Registration' : 'Pending / Direct'))
+  const paymentStatus = String(booking?.paymentStatus || (total === 0 ? 'paid' : 'pending')).toUpperCase()
+
+  const bookingTime = booking?.createdAt
+    ? new Date(booking.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+    : new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+
+  const logoAttachment = resolveLogoAttachment(c)
+  const attachments: any[] = []
+  if (logoAttachment) {
+    attachments.push(logoAttachment)
+  }
+
+  const htmlContent = `
+    <div style="font-size: 18px; font-family: 'Playfair Display', Georgia, serif; color: #300D14; font-weight: bold; margin-bottom: 6px;">
+      🚨 New Event Booking Received
+    </div>
+    <div style="font-size: 14px; line-height: 1.6; color: #555555; margin-bottom: 20px;">
+      A new booking has been confirmed for <strong style="color: #6B1A2A;">${escapeEmailHtml(eventName)}</strong>. Below are the registration and customer details:
+    </div>
+
+    <!-- Customer Information Card -->
+    <div style="border: 1px solid #E8DCC4; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+      <div style="background-color: #FAF7F2; padding: 10px 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px; color: #6B1A2A; border-bottom: 1px solid #E8DCC4;">
+        👤 Customer Information
+      </div>
+      <div style="padding: 14px 16px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+          <tr>
+            <td style="padding: 6px 0; color: #777777; width: 140px;">Customer Name</td>
+            <td style="padding: 6px 0; color: #333333; font-weight: 600;">${escapeEmailHtml(customerName)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #777777;">Email Address</td>
+            <td style="padding: 6px 0; color: #333333;"><a href="mailto:${escapeEmailHtml(customerEmail)}" style="color: #6B1A2A; text-decoration: underline;">${escapeEmailHtml(customerEmail)}</a></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #777777;">Mobile Number</td>
+            <td style="padding: 6px 0; color: #333333; font-weight: 600;"><a href="tel:${escapeEmailHtml(customerMobile)}" style="color: #333333; text-decoration: none;">📞 ${escapeEmailHtml(customerMobile)}</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Booking & Event Details Card -->
+    <div style="border: 1px solid #E8DCC4; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+      <div style="background-color: #FAF0F2; padding: 10px 16px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.2px; color: #6B1A2A; border-bottom: 1px solid #E8DCC4;">
+        🎟️ Booking & Event Details
+      </div>
+      <div style="padding: 14px 16px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777; width: 140px;">Booking Reference</td>
+            <td style="padding: 6px 0; color: #6B1A2A; font-weight: bold; font-family: monospace, Courier, sans-serif;">${escapeEmailHtml(bookingNumber)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Event</td>
+            <td style="padding: 6px 0; color: #333333; font-weight: 600;">${escapeEmailHtml(eventName)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Date & Time</td>
+            <td style="padding: 6px 0; color: #333333;">${escapeEmailHtml(eventDate)} (${escapeEmailHtml(timeSlot)})</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Event Mode</td>
+            <td style="padding: 6px 0; color: #333333; font-weight: 600;">${escapeEmailHtml(modeLabel)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Seats Reserved</td>
+            <td style="padding: 6px 0; color: #333333; font-weight: 600;">${quantity} ${quantity === 1 ? 'Seat' : 'Seats'}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Amount Paid</td>
+            <td style="padding: 6px 0; color: #6B1A2A; font-weight: bold;">${total > 0 ? `₹${total.toLocaleString('en-IN')}` : 'FREE (₹0.00)'}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F0E8D8;">
+            <td style="padding: 6px 0; color: #777777;">Payment ID / Status</td>
+            <td style="padding: 6px 0; color: #333333; font-family: monospace, Courier, sans-serif; font-size: 12.5px;">${escapeEmailHtml(paymentId)} (${escapeEmailHtml(paymentStatus)})</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #777777;">Booking Timestamp</td>
+            <td style="padding: 6px 0; color: #555555; font-size: 12.5px;">${escapeEmailHtml(bookingTime)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="font-size: 13px; color: #777777; line-height: 1.5; text-align: center;">
+      You can manage event registrations and attendee check-ins in the Admin Portal.
+    </div>
+  `
+
+  const html = wrapInEmailTemplate(
+    htmlContent,
+    `[Admin Alert] New Booking: ${eventName} (${bookingNumber})`,
+    Boolean(logoAttachment),
+    companyName,
+  )
+
+  const plainText = [
+    `[ADMIN ALERT] New Event Booking Received`,
+    ``,
+    `Event: ${eventName}`,
+    `Booking Reference: ${bookingNumber}`,
+    ``,
+    `--- CUSTOMER DETAILS ---`,
+    `Name: ${customerName}`,
+    `Email: ${customerEmail}`,
+    `Mobile: ${customerMobile}`,
+    ``,
+    `--- BOOKING DETAILS ---`,
+    `Date & Time: ${eventDate} (${timeSlot})`,
+    `Mode: ${modeLabel}`,
+    `Seats: ${quantity}`,
+    `Amount: ${total > 0 ? `₹${total.toLocaleString('en-IN')}` : 'FREE'}`,
+    `Payment ID: ${paymentId} (${paymentStatus})`,
+    `Timestamp: ${bookingTime}`,
+    ``,
+    `Regards,`,
+    `${companyName} System`,
+  ].join('\n')
+
+  try {
+    await transporter.sendMail({
+      from: emailFrom(companyName),
+      to: recipient,
+      subject: `[Admin Alert] New Event Booking: ${eventName} (${bookingNumber})`,
+      text: plainText,
+      html,
+      attachments,
+    })
+    console.log(`[Email] Admin event booking alert sent to ${recipient} for booking ${bookingNumber}`)
+  } catch (err) {
+    console.error(`[Email] Failed to send admin event booking alert to ${recipient}:`, err)
+  }
+}
+
+export const sendAdminEventBookingAlertEmail = sendAdminEventBookingAlert
 

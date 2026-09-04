@@ -22,6 +22,8 @@ import {
   XCircle,
   Mail,
   Film,
+  CalendarDays,
+  Palette,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -75,6 +77,7 @@ export const sidebarItems: SidebarEntry[] = [
   { path: '/reels', label: 'Reel the Weave', Icon: Film },
   { path: '/marquee-messages', label: 'Marquee Messages', Icon: ScrollText },
   { path: '/banners', label: 'Banners', Icon: Image },
+  { path: '/art-wave', label: 'The Art of Weaving', Icon: Film },
   {
     label: 'Products',
     Icon: Package,
@@ -109,6 +112,7 @@ export const sidebarItems: SidebarEntry[] = [
   },
   { path: '/notifications', label: 'Notifications', Icon: Bell },
   { path: '/email-campaigns', label: 'Email Campaigns', Icon: Send },
+  { path: '/events', label: 'Events', Icon: CalendarDays },
   { path: '/enquiries', label: 'Contact Enquiries', Icon: Mail },
   { path: '/settings', label: 'Shipping Status', Icon: Settings },
 ]
@@ -188,6 +192,31 @@ export const resources: ResourceConfig[] = [
       { name: 'ctaLabel', label: 'CTA Label' },
       { name: 'ctaUrl', label: 'CTA URL' },
       { name: 'sortOrder', label: 'Sort Order', kind: 'number' },
+      { name: 'active', label: 'Active', kind: 'boolean' },
+    ],
+  },
+  {
+    path: '/art-wave',
+    api: 'art-wave',
+    title: 'The Art of Weaving',
+    eyebrow: 'Homepage The Art of Weaving Section',
+    Icon: Film,
+    columns: ['id', 'videoUrl', 'imageUrl', 'active'],
+    fields: [
+      {
+        name: 'videoUrl',
+        label: 'Video Upload / URL',
+        kind: 'video',
+        required: true,
+        dimensionLabel: 'MP4, WebM, or MOV — Max 50 MB.',
+      },
+      {
+        name: 'imageUrl',
+        label: 'Cover / Poster Image',
+        kind: 'image',
+        dimensionHint: 'art-card',
+        dimensionLabel: 'Optional poster for video preview. Recommended: 1200×800px, 3:2 ratio.',
+      },
       { name: 'active', label: 'Active', kind: 'boolean' },
     ],
   },

@@ -1,12 +1,13 @@
 import bcrypt from 'bcryptjs'
 import { env } from '../config/env.js'
 import { ensureDatabaseExists, sequelize } from './sequelize.js'
-import { Admin, AnnouncementMessage, MarqueeMessage, Banner, Category, Product, ProductVariant, Setting } from '../models/index.js'
+import { Admin, AnnouncementMessage, MarqueeMessage, Banner, Category, Product, ProductVariant, Setting, ArtWaveItem } from '../models/index.js'
 import { slugify } from '../utils/slug.js'
 import {
   defaultAnnouncementMessages,
   defaultMarqueeMessages,
   defaultBanners,
+  defaultArtWaveItems,
   headerNavMenu,
 } from './initial-data.js'
 
@@ -191,6 +192,13 @@ async function seed() {
     await Banner.findOrCreate({
       where: { placement: banner.placement, title: banner.title },
       defaults: { ...banner, sortOrder: index, active: true },
+    })
+  }
+
+  for (const [index, item] of defaultArtWaveItems.entries()) {
+    await ArtWaveItem.findOrCreate({
+      where: { title: item.title },
+      defaults: { ...item, sortOrder: index, active: true },
     })
   }
 

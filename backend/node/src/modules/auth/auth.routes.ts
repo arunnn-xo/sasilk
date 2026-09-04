@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import { Op } from 'sequelize'
 import { z } from 'zod'
-import { Customer, PasswordReset, CartItem, WishlistItem, GuestSession, Product, ProductVariant, Order } from '../../models/index.js'
+import { Customer, PasswordReset, CartItem, WishlistItem, GuestSession, Product, ProductVariant, Order, EventBooking } from '../../models/index.js'
 import { sequelize } from '../../database/sequelize.js'
 import { requireCustomerAuth } from '../../middleware/auth.js'
 import { AppError, asyncHandler } from '../../utils/http.js'
@@ -124,6 +124,18 @@ async function mergeGuestData(guestSessionId: string, userId: number) {
   await GuestSession.destroy({ where: { sessionId: guestSessionId } })
 }
 
+async function linkGuestEventBookings(email: string, customerId: number) {
+  await EventBooking.update(
+    { customerId },
+    {
+      where: {
+        customerId: null,
+        [Op.and]: [sequelize.where(sequelize.fn('LOWER', sequelize.col('customer_email')), email.toLowerCase())],
+      },
+    },
+  ).catch(() => {})
+}
+
 async function cleanupGuestSession(req: any, res: any) {
   const guestSessionId = readGuestSessionId(req)
   if (guestSessionId) {
@@ -184,6 +196,9 @@ router.post('/register', asyncHandler(async (req, res) => {
     },
   ).catch(() => {})
 
+  // Link past guest event bookings placed under this email to the new account
+  await linkGuestEventBookings(safeCustomer.email, safeCustomer.id)
+
   res.status(201).json({ customer: safeCustomer })
 }))
 
@@ -216,6 +231,9 @@ router.post('/login', asyncHandler(async (req, res) => {
     await mergeGuestData(guestSessionId, safeCustomer.id).catch(() => {})
     clearGuestSessionCookie(res)
   }
+
+  // Link guest event bookings placed under this email to the account
+  await linkGuestEventBookings(safeCustomer.email, safeCustomer.id)
 
   res.json({ customer: safeCustomer })
 }))

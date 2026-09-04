@@ -93,7 +93,7 @@ select {
   font-weight: 700;
   font-size: 0.8125rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
+  border-radius: 6px;
   border: 1px solid rgba(217, 184, 110, 0.4);
   box-shadow: 0 4px 12px rgba(107, 26, 42, 0.25);
   transition: all 0.2s ease;
@@ -124,7 +124,7 @@ select {
   font-weight: 700;
   font-size: 0.8125rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
+  border-radius: 6px;
   border: 1px solid #EFE8DA;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
@@ -148,7 +148,7 @@ select {
   font-weight: 800;
   font-size: 0.8125rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 12px rgba(217, 184, 110, 0.3);
   transition: all 0.2s ease;

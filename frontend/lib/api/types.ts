@@ -152,3 +152,14 @@ export type StorefrontReel = {
   views: string
   sortOrder: number
 }
+
+export type StorefrontArtWaveItem = {
+  id: number
+  title: string
+  subtitle?: string | null
+  description?: string | null
+  imageUrl?: string | null
+  videoUrl?: string | null
+  mediaType?: 'image' | 'video'
+  sortOrder?: number
+}

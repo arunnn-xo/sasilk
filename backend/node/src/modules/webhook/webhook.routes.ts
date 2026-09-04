@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { createHmac } from 'crypto'
-import { Order, OrderItem, Customer, Product, ProductVariant } from '../../models/index.js'
+import { Order, OrderItem, Customer, Product, ProductVariant, EventBooking } from '../../models/index.js'
 import { mapShiprocketStatus } from '../../services/shiprocket.service.js'
 import { sendShippingEmail, sendDeliveryEmail, sendOutForDeliveryEmail, sendRtoEmail, sendReturnedEmail, sendCancellationEmail } from '../../services/email.service.js'
 import { env } from '../../config/env.js'
 import { processPaidOrder } from '../storefront/controllers/order.controller.js'
+import { confirmPaidBooking } from '../events/events.controller.js'
 
 const router = Router()
 
@@ -186,6 +187,19 @@ router.post('/razorpay', async (req, res) => {
         return res.status(200).json({ ok: false, reason: 'Missing order_id in payment' })
       }
 
+      // Event bookings are matched before product orders so each flow stays independent.
+      const eventBooking = await EventBooking.findOne({
+        where: { razorpayOrderId, paymentStatus: 'pending' },
+      })
+      if (eventBooking) {
+        const bookingId = eventBooking.get('id') as number
+        if (eventBooking.get('paymentStatus') !== 'paid') {
+          await confirmPaidBooking(bookingId, payment.id)
+        }
+        console.log(`[Webhook] Payment confirmed for event booking ${eventBooking.get('bookingNumber')}`)
+        return res.status(200).json({ ok: true, bookingId })
+      }
+
       const orders = await Order.findAll({
         where: { status: 'pending_payment' },
       })
@@ -222,6 +236,10 @@ router.post('/razorpay', async (req, res) => {
       const payment = req.body?.payload?.payment?.entity
       const razorpayOrderId = payment?.order_id
       if (razorpayOrderId) {
+        await EventBooking.update(
+          { paymentStatus: 'failed', razorpayPaymentId: payment.id },
+          { where: { razorpayOrderId, paymentStatus: 'pending' } },
+        )
         const orders = await Order.findAll({ where: { status: 'pending_payment' } })
         for (const order of orders) {
           const meta = order.get('metadata') as Record<string, unknown> | null

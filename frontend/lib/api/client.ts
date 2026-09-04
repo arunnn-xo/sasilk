@@ -52,11 +52,10 @@ export function resolveImageUrl(url: string | null | undefined): string | undefi
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
     return url
   }
-  // Only prepend backend base URL for uploaded files
-  // Paths like /categories/*, /saree*.png, etc. are served from Next.js public/
+  // Uploaded files are proxied by the Next rewrite /uploads/* -> backend uploads dir,
+  // so keep the relative path (same-origin). Avoids next/image hostname config.
   if (url.startsWith('/uploads/')) {
-    const base = apiBaseUrl.replace(/\/api$/, '')
-    return `${base}${url}`
+    return url
   }
   // All other relative paths are Next.js public folder assets — return as-is
   return url

@@ -9,6 +9,7 @@ import {
   Banner,
   AnnouncementMessage,
   MarqueeMessage,
+  ArtWaveItem,
 } from '../../../models/index.js'
 import { plain, mapCategory, mapProduct } from './helpers.js'
 import { getShippingConfig, getGuestDiscountPopupConfig, getHomeNewArrivalsConfig } from '../../../services/settings.service.js'
@@ -45,6 +46,16 @@ export const getBanners = async (req: Request, res: Response) => {
   })
 
   res.json({ banners: banners.map(row => plain(row)) })
+}
+
+export const getArtWave = async (_req: Request, res: Response) => {
+  const items = await ArtWaveItem.findAll({
+    where: { active: true },
+    attributes: ['id', 'title', 'subtitle', 'description', 'imageUrl', 'videoUrl', 'mediaType', 'sortOrder'],
+    order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+  })
+
+  res.json({ items: items.map(row => plain(row)) })
 }
 
 export const getProducts = async (req: Request, res: Response) => {

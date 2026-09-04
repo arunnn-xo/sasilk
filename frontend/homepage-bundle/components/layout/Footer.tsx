@@ -16,16 +16,17 @@ function filteredCollectionHref(baseHref: string, filter: string) {
 const quickLinks = [
   { label: 'About Us', href: '/about' },
   { label: 'Shop Now', href: '/shop' },
-  { label: 'Read Our Blog', href: '/blog' },
+  { label: 'Book Events', href: '/events' },
+  { label: 'Track Order', href: '/track-order' },
   { label: 'Contact Us', href: '/contact' },
 ]
 
 const customerServices = [
-  { label: 'Privacy Policy', href: '/privacy' },
-  { label: 'Terms & Conditions', href: '/terms' },
-  { label: 'Return & Refund Policy', href: '/returns' },
-  { label: 'Shipping Policy', href: '/shipping-policy' },
-  { label: 'Exchange Policy', href: '/exchange-policy' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms-conditions' },
+  { label: 'Shipping & Refund', href: '/shipping-and-refund' },
+  { label: 'My Account', href: '/account' },
+  { label: 'Wishlist', href: '/wishlist' },
 ]
 
 /* ── Contact Icons ────────────────────────────────── */
@@ -190,71 +191,96 @@ export default function Footer() {
         {/* Top Kolam Border (Dark Contrast) */}
         <div className="w-full h-[44px] opacity-90 mb-10" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
 
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-10 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10 lg:gap-16">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-10 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-8 lg:gap-14">
           {/* Brand Intro */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#103042]/30 md:after:to-transparent">
-            <Link href="/" className="inline-block no-underline mb-4">
-              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#103042]/20 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden" style={{ width: '210px', height: '95px' }}>
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-7 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
+            <Link href="/" className="inline-block no-underline mb-3">
+              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#D9B86E]/30 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden p-2" style={{ width: '220px', height: '85px' }}>
                 <Image 
                   src="/logo.png" 
                   alt="Soil Goddess By Sri Akila" 
                   width={480} 
                   height={380} 
-                  className="w-[260px] h-[200px] max-w-none object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </Link>
-            <p className="text-[12px] sm:text-[13px] leading-relaxed mt-1 font-semibold" style={{ color: themeColors.textDark }}>
-              <strong className="font-bold uppercase tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> is for premium handloom sarees, heritage silk collections, and traditional weaves.
+            <p className="text-[12px] sm:text-[13px] leading-relaxed mt-0.5 font-semibold" style={{ color: themeColors.textDark }}>
+              <strong className="font-bold uppercase tracking-widest" style={{ color: '#D9B86E', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> is for premium handloom sarees, heritage silk collections, and traditional weaves.
             </p>
 
-            <div className="mt-3 space-y-2">
-              <div className="flex items-start gap-2">
-                <IconLocation className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: themeColors.accentGold }} />
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 w-full">
+              <div className="flex items-center gap-2">
+                <IconLocation className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
                 <span className="text-[12px] sm:text-[13px] leading-relaxed font-medium" style={{ color: themeColors.textDark }}>Coimbatore, Tamil Nadu</span>
               </div>
               <div className="flex items-center gap-2">
-                <IconMail className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
-                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
+                <IconPhone className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
+                <a href="tel:+919444199944" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline" style={{ color: themeColors.textDark }}>+91 94441-99944</a>
               </div>
               <div className="flex items-center gap-2">
-                <IconPhone className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
-                <a href="tel:+919444199944" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline" style={{ color: themeColors.textDark }}>+91 94441-99944</a>
+                <IconMail className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
+                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
               </div>
               <div className="flex items-center gap-2">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <a href="https://www.soilgoddess.com" target="_blank" rel="noopener noreferrer" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#800020] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>www.soilgoddess.com</a>
+                <a href="https://www.soilgoddess.com" target="_blank" rel="noopener noreferrer" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>www.soilgoddess.com</a>
               </div>
             </div>
           </div>
 
-          {/* Customer Services */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#103042]/30 md:after:to-transparent">
-            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
-              CUSTOMER SERVICES
-            </h4>
-            <div className="space-y-1.5 flex flex-col items-start">
-              {customerServices.map(l => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  className="group relative inline-block text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300"
-                  style={{ color: themeColors.textDark }}
-                >
-                  <span className="relative z-10 group-hover:text-[#800020] transition-colors duration-300">{l.label}</span>
-                  <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#103042] transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-              ))}
+          {/* Quick Links & Customer Services (Compact 2-Column Grid on Mobile) */}
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-7 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
+            <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-6 w-full">
+              {/* Quick Links */}
+              <div>
+                <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
+                  QUICK LINKS
+                </h4>
+                <div className="space-y-2 flex flex-col items-start">
+                  {quickLinks.map(l => (
+                    <Link
+                      key={l.label}
+                      href={l.href}
+                      className="group relative inline-flex items-center text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300 hover:text-[#D9B86E]"
+                      style={{ color: themeColors.textDark }}
+                    >
+                      <span className="relative z-10">{l.label}</span>
+                      <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Customer Services */}
+              <div>
+                <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
+                  CUSTOMER CARE
+                </h4>
+                <div className="space-y-2 flex flex-col items-start">
+                  {customerServices.map(l => (
+                    <Link
+                      key={l.label}
+                      href={l.href}
+                      className="group relative inline-flex items-center text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300 hover:text-[#D9B86E]"
+                      style={{ color: themeColors.textDark }}
+                    >
+                      <span className="relative z-10">{l.label}</span>
+                      <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Payment Methods */}
           <div className="flex flex-col items-start w-full">
-            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: themeColors.textDark, fontFamily: '"Assistant", sans-serif' }}>
+            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
               PAYMENT METHODS
             </h4>
             <p className="text-[12px] sm:text-[13px] leading-relaxed mb-3 font-semibold" style={{ color: themeColors.textDark }}>
-              At <strong className="font-bold uppercase tracking-widest" style={{ color: themeColors.textDark, fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong>, we offer safe & secure payment options.
+              At <strong className="font-bold uppercase tracking-widest" style={{ color: '#D9B86E', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong>, we offer safe & secure payment options.
             </p>
             <div className="flex flex-wrap items-center gap-1.5">
               <BadgeVisa />

@@ -352,7 +352,7 @@ export default function DashboardPage() {
 
       {/* ── Sales Overview ─────────────────────────────── */}
       <section>
-        <h2 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+        <h2 className="text-[12px] font-bold text-[#8A6D4B] uppercase tracking-[0.2em] mb-4">
           SALES OVERVIEW
         </h2>
 
@@ -362,52 +362,75 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {/* Total Sales (Royal Burgundy) */}
             <article
-              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[120px] shadow-[0_8px_20px_-6px_rgba(34,197,94,0.5)]"
-              style={{ background: 'linear-gradient(to bottom right, #22c55e, #16a34a)' }}
+              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[128px] shadow-[0_10px_25px_-5px_rgba(107,26,42,0.4)] border border-[#D9B86E]/30 transition-transform duration-300 hover:-translate-y-1"
+              style={{ background: 'linear-gradient(135deg, #6B1A2A 0%, #4A101C 60%, #300D14 100%)' }}
             >
-              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-20 pointer-events-none" />
+              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-15 pointer-events-none text-white" />
+              
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <p className="text-[11px] font-bold tracking-widest text-white/90 uppercase mb-2">
-                  Total Sales
-                </p>
-                <p className="font-display text-[28px] font-bold leading-none mt-auto">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-extrabold tracking-[0.2em] uppercase text-[#E8C87A]">
+                    Total Sales
+                  </p>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-[#FAF6EE]/80 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+                    All Time
+                  </span>
+                </div>
+                <p className="font-display text-[30px] font-bold leading-none mt-auto text-white">
                   {formatCurrency(salesData?.totalSales ?? 0)}
                 </p>
               </div>
             </article>
 
+            {/* Today's Sales (Heritage Gold) */}
             <article
-              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[120px] shadow-[0_8px_20px_-6px_rgba(122,92,250,0.5)]"
-              style={{ background: 'linear-gradient(to bottom right, #7a5cfa, #6042db)' }}
+              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[128px] shadow-[0_10px_25px_-5px_rgba(191,154,75,0.45)] border border-white/20 transition-transform duration-300 hover:-translate-y-1"
+              style={{ background: 'linear-gradient(135deg, #D9B86E 0%, #BF9A4B 50%, #926E22 100%)' }}
             >
-              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-20 pointer-events-none" />
+              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-15 pointer-events-none text-white" />
+              
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <p className="text-[11px] font-bold tracking-widest text-white/90 uppercase mb-2">
-                  Today's Sales
-                </p>
-                <p className="font-display text-[28px] font-bold leading-none mt-auto">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-extrabold tracking-[0.2em] uppercase text-[#300D14]">
+                    Today's Sales
+                  </p>
+                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#300D14] bg-white/40 px-2 py-0.5 rounded-full">
+                    Today
+                  </span>
+                </div>
+                <p className="font-display text-[30px] font-bold leading-none mt-auto text-white drop-shadow-sm">
                   {formatCurrency(salesData?.todaySales ?? 0)}
                 </p>
               </div>
             </article>
 
+            {/* Range Sales (Midnight Peacock Teal) */}
             <article
-              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[120px] shadow-[0_8px_20px_-6px_rgba(62,165,251,0.5)]"
-              style={{ background: 'linear-gradient(to bottom right, #3ea5fb, #258bf7)' }}
+              className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between min-h-[128px] shadow-[0_10px_25px_-5px_rgba(16,48,66,0.45)] border border-[#D9B86E]/30 transition-transform duration-300 hover:-translate-y-1"
+              style={{ background: 'linear-gradient(135deg, #1A4056 0%, #103042 60%, #091D29 100%)' }}
             >
-              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-20 pointer-events-none" />
+              <IndianRupee className="absolute bottom-2 right-2 w-16 h-16 opacity-15 pointer-events-none text-white" />
+              
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <p className="text-[11px] font-bold tracking-widest text-white/90 uppercase mb-2">
-                  Range Sales
-                </p>
-                <p className="font-display text-[28px] font-bold leading-none mt-auto">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-extrabold tracking-[0.2em] uppercase text-[#E8C87A]">
+                    Range Sales
+                  </p>
+                  {appliedRange && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#E8C87A] bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+                      Custom Range
+                    </span>
+                  )}
+                </div>
+                <p className="font-display text-[30px] font-bold leading-none mt-auto text-white">
                   {appliedRange
                     ? (salesFetching ? '…' : formatCurrency(salesData?.rangeSales ?? 0))
                     : '—'}
                 </p>
                 {appliedRange && (
-                  <p className="text-[11px] text-white/80 mt-1">
+                  <p className="text-[11px] text-[#FAF6EE]/85 mt-1 font-medium">
                     {appliedRange.from} to {appliedRange.to}
                   </p>
                 )}
@@ -443,7 +466,7 @@ export default function DashboardPage() {
               type="button"
               disabled={!canApplyRange}
               onClick={handleApplyRange}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-[13.5px] font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg bg-[#6B1A2A] hover:bg-[#521320] px-5 py-2 text-[13.5px] font-bold text-white shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Apply
             </button>
@@ -451,7 +474,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={handleClearRange}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-[13.5px] font-semibold text-gray-600"
+                className="rounded-lg border border-[#D9B86E]/50 px-4 py-2 text-[13.5px] font-semibold text-[#6B1A2A] hover:bg-[#FAF6EE] transition-all"
               >
                 Clear
               </button>
@@ -531,14 +554,14 @@ export default function DashboardPage() {
 
       {/* ── Top Selling Products ───────────────────────── */}
       <section>
-        <h2 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+        <h2 className="text-[12px] font-bold text-[#8A6D4B] uppercase tracking-[0.2em] mb-4">
           TOP SELLING PRODUCTS
         </h2>
 
         <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-100">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h3 className="flex items-center gap-2 text-[13.5px] font-semibold text-gray-800">
-              <TrendingUp className="h-4 w-4 text-[#22c55e]" />
+              <TrendingUp className="h-4 w-4 text-[#BF9A4B]" />
               Top {TOP_PRODUCTS_LIMIT} by units sold
               {topProductsData && (
                 <span className="font-normal text-gray-500">
@@ -550,7 +573,7 @@ export default function DashboardPage() {
                 </span>
               )}
             </h3>
-            {topProductsFetching && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
+            {topProductsFetching && <Loader2 className="h-4 w-4 animate-spin text-[#BF9A4B]" />}
           </div>
 
           {rangeValidationError ? (
@@ -572,9 +595,9 @@ export default function DashboardPage() {
               {topProductsData!.products.map((p, index) => (
                 <li
                   key={p.productId}
-                  className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:border-gray-200 hover:bg-gray-50/60"
+                  className="flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:border-[#D9B86E]/40 hover:bg-[#FAF6EE]/50"
                 >
-                  <span className="w-5 shrink-0 text-center font-display text-[15px] font-bold text-gray-400">
+                  <span className="w-5 shrink-0 text-center font-display text-[15px] font-bold text-[#BF9A4B]">
                     {index + 1}
                   </span>
 
@@ -582,7 +605,7 @@ export default function DashboardPage() {
 
                   <Link
                     to={`/products/edit/${p.productId}`}
-                    className="min-w-0 flex-1 text-[13.5px] font-medium text-gray-800 no-underline line-clamp-2 hover:text-[#7a5cfa]"
+                    className="min-w-0 flex-1 text-[13.5px] font-medium text-gray-800 no-underline line-clamp-2 hover:text-[#6B1A2A] transition-colors"
                   >
                     {p.name}
                   </Link>
@@ -593,7 +616,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="w-28 shrink-0 text-right">
-                    <p className="text-[13.5px] font-semibold leading-tight text-gray-700">
+                    <p className="text-[13.5px] font-semibold leading-tight text-[#6B1A2A]">
                       {formatCurrency(p.revenue)}
                     </p>
                     <p className="text-[10.5px] uppercase tracking-wide text-gray-400">revenue</p>
@@ -608,10 +631,10 @@ export default function DashboardPage() {
       {/* ── Premium Gradient Stats Grid ─────────────────── */}
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest">
+          <h2 className="text-[12px] font-bold text-[#8A6D4B] uppercase tracking-[0.2em]">
             STORE OVERVIEW
           </h2>
-          {statsFetching && !isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
+          {statsFetching && !isLoading && <Loader2 className="h-4 w-4 animate-spin text-[#BF9A4B]" />}
         </div>
 
         {statsError ? (
@@ -633,7 +656,7 @@ export default function DashboardPage() {
 
       {/* ── Premium Styled Quick Actions Cards ────────────── */}
       <section>
-        <h2 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+        <h2 className="text-[12px] font-bold text-[#8A6D4B] uppercase tracking-[0.2em] mb-4">
           QUICK ACTIONS
         </h2>
         
@@ -647,7 +670,7 @@ export default function DashboardPage() {
               <Link
                 key={action.to}
                 to={action.to}
-                className="group flex flex-col rounded-2xl bg-white p-6 shadow-sm border border-gray-100 no-underline transition-all hover:shadow-lg hover:border-gray-200"
+                className="group flex flex-col rounded-2xl bg-white p-6 shadow-sm border border-gray-100 no-underline transition-all hover:shadow-lg hover:border-[#D9B86E]/40 hover:-translate-y-1 duration-300"
               >
                 <div 
                   className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl transition-transform group-hover:scale-105"
@@ -657,13 +680,13 @@ export default function DashboardPage() {
                 </div>
                 
                 {/* Exact Text Names for Actions */}
-                <h3 className="font-display text-[16px] font-semibold text-gray-900 mb-2">
+                <h3 className="font-display text-[16px] font-semibold text-gray-900 mb-2 group-hover:text-[#6B1A2A] transition-colors">
                   {action.title}
                 </h3>
                 <p className="text-[14px] text-gray-500 leading-relaxed mb-6 flex-1">
                   {action.description}
                 </p>
-                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-900">
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#6B1A2A] group-hover:gap-2.5 transition-all">
                   Go to {action.title}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -676,8 +699,8 @@ export default function DashboardPage() {
       {/* ── Loading Overlay (full-page fallback) ────────── */}
       {isLoading && (
         <div className="flex items-center justify-center py-4">
-          <Loader2 className="h-5 w-5 animate-spin text-[#7a5cfa]" />
-          <span className="ml-2 text-sm text-[var(--muted)]">
+          <Loader2 className="h-5 w-5 animate-spin text-[#6B1A2A]" />
+          <span className="ml-2 text-sm text-[#8A6D4B]">
             Loading dashboard data…
           </span>
         </div>

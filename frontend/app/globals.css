@@ -269,6 +269,40 @@ body {
   animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ── Ultra-Luxury Event Booking Alert Micro-Interactions ─────────────────────── */
+@keyframes luxuryEventPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(217, 184, 110, 0.55), 0 2px 10px rgba(107, 26, 42, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(217, 184, 110, 0), 0 4px 16px rgba(107, 26, 42, 0.45);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes luxuryShimmerSweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.luxury-event-badge {
+  background: linear-gradient(135deg, #4A0F1C 0%, #7A1A2C 50%, #4A0F1C 100%);
+  border: 1px solid #D9B86E;
+  animation: luxuryEventPulse 2.6s ease-in-out infinite;
+}
+
+.luxury-event-shimmer {
+  background: linear-gradient(90deg, #4A0F1C 0%, #8B1A2B 30%, #D9B86E 50%, #8B1A2B 70%, #4A0F1C 100%);
+  background-size: 250% 100%;
+  animation: luxuryShimmerSweep 3.6s linear infinite;
+  border: 1px solid #D9B86E;
+}
+
 /* ── Nav link hover effects ─────────────────────── */
 .nav-item {
   position: relative;
@@ -723,12 +757,18 @@ body {
 .floating-action-stack {
   position: fixed;
   right: 14px;
-  bottom: 18px;
+  bottom: 76px;
   z-index: 95;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+}
+
+@media (min-width: 1024px) {
+  .floating-action-stack {
+    bottom: 24px;
+  }
 }
 
 @keyframes floating-icon {

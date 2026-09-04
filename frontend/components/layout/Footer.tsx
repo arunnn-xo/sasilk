@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
+import { usePathname } from 'next/navigation'
 import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
 import { useCart } from '@/components/cart/CartContext'
-import { fetchNavMenu, type NavMenuItem } from '@/lib/services/storefront.service'
 import { STATIC_NAV_MENU } from '@/lib/data/navigation'
+import type { NavMenuItem } from '@/lib/services/storefront.service'
 
 function filteredCollectionHref(baseHref: string, filter: string) {
   return `${baseHref}?filter=${encodeURIComponent(filter)}`
@@ -16,16 +17,17 @@ function filteredCollectionHref(baseHref: string, filter: string) {
 const quickLinks = [
   { label: 'About Us', href: '/about' },
   { label: 'Shop Now', href: '/shop' },
-  { label: 'Read Our Blog', href: '/blog' },
+  { label: 'Book Events', href: '/events' },
+  { label: 'Track Order', href: '/track-order' },
   { label: 'Contact Us', href: '/contact' },
 ]
 
 const customerServices = [
-  { label: 'Privacy Policy', href: '/privacy' },
-  { label: 'Terms & Conditions', href: '/terms' },
-  { label: 'Return & Refund Policy', href: '/returns' },
-  { label: 'Shipping Policy', href: '/shipping-policy' },
-  { label: 'Exchange Policy', href: '/exchange-policy' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms-conditions' },
+  { label: 'Shipping & Refund', href: '/shipping-and-refund' },
+  { label: 'My Account', href: '/account' },
+  { label: 'Wishlist', href: '/wishlist' },
 ]
 
 /* ── Contact Icons ────────────────────────────────── */
@@ -120,16 +122,14 @@ function KolamCornerSVG({ position }: { position: 'top-left' | 'top-right' | 'bo
   )
 }
 
-import { usePathname } from 'next/navigation'
-
 function MobileNavLink({ href, label, Icon, badge }: { href: string; label: string; Icon: LucideIcon; badge?: string }) {
   const pathname = usePathname()
   const isActive = pathname === href
   const showBadge = badge && badge !== '0'
   
   return (
-    <Link href={href} className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 no-underline transition-all duration-200 ${isActive ? 'text-[#F2C94C]' : 'text-[#FAF6EE]/85 hover:text-[#F2C94C]'}`}>
-      <span className="relative">
+    <Link href={href} className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 no-underline transition-all duration-200 ${isActive ? 'text-[#F2C94C]' : 'text-[#FAF6EE]/85 hover:text-[#F2C94C]'}`}>
+      <span className="relative inline-flex items-center justify-center">
         <Icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(242,201,76,0.5)]' : ''}`} strokeWidth={isActive ? 2.3 : 2} />
         {showBadge ? (
           <span className="absolute -right-2.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-white/30 bg-[#D32F2F] px-1 text-[9px] font-bold leading-none text-white shadow-sm">
@@ -137,8 +137,8 @@ function MobileNavLink({ href, label, Icon, badge }: { href: string; label: stri
           </span>
         ) : null}
       </span>
-      <span className={`max-w-full truncate text-[10px] leading-none ${isActive ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>{label}</span>
-      {isActive && <span className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-5 h-[2.5px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
+      <span className={`max-w-full truncate text-[10px] leading-tight ${isActive ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>{label}</span>
+      {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
     </Link>
   )
 }
@@ -158,21 +158,8 @@ function MobileDrawerQuickLink({ href, label, Icon }: { href: string; label: str
 export default function Footer() {
   const { totalUnits: itemCount } = useCart()
   const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const [navMenu, setNavMenu] = useState<NavMenuItem[]>(STATIC_NAV_MENU)
+  const navMenu = STATIC_NAV_MENU
   const [activeMobileCategory, setActiveMobileCategory] = useState<NavMenuItem | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    fetchNavMenu()
-      .then(menu => {
-        if (cancelled) return
-        setNavMenu(menu ? menu : STATIC_NAV_MENU)
-      })
-      .catch(() => {
-        if (!cancelled) setNavMenu(STATIC_NAV_MENU)
-      })
-    return () => { cancelled = true }
-  }, [])
 
   const footerLogos = [
     { src: '/images/footerlogos/1.png', alt: 'Handloom Weaving', scale: 'scale-[2.4] sm:scale-[2.5] md:scale-[2.6]' },
@@ -195,40 +182,41 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="pb-24 md:pb-12 relative flex flex-col justify-center w-full shadow-inner" style={{ background: themeColors.bg, color: themeColors.textDark, paddingTop: '36px', paddingBottom: '36px', fontFamily: '"Assistant", sans-serif', fontSize: '13px', lineHeight: '21px', fontWeight: 500 }}>
+      <footer className="pt-10 pb-[84px] md:pb-8 relative flex flex-col justify-center w-full shadow-inner" style={{ background: themeColors.bg, color: themeColors.textDark, fontFamily: '"Assistant", sans-serif', fontSize: '13px', lineHeight: '21px', fontWeight: 500 }}>
         {/* Top Kolam Border (Dark Contrast) */}
         <div className="w-full h-[44px] opacity-90 mb-10" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
 
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-10 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10 lg:gap-16">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-10 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-8 lg:gap-14">
           {/* Brand Intro */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
-            <Link href="/" className="inline-block no-underline mb-4">
-              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#D9B86E]/30 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden" style={{ width: '210px', height: '95px' }}>
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-7 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
+            <Link href="/" className="inline-block no-underline mb-3">
+              <div className="bg-[#FAF6EE] rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-[#D9B86E]/30 flex items-center justify-center transition-transform duration-300 hover:scale-[1.02] overflow-hidden p-2" style={{ width: '220px', height: '85px' }}>
                 <Image 
                   src="/logo.png" 
                   alt="Soil Goddess By Sri Akila" 
                   width={480} 
                   height={380} 
-                  className="w-[260px] h-[200px] max-w-none object-contain"
+                  unoptimized
+                  className="w-full h-full object-contain"
                 />
               </div>
             </Link>
-            <p className="text-[12px] sm:text-[13px] leading-relaxed mt-1 font-semibold" style={{ color: themeColors.textDark }}>
+            <p className="text-[12px] sm:text-[13px] leading-relaxed mt-0.5 font-semibold" style={{ color: themeColors.textDark }}>
               <strong className="font-bold uppercase tracking-widest" style={{ color: '#D9B86E', fontFamily: 'Playfair Display, serif', fontSize: '13px' }}>SOIL GODDESS</strong> is for premium handloom sarees, heritage silk collections, and traditional weaves.
             </p>
 
-            <div className="mt-3 space-y-2">
-              <div className="flex items-start gap-2">
-                <IconLocation className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: themeColors.accentGold }} />
-                <span className="text-[12px] sm:text-[13px] leading-relaxed font-medium" style={{ color: themeColors.textDark }}>Coimbatore, Tamil Nadu</span>
-              </div>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 w-full">
               <div className="flex items-center gap-2">
-                <IconMail className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
-                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
+                <IconLocation className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
+                <span className="text-[12px] sm:text-[13px] leading-relaxed font-medium" style={{ color: themeColors.textDark }}>Coimbatore, Tamil Nadu</span>
               </div>
               <div className="flex items-center gap-2">
                 <IconPhone className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
                 <a href="tel:+919444199944" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline" style={{ color: themeColors.textDark }}>+91 94441-99944</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <IconMail className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }} />
+                <a href="mailto:care@soilgoddess.com" className="text-[12px] sm:text-[13px] font-semibold hover:text-[#D9B86E] transition-colors no-underline break-all" style={{ color: themeColors.textDark }}>care@soilgoddess.com</a>
               </div>
               <div className="flex items-center gap-2">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" style={{ color: themeColors.accentGold }}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -237,23 +225,48 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Customer Services */}
-          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-8 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
-            <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
-              CUSTOMER SERVICES
-            </h4>
-            <div className="space-y-1.5 flex flex-col items-start">
-              {customerServices.map(l => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  className="group relative inline-block text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300"
-                  style={{ color: themeColors.textDark }}
-                >
-                  <span className="relative z-10 group-hover:text-[#D9B86E] transition-colors duration-300">{l.label}</span>
-                  <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-              ))}
+          {/* Quick Links & Customer Services (Compact 2-Column Grid on Mobile) */}
+          <div className="flex flex-col items-start w-full relative md:after:content-[''] md:after:absolute md:after:-right-4 lg:after:-right-7 md:after:top-[10%] md:after:bottom-[10%] md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-transparent md:after:via-[#D9B86E]/30 md:after:to-transparent">
+            <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-6 w-full">
+              {/* Quick Links */}
+              <div>
+                <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
+                  QUICK LINKS
+                </h4>
+                <div className="space-y-2 flex flex-col items-start">
+                  {quickLinks.map(l => (
+                    <Link
+                      key={l.label}
+                      href={l.href}
+                      className="group relative inline-flex items-center text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300 hover:text-[#D9B86E]"
+                      style={{ color: themeColors.textDark }}
+                    >
+                      <span className="relative z-10">{l.label}</span>
+                      <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Customer Services */}
+              <div>
+                <h4 className="footer-section-heading text-[12px] sm:text-[13px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-2.5" style={{ color: '#D9B86E', fontFamily: '"Assistant", sans-serif' }}>
+                  CUSTOMER CARE
+                </h4>
+                <div className="space-y-2 flex flex-col items-start">
+                  {customerServices.map(l => (
+                    <Link
+                      key={l.label}
+                      href={l.href}
+                      className="group relative inline-flex items-center text-[12px] sm:text-[13px] font-semibold no-underline pb-0.5 transition-all duration-300 hover:text-[#D9B86E]"
+                      style={{ color: themeColors.textDark }}
+                    >
+                      <span className="relative z-10">{l.label}</span>
+                      <span className="absolute left-0 bottom-0 w-0 h-[1.5px] bg-[#D9B86E] transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -334,9 +347,9 @@ export default function Footer() {
         <div className="w-full h-[44px] opacity-90 mt-6 mb-2" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
 
         {/* Copyright Section */}
-        <div className="w-full pt-6 pb-0">
+        <div className="w-full pt-4 pb-2">
           <div className="max-w-[1000px] mx-auto px-4 flex items-center justify-center">
-            <div className="relative py-3.5 px-6 md:px-12 border border-[#D9B86E]/40 rounded-full bg-[#FAF6EE] shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center overflow-hidden transition-transform hover:scale-[1.01] duration-300">
+            <div className="relative py-3 px-6 md:px-12 border border-[#D9B86E]/40 rounded-full bg-[#FAF6EE] shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center overflow-hidden transition-transform hover:scale-[1.01] duration-300">
               
               {/* Subtle Kolam Background inside the container */}
               <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "url('/kolam-border.svg')", backgroundRepeat: 'repeat-x', backgroundPosition: 'center', backgroundSize: '32px 44px' }} aria-hidden="true" />
@@ -354,7 +367,7 @@ export default function Footer() {
       </footer>
 
       {categoriesOpen ? (
-        <div className="fixed inset-0 z-[120] md:hidden" role="dialog" aria-modal="true" aria-label="More categories">
+        <div className="fixed inset-0 z-[120] lg:hidden" role="dialog" aria-modal="true" aria-label="More categories">
           <button
             type="button"
             className="absolute inset-0 bg-burgundy/55"
@@ -500,7 +513,7 @@ export default function Footer() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-0 left-0 right-0 z-[100] flex h-[64px] items-center justify-between border-t border-[#D9B86E]/30 bg-[#1F080D]/95 backdrop-blur-md px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.65)] md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-[999] flex min-h-[64px] h-auto items-center justify-between border-t border-[#D9B86E]/40 bg-[#1F080D]/95 backdrop-blur-md px-2 xs:px-3 pb-[max(10px,env(safe-area-inset-bottom,12px))] pt-1.5 shadow-[0_-6px_24px_rgba(0,0,0,0.65)] lg:hidden select-none">
         <MobileNavLink href="/" label="Home" Icon={Home} />
         <MobileNavLink href="/shop" label="Shop" Icon={ShoppingBag} />
         <MobileNavLink href="/wishlist" label="Wishlist" Icon={Heart} />
@@ -511,14 +524,14 @@ export default function Footer() {
             setCategoriesOpen(true)
             setActiveMobileCategory(null)
           }}
-          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 transition-all duration-200 ${
+          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ${
             categoriesOpen ? 'text-[#F2C94C]' : 'text-[#FAF6EE]/85 hover:text-[#F2C94C]'
           }`}
           aria-label="Open more categories"
         >
           <Menu className={`h-5 w-5 transition-transform ${categoriesOpen ? 'scale-110 drop-shadow-[0_0_8px_rgba(242,201,76,0.5)]' : ''}`} strokeWidth={categoriesOpen ? 2.3 : 2} />
-          <span className={`max-w-full truncate text-[10px] leading-none ${categoriesOpen ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>Categories</span>
-          {categoriesOpen && <span className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-5 h-[2.5px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
+          <span className={`max-w-full truncate text-[10px] leading-tight ${categoriesOpen ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>Categories</span>
+          {categoriesOpen && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
         </button>
       </div>
     </>

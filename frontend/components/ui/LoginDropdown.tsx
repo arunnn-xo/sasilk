@@ -145,12 +145,12 @@ export default function LoginDropdown() {
         aria-haspopup="dialog"
       >
         <User
-          size={28}
+          size={24}
           color="var(--burgundy)"
           strokeWidth={1.6}
           className={`transition-colors duration-300 ${open ? 'fill-[#9c1a21]' : 'fill-transparent group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]'}`}
         />
-        <span className="text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
+        <span className="text-[10.5px] xl:text-[11.5px] tracking-wide whitespace-nowrap hidden md:block" style={{ color: 'var(--muted)', fontWeight: 500 }}>
           Account
         </span>
       </button>
