@@ -27,7 +27,7 @@ homepage-bundle/
 ├── components/
 │   ├── home/                        # Homepage Specific Sections (HeroSection, InstaReels, HomeComponents)
 │   ├── layout/                      # Layout Components (Header, Footer with #FF8F00 bg, AnnouncementBar)
-│   └── ui/                          # Interactive UI Components (IntroVideo, CouponPopup, FloatingActions, CartHandler)
+│   └── ui/                          # Interactive UI Components (IntroVideo, FloatingActions, CartHandler)
 └── lib/                             # Shared Services & State
     ├── context/                     # Cart Context State
     ├── services/                    # Storefront & Order Services

@@ -36,7 +36,7 @@ export type CreateOrderInput = {
     state: string
     pincode: string
   }
-  paymentMethod: 'cod' | 'razorpay'
+  paymentMethod: 'cod' | 'cashfree'
   couponCode?: string
 }
 
@@ -50,11 +50,11 @@ export async function createOrder(data: CreateOrderInput): Promise<OrderData> {
   return res.json()
 }
 
-export async function createRazorpayOrder(data: { amount: number; currency?: string }): Promise<{ id: string; amount: number; currency: string }> {
-  return apiPost('/storefront/orders/create-razorpay-order', data)
+export async function createCashfreeOrder(data: { amount: number; currency?: string }): Promise<{ id: string; amount: number; currency: string }> {
+  return apiPost('/storefront/orders/create-cashfree-order', data)
 }
 
-export async function verifyPayment(data: { razorpayOrderId: string; razorpayPaymentId: string; razorpaySignature: string; orderId: number }): Promise<{ message: string }> {
+export async function verifyPayment(data: { cashfreeOrderId: string; orderId: number }): Promise<{ message: string }> {
   return apiPost('/storefront/orders/verify-payment', data)
 }
 

@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MapPin, Video, CalendarDays, Users, Lock, Smartphone, Mail, User as UserIcon, AlertCircle } from 'lucide-react'
-import { bookEvent, fetchEventBooking, verifyEventBooking, type EventItem } from '@/lib/services/storefront.service'
-import { loadRazorpayScript, type RazorpayResponse } from '@/lib/razorpay'
+import { bookEvent, fetchEventBooking, type EventItem } from '@/lib/services/storefront.service'
+import { openCashfreeCheckout } from '@/lib/cashfree'
 import { resolveImageUrl } from '@/lib/api/client'
 import { formatEventDateTime, formatTime12h } from '@/lib/utils/eventFormat'
 import EventGallery from './EventGallery'
@@ -65,7 +65,7 @@ export default function EventDetail({ event }: { event: EventItem }) {
         quantity,
       })
 
-      if (!booking.razorpayOrderId) {
+      if (!booking.cashfreeOrderId || !booking.paymentSessionId) {
         if (booking.status === 'confirmed') {
           router.push(`/events/confirmation/${booking.bookingId}`)
           return
@@ -73,65 +73,42 @@ export default function EventDetail({ event }: { event: EventItem }) {
         throw new Error('Payment could not be initialized. Please try again.')
       }
 
-      await loadRazorpayScript()
-      const rzp = new window.Razorpay!({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: booking.amount,
-        currency: booking.currency || 'INR',
-        name: 'Soil Goddess',
-        description: `Event booking ${booking.bookingNumber}`,
-        order_id: booking.razorpayOrderId,
-        handler: async function (response: RazorpayResponse) {
-          const sigKey = `sas_evsig_${booking.bookingId}`
-          try {
-            sessionStorage.setItem(sigKey, JSON.stringify({
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpaySignature: response.razorpay_signature,
-            }))
-          } catch {
-            /* storage unavailable — verification still runs here as fallback */
-          }
+      // Remember the order id so the confirmation page can verify the payment.
+      try {
+        sessionStorage.setItem(`sas_evorder_${booking.bookingId}`, booking.cashfreeOrderId)
+      } catch { /* ignore */ }
 
-          const confirmUrl = `/events/confirmation/${booking.bookingId}`
-          try {
-            await verifyEventBooking({
-              bookingId: booking.bookingId,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpaySignature: response.razorpay_signature,
-            })
-            try { sessionStorage.removeItem(sigKey) } catch {}
-          } catch {
-            /* verification failed on client — confirmation page will retry via sessionStorage sig */
-          }
-          // Always navigate to confirmation page (either already verified or will verify there)
-          window.location.href = confirmUrl
-        },
-        modal: {
-          ondismiss: function () {
-            setBusy(false)
-            if (booking.razorpayOrderId) {
-              setTimeout(() => {
-                fetchEventBooking(booking.bookingId)
-                  .then(existing => {
-                    if (existing.paymentStatus === 'paid') {
-                      router.push(`/events/confirmation/${existing.id}`)
-                    }
-                  })
-                  .catch(() => {})
-              }, 1200)
+      await openCashfreeCheckout(booking.paymentSessionId)
+
+      // Poll the booking status until payment is confirmed by the webhook,
+      // then move to the confirmation page. Cashfree's modal does not auto-redirect
+      // the parent tab, so we wait and navigate once payment lands.
+      const confirmUrl = `/events/confirmation/${booking.bookingId}`
+      const started = Date.now()
+      const pollStatus = () => {
+        fetchEventBooking(booking.bookingId)
+          .then(existing => {
+            if (existing.paymentStatus === 'paid') {
+              window.location.href = confirmUrl
+              return
             }
-          },
-        },
-        prefill: {
-          name: customerName.trim(),
-          email: customerEmail.trim(),
-          contact: customerMobile,
-        },
-        theme: { color: '#8B1A2B' },
-      })
-      rzp.open()
+            if (Date.now() - started > 3 * 60 * 1000) {
+              setBusy(false)
+              setError('Payment is still being confirmed. Check your bookings shortly.')
+              return
+            }
+            setTimeout(pollStatus, 3000)
+          })
+          .catch(() => {
+            if (Date.now() - started > 3 * 60 * 1000) {
+              setBusy(false)
+              setError('Payment is still being confirmed. Check your bookings shortly.')
+              return
+            }
+            setTimeout(pollStatus, 3000)
+          })
+      }
+      pollStatus()
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again.')
       setBusy(false)
@@ -312,7 +289,7 @@ export default function EventDetail({ event }: { event: EventItem }) {
                   >
                     {busy ? 'Processing…' : `Book Now · ₹${priceTotal.toFixed(2)}`}
                   </button>
-                  <p className="font-sans mt-3 text-center text-[10px] text-[#8A6D4B]">Secure payments via Razorpay</p>
+                  <p className="font-sans mt-3 text-center text-[10px] text-[#8A6D4B]">Secure payments via Cashfree</p>
                 </div>
               </div>
             )}

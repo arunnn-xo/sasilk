@@ -1814,7 +1814,7 @@ export async function sendCancellationEmail(
   const cancelReason = String(order.cancellationReason || meta.cancelReason || '')
   const paymentStatus = String(order.paymentStatus || '')
   const isRefunded = paymentStatus === 'refunded'
-  const wasPaid = paymentStatus === 'paid' || meta.razorpayPaymentId
+  const wasPaid = paymentStatus === 'paid' || meta.cashfreePaymentId || meta.cashfreeOrderId
 
   const html = wrapInEmailTemplate(
     `
@@ -2223,7 +2223,7 @@ export async function sendAdminEventBookingAlert(
   const eventName = String(event?.name || event?.title || 'Soil Goddess Event')
   const eventDate = formatEventDate(event?.eventDate)
   const timeSlot = formatTimeSlot(event?.startTime, event?.endTime)
-  const paymentId = String(booking?.razorpayPaymentId || (total === 0 ? 'Free Registration' : 'Pending / Direct'))
+  const paymentId = String(booking?.gatewayPaymentId || (total === 0 ? 'Free Registration' : 'Pending / Direct'))
   const paymentStatus = String(booking?.paymentStatus || (total === 0 ? 'paid' : 'pending')).toUpperCase()
 
   const bookingTime = booking?.createdAt

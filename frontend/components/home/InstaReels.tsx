@@ -37,15 +37,13 @@ export default function InstaReels() {
     fetchReels().then(setReelsData)
   }, [])
 
-  // Lock body scroll when modal is open
+  // Lock body scroll only when modal is open
   useEffect(() => {
-    if (activeSlideIndex !== null) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
+    if (activeSlideIndex === null) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = originalOverflow
     }
   }, [activeSlideIndex])
 

@@ -1,43 +1,51 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { createHmac } from 'crypto'
 import { Order, OrderItem, Customer, Product, ProductVariant, EventBooking } from '../../models/index.js'
-import { mapShiprocketStatus } from '../../services/shiprocket.service.js'
+import { mapIthinkStatus } from '../../services/ithink.service.js'
 import { sendShippingEmail, sendDeliveryEmail, sendOutForDeliveryEmail, sendRtoEmail, sendReturnedEmail, sendCancellationEmail } from '../../services/email.service.js'
-import { env } from '../../config/env.js'
+import { verifyWebhookSignature } from '../../services/cashfree.service.js'
 import { processPaidOrder } from '../storefront/controllers/order.controller.js'
 import { confirmPaidBooking } from '../events/events.controller.js'
 
 const router = Router()
 
-const shiprocketWebhookSchema = z.object({
-  order_id: z.string(),
-  shipment_id: z.union([z.number(), z.string()]),
-  awb_code: z.string().optional(),
-  status: z.string(),
+const ithinkWebhookSchema = z.object({
+  awb_number: z.string().optional(),
+  order_id: z.string().optional(),
+  shipment_id: z.union([z.number(), z.string()]).optional(),
   current_status: z.string().optional(),
+  status: z.string().optional(),
   courier_name: z.string().optional(),
   delivery_date: z.string().optional(),
   rto_date: z.string().optional(),
   rto_reason: z.string().optional(),
 })
 
-router.post('/shiprocket', async (req, res) => {
+router.post('/ithink', async (req, res) => {
   try {
     const rawBody = req.body?.data
       ? (typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data)
       : req.body
 
-    const parsed = shiprocketWebhookSchema.parse(rawBody)
-    const internalStatus = mapShiprocketStatus(parsed.status)
+    const parsed = ithinkWebhookSchema.parse(rawBody)
+    const statusStr = parsed.current_status || parsed.status || ''
+    const internalStatus = mapIthinkStatus(statusStr)
 
     if (!internalStatus) {
-      return res.status(200).json({ ok: true, skipped: `Unknown Shiprocket status: ${parsed.status}` })
+      return res.status(200).json({ ok: true, skipped: `Unknown iThink status: ${statusStr}` })
     }
 
-    const order = await Order.findOne({ where: { orderNumber: parsed.order_id } })
+    // Match order by AWB code or order_id
+    let order = null
+    if (parsed.awb_number) {
+      order = await Order.findOne({ where: { trackingNumber: parsed.awb_number } })
+    }
+    if (!order && parsed.order_id) {
+      order = await Order.findOne({ where: { orderNumber: parsed.order_id } })
+    }
+
     if (!order) {
-      return res.status(200).json({ ok: false, reason: `Order ${parsed.order_id} not found` })
+      return res.status(200).json({ ok: false, reason: `Order not found for AWB: ${parsed.awb_number} / orderId: ${parsed.order_id}` })
     }
 
     const currentStatus = order.getDataValue('status') as string
@@ -47,31 +55,28 @@ router.post('/shiprocket', async (req, res) => {
       status: internalStatus,
       metadata: {
         ...existingMeta,
-        shiprocketShipmentId: parsed.shipment_id,
-        shiprocketStatus: parsed.status,
-        shiprocketCourierName: parsed.courier_name,
-        shiprocketDeliveryDate: parsed.delivery_date,
-        shiprocketRtoDate: parsed.rto_date,
-        shiprocketRtoReason: parsed.rto_reason,
+        ithinkShipmentId: parsed.shipment_id,
+        ithinkStatus: statusStr,
+        ithinkCourierName: parsed.courier_name,
+        ithinkDeliveryDate: parsed.delivery_date,
+        ithinkRtoDate: parsed.rto_date,
+        ithinkRtoReason: parsed.rto_reason,
       },
     }
 
-    if (parsed.awb_code) {
-      (updates.metadata as Record<string, unknown>).shiprocketAwbCode = parsed.awb_code
+    if (parsed.awb_number) {
+      (updates.metadata as Record<string, unknown>).ithinkAwbCode = parsed.awb_number
     }
 
     if (internalStatus === 'delivered') {
       updates.deliveredAt = new Date()
     }
 
-    if (!order.getDataValue('trackingNumber') && parsed.awb_code) {
-      updates.trackingNumber = parsed.awb_code
+    if (!order.getDataValue('trackingNumber') && parsed.awb_number) {
+      updates.trackingNumber = parsed.awb_number
     }
 
-    // 'cancelled' (courier-side auto-cancel) and 'returned' (parcel physically handed back)
-    // both mean stock should come back into inventory, same as the admin-initiated cancel/
-    // return flows — restore it here too, guarded the same way (only if we're past
-    // pending_payment, i.e. stock was actually deducted, and only once per transition).
+    // Restore stock when courier cancels or returns the parcel
     const isNewTransition = currentStatus !== internalStatus
     if (isNewTransition && currentStatus !== 'pending_payment' && (internalStatus === 'cancelled' || internalStatus === 'returned')) {
       const orderItems = await OrderItem.findAll({ where: { orderId: order.getDataValue('id') } })
@@ -90,7 +95,7 @@ router.post('/shiprocket', async (req, res) => {
     const details: Record<string, unknown> = {
       from: currentStatus,
       to: internalStatus,
-      shiprocketStatus: parsed.status,
+      ithinkStatus: statusStr,
       shipmentId: parsed.shipment_id,
     }
 
@@ -106,11 +111,7 @@ router.post('/shiprocket', async (req, res) => {
     }
 
     // Send customer email notifications for key status changes via webhook.
-    // Shiprocket's SHIPPED and PICKUP raw statuses both map to our internal 'dispatched',
-    // and couriers can redeliver the same webhook — only email when this is genuinely a
-    // NEW status the order is entering (currentStatus !== internalStatus), otherwise a
-    // second callback for the same status (or one that arrives after an admin already
-    // manually moved the order to that status) would re-send the same email.
+    // Only email when this is genuinely a NEW status the order is entering.
     if (isNewTransition) {
       const freshOrder = await Order.findByPk(order.getDataValue('id'), {
         include: [{ model: OrderItem, as: 'items' }, { model: Customer }],
@@ -122,27 +123,27 @@ router.post('/shiprocket', async (req, res) => {
         if (custEmail) {
           if (internalStatus === 'dispatched') {
             sendShippingEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] Shipping email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] Shipping email failed for ${parsed.order_id}:`, err.message)
             })
           } else if (internalStatus === 'out_for_delivery') {
             sendOutForDeliveryEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] Out-for-delivery email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] Out-for-delivery email failed for ${parsed.order_id}:`, err.message)
             })
           } else if (internalStatus === 'delivered') {
             sendDeliveryEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] Delivery email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] Delivery email failed for ${parsed.order_id}:`, err.message)
             })
           } else if (internalStatus === 'rto') {
             sendRtoEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] RTO email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] RTO email failed for ${parsed.order_id}:`, err.message)
             })
           } else if (internalStatus === 'returned') {
             sendReturnedEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] Returned email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] Returned email failed for ${parsed.order_id}:`, err.message)
             })
           } else if (internalStatus === 'cancelled') {
             sendCancellationEmail(custEmail, plainOrder).catch((err: any) => {
-              console.error(`[Webhook] Cancellation email failed for ${parsed.order_id}:`, err.message)
+              console.error(`[iThink Webhook] Cancellation email failed for ${parsed.order_id}:`, err.message)
             })
           }
         }
@@ -154,47 +155,46 @@ router.post('/shiprocket', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(200).json({ ok: false, reason: 'Validation failed', issues: err.issues })
     }
-    console.error('Webhook error:', err)
+    console.error('[iThink Webhook] error:', err)
     res.status(200).json({ ok: false, reason: err.message })
   }
 })
 
-// ─── Razorpay Webhook ─────────────────────────────────
-router.post('/razorpay', async (req, res) => {
+// ─── Cashfree Webhook ─────────────────────────────────
+router.post('/cashfree', async (req: any, res) => {
   try {
-    const webhookSecret = env.RAZORPAY_WEBHOOK_SECRET
-    if (webhookSecret) {
-      const signature = req.headers['x-razorpay-signature'] as string
-      if (!signature) {
-        return res.status(200).json({ ok: false, reason: 'Missing signature' })
-      }
-      const body = JSON.stringify(req.body)
-      const expected = createHmac('sha256', webhookSecret).update(body).digest('hex')
-      if (expected !== signature) {
+    const signature = req.headers['x-webhook-signature'] as string
+    const timestamp = req.headers['x-webhook-timestamp'] as string
+    const rawBody = req.rawBody ? Buffer.from(req.rawBody).toString('utf8') : null
+    if (signature && rawBody) {
+      try {
+        verifyWebhookSignature(signature, rawBody, timestamp)
+      } catch {
         return res.status(200).json({ ok: false, reason: 'Invalid signature' })
       }
+    } else {
+      console.warn('[Webhook] Cashfree signature/rawBody missing — skipping signature verification')
     }
 
-    const event = req.body?.event
-    if (!event) {
-      return res.status(200).json({ ok: false, reason: 'Missing event' })
+    const type = req.body?.type
+    const data = req.body?.data || {}
+    const order = data.order || {}
+    const payment = data.payment || {}
+    const cashfreeOrderId = order.order_id
+
+    if (!cashfreeOrderId) {
+      return res.status(200).json({ ok: false, reason: 'Missing order_id' })
     }
 
-    if (event === 'payment.captured') {
-      const payment = req.body?.payload?.payment?.entity
-      const razorpayOrderId = payment?.order_id
-      if (!razorpayOrderId) {
-        return res.status(200).json({ ok: false, reason: 'Missing order_id in payment' })
-      }
-
+    if (type === 'PAYMENT_SUCCESS_WEBHOOK') {
       // Event bookings are matched before product orders so each flow stays independent.
       const eventBooking = await EventBooking.findOne({
-        where: { razorpayOrderId, paymentStatus: 'pending' },
+        where: { gatewayOrderId: cashfreeOrderId, paymentStatus: 'pending' },
       })
       if (eventBooking) {
         const bookingId = eventBooking.get('id') as number
         if (eventBooking.get('paymentStatus') !== 'paid') {
-          await confirmPaidBooking(bookingId, payment.id)
+          await confirmPaidBooking(bookingId, payment.cf_payment_id != null ? String(payment.cf_payment_id) : null)
         }
         console.log(`[Webhook] Payment confirmed for event booking ${eventBooking.get('bookingNumber')}`)
         return res.status(200).json({ ok: true, bookingId })
@@ -205,66 +205,61 @@ router.post('/razorpay', async (req, res) => {
       })
 
       let matched: any = null
-      for (const order of orders) {
-        const meta = order.get('metadata') as Record<string, unknown> | null
-        if (meta?.razorpayOrderId === razorpayOrderId) {
-          matched = order
+      for (const o of orders) {
+        const meta = o.get('metadata') as Record<string, unknown> | null
+        if (meta?.cashfreeOrderId === cashfreeOrderId) {
+          matched = o
           break
         }
       }
 
       if (!matched) {
-        return res.status(200).json({ ok: false, reason: `Order with razorpayOrderId ${razorpayOrderId} not found in pending_payment` })
+        return res.status(200).json({ ok: false, reason: `Order with cashfreeOrderId ${cashfreeOrderId} not found in pending_payment` })
       }
 
       const matchedId = matched.get('id') as number
-
-      // Skip if already paid
-      const existingMeta = (matched.get({ plain: true }) as any).metadata || {}
       if ((matched.get('paymentStatus') as string) !== 'paid') {
         await processPaidOrder(matchedId, {
-          razorpayPaymentId: payment.id,
+          cashfreePaymentId: payment.cf_payment_id != null ? String(payment.cf_payment_id) : '',
+          cashfreeOrderId,
           webhookConfirmed: true,
         })
       }
 
-      console.log(`[Webhook] Payment confirmed for order ${matched.get('orderNumber')} via Razorpay webhook`)
+      console.log(`[Webhook] Payment confirmed for order ${matched.get('orderNumber')} via Cashfree webhook`)
       return res.status(200).json({ ok: true, orderId: matched.get('orderNumber') })
     }
 
-    if (event === 'payment.failed') {
-      const payment = req.body?.payload?.payment?.entity
-      const razorpayOrderId = payment?.order_id
-      if (razorpayOrderId) {
-        await EventBooking.update(
-          { paymentStatus: 'failed', razorpayPaymentId: payment.id },
-          { where: { razorpayOrderId, paymentStatus: 'pending' } },
-        )
-        const orders = await Order.findAll({ where: { status: 'pending_payment' } })
-        for (const order of orders) {
-          const meta = order.get('metadata') as Record<string, unknown> | null
-          if (meta?.razorpayOrderId === razorpayOrderId) {
-            const existingMeta = (order.get({ plain: true }) as any).metadata || {}
-            await order.update({
-              status: 'cancelled',
-              metadata: {
-                ...existingMeta,
-                razorpayPaymentId: payment.id,
-                razorpayFailureReason: payment.error_description || payment.error_reason || 'Unknown',
-                failedAt: new Date().toISOString(),
-              },
-            })
-            console.log(`[Webhook] Payment failed for order ${order.get('orderNumber')}`)
-            break
-          }
+    if (type === 'PAYMENT_FAILED_WEBHOOK') {
+      await EventBooking.update(
+        { paymentStatus: 'failed', gatewayPaymentId: payment.cf_payment_id != null ? String(payment.cf_payment_id) : null },
+        { where: { gatewayOrderId: cashfreeOrderId, paymentStatus: 'pending' } },
+      )
+      const orders = await Order.findAll({ where: { status: 'pending_payment' } })
+      for (const o of orders) {
+        const meta = o.get('metadata') as Record<string, unknown> | null
+        if (meta?.cashfreeOrderId === cashfreeOrderId) {
+          const existingMeta = (o.get({ plain: true }) as any).metadata || {}
+          await o.update({
+            status: 'cancelled',
+            metadata: {
+              ...existingMeta,
+              cashfreeOrderId,
+              cashfreePaymentId: payment.cf_payment_id != null ? String(payment.cf_payment_id) : null,
+              cashfreeFailureReason: payment.error_details?.error_description || payment.payment_message || 'Unknown',
+              failedAt: new Date().toISOString(),
+            },
+          })
+          console.log(`[Webhook] Payment failed for order ${o.get('orderNumber')}`)
+          break
         }
       }
       return res.status(200).json({ ok: true })
     }
 
-    res.status(200).json({ ok: true, skipped: `Unhandled event: ${event}` })
+    res.status(200).json({ ok: true, skipped: `Unhandled event: ${type}` })
   } catch (err: any) {
-    console.error('[Webhook] Razorpay error:', err)
+    console.error('[Webhook] Cashfree error:', err)
     res.status(200).json({ ok: false, reason: err.message })
   }
 })

@@ -735,7 +735,7 @@ export default function ShopPage({
       ) : null}
 
       {toast ? (
-        <div className="fixed bottom-6 left-1/2 z-[140] -translate-x-1/2 rounded-xl bg-[#300D14] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-amber-200 shadow-2xl border border-amber-300/40 backdrop-blur-md">
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 z-[140] -translate-x-1/2 rounded-xl bg-[#300D14] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-amber-200 shadow-2xl border border-amber-300/40 backdrop-blur-md">
           {toast}
         </div>
       ) : null}

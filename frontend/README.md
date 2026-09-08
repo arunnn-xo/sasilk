@@ -20,7 +20,6 @@ homepage-bundle/
     │   └── AnnouncementBar.tsx      # Top Announcement Ticker
     └── ui/                          # Interactive UI Components
         ├── IntroVideo.tsx           # Intro Video Handler
-        ├── CouponPopup.tsx          # Promotional Coupon Popup
         ├── FloatingActions.tsx      # Floating Action Buttons (WhatsApp / Quick Call)
         └── CartNavigationHandler.tsx# Cart State Handler
 ```

@@ -1,23 +1,26 @@
-# BRIEFING — 2026-09-02T10:33:16+05:30
+# BRIEFING — 2026-09-07T15:28:27+05:30
 
 ## Mission
-Build a static Single Product Detail Page showcase with 2 realistic, complete demo silk saree products for an upcoming client review meeting in frontend Next.js storefront.
+Sentinel overseeing alignment of frontend guest discount popup strictly with existing backend & admin panel configuration flow, removing obsolete hardcoded CouponPopup.tsx (SAS15OFF), and ensuring responsive luxury welcome offer experience across storefront.
 
 ## 🔒 My Identity
 - Archetype: sentinel
 - Working directory: C:\sts-projects\sasilk\.agents\sentinel
 - Orchestrator: 476762d7-124c-4ce8-9891-d9e44a00b4a1 (swe_1)
 - Victory Auditor: to be spawned on victory claim
+- Orchestrator (SWE Light): [TBD - spawning swe_2]
+- Victory Auditor (SWE Light): [to be spawned on victory claim]
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
 - Victory Audit is MANDATORY before reporting completion
 - Route: teamwork_preview_swe (SWE Light) per Routing Decision Table ("This is a single self-contained fix; keep it small and focused.")
+- Next.js frontend build (npm run build) must pass with 0 errors
 
 ## User Context
-- **Last user request**: Build static Single Product Detail Page showcase with 2 complete demo silk saree products and offline demo fallback in storefront.service.ts.
+- **Last user request**: Align frontend guest discount popup strictly with existing backend & admin panel configuration flow, removing obsolete CouponPopup.tsx (SAS15OFF) and ensuring consistent welcome offers across storefront.
 - **Pending clarifications**: none
-- **Delivered results**: none
+- **Delivered results**: none for current task
 
 ## Project Status
 - **Phase**: in progress
@@ -30,3 +33,4 @@ Build a static Single Product Detail Page showcase with 2 realistic, complete de
 ## Artifact Index
 - C:\sts-projects\sasilk\ORIGINAL_REQUEST.md — Original User Request record
 - C:\sts-projects\sasilk\.agents\ORIGINAL_REQUEST.md — Original User Request record
+

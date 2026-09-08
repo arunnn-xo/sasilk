@@ -207,7 +207,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     <WishlistContext.Provider value={value}>
       {children}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-[#D4AF37] bg-white px-6 py-3 text-sm font-semibold text-[#6B1A2A] shadow-2xl animate-fade-in-up">
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-[#D4AF37] bg-white px-6 py-3 text-sm font-semibold text-[#6B1A2A] shadow-2xl animate-fade-in-up">
           {toast}
         </div>
       )}

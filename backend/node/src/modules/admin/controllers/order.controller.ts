@@ -12,7 +12,7 @@ import {
   Coupon,
   CouponUsage,
 } from '../../../models/index.js'
-import { createShipment, assignAwb, generatePickup, cancelShiprocketOrder } from '../../../services/shiprocket.service.js'
+import { createShipment, getAwb, generatePickup, cancelOrder } from '../../../services/ithink.service.js'
 import { sendBackInStockEmail, sendAbandonedCartEmail, sendShippingEmail, sendDeliveryEmail, sendCancellationEmail, sendOrderConfirmationEmail, sendPackingEmail, sendOutForDeliveryEmail, sendRtoEmail, sendReturnedEmail, sendAdminOrderNotification } from '../../../services/email.service.js'
 import { generateOrderPdf } from '../../../services/order-pdf.service.js'
 import { generateAddressesPdf } from '../../../services/order-addresses-pdf.service.js'
@@ -147,7 +147,7 @@ export const transitionOrder = async (req: Request, res: Response) => {
   }
 
   const updates: Record<string, unknown> = { status: body.nextStatus }
-  let shiprocketSyncError: string | undefined
+  let ithinkSyncError: string | undefined
 
   if (body.nextStatus === 'packing' || body.nextStatus === 'dispatched') {
     const isPackingFlow = body.nextStatus === 'packing'
@@ -169,7 +169,7 @@ export const transitionOrder = async (req: Request, res: Response) => {
         const paymentMethod = o.metadata?.paymentMethod || 'cod'
         const custName = o.Customer?.name || [shipAddr.firstName, shipAddr.lastName].filter(Boolean).join(' ') || 'Customer'
 
-        // Fetch product dimensions for Shiprocket
+        // Fetch product dimensions for iThink Logistics
         const orderProductIds = (o.items || [])
           .map((item: any) => item.productId)
           .filter(Boolean)
@@ -200,8 +200,8 @@ export const transitionOrder = async (req: Request, res: Response) => {
         const existingMeta = o.metadata || {}
 
         if (isPackingFlow) {
-          // Packing: Create Shiprocket order only, keep status as packing
-          const srRes = await createShipment({
+          // Packing: Create iThink order only, keep status as packing
+          const ithinkRes = await createShipment({
             orderId: o.id,
             orderNumber: o.orderNumber,
             orderDate: new Date(o.createdAt).toISOString().split('T')[0],
@@ -228,32 +228,32 @@ export const transitionOrder = async (req: Request, res: Response) => {
 
           const newMeta: Record<string, unknown> = {
             ...existingMeta,
-            shiprocketOrderId: srRes.order_id,
-            shiprocketShipmentId: srRes.shipment_id,
-            shiprocketStatus: srRes.status,
+            ithinkOrderId: ithinkRes.order_id,
+            ithinkShipmentId: ithinkRes.shipment_id,
+            ithinkStatus: ithinkRes.status,
           }
 
-          // If AWB already assigned on creation
-          if (srRes.awb_code) {
-            newMeta.shiprocketAwbCode = srRes.awb_code
-            newMeta.shiprocketLabelUrl = srRes.label_url
+          // AWB is often returned immediately by iThink on order creation
+          if (ithinkRes.awb_code) {
+            newMeta.ithinkAwbCode = ithinkRes.awb_code
+            newMeta.ithinkLabelUrl = ithinkRes.label_url
           }
 
           updates.metadata = newMeta
-          if ((newMeta.shiprocketAwbCode as string) && !updates.trackingNumber) {
-            updates.trackingNumber = newMeta.shiprocketAwbCode as string
+          if ((newMeta.ithinkAwbCode as string) && !updates.trackingNumber) {
+            updates.trackingNumber = newMeta.ithinkAwbCode as string
           }
           // Stay in packing — do NOT override status
         } else {
-          // Dispatched: Assign AWB + pickup for existing Shiprocket order
-          const srOrderId = existingMeta.shiprocketOrderId as number | undefined
-          const srShipmentId = existingMeta.shiprocketShipmentId as number | undefined
+          // Dispatched: Get AWB + pickup for existing iThink order
+          const ithinkOrderId = existingMeta.ithinkOrderId as string | undefined
+          const ithinkShipmentId = existingMeta.ithinkShipmentId as string | undefined
 
-          let shipmentId = srShipmentId
+          let shipmentId = ithinkShipmentId
 
-          // If no Shiprocket order exists yet, create one
-          if (!srOrderId) {
-            const srRes = await createShipment({
+          // If no iThink order exists yet, create one
+          if (!ithinkOrderId) {
+            const ithinkRes = await createShipment({
               orderId: o.id,
               orderNumber: o.orderNumber,
               orderDate: new Date(o.createdAt).toISOString().split('T')[0],
@@ -277,63 +277,63 @@ export const transitionOrder = async (req: Request, res: Response) => {
               breadthCm: maxBreadth,
               heightCm: maxHeight,
             })
-            existingMeta.shiprocketOrderId = srRes.order_id
-            existingMeta.shiprocketShipmentId = srRes.shipment_id
-            existingMeta.shiprocketStatus = srRes.status
-            shipmentId = srRes.shipment_id
-            if (srRes.awb_code) {
-              existingMeta.shiprocketAwbCode = srRes.awb_code
-              existingMeta.shiprocketLabelUrl = srRes.label_url
+            existingMeta.ithinkOrderId = ithinkRes.order_id
+            existingMeta.ithinkShipmentId = ithinkRes.shipment_id
+            existingMeta.ithinkStatus = ithinkRes.status
+            shipmentId = String(ithinkRes.shipment_id)
+            if (ithinkRes.awb_code) {
+              existingMeta.ithinkAwbCode = ithinkRes.awb_code
+              existingMeta.ithinkLabelUrl = ithinkRes.label_url
             }
           }
 
           let courierName: string | null = null
 
-          // Assign AWB (if not already assigned)
-          if (shipmentId && !existingMeta.shiprocketAwbCode) {
+          // Get AWB (if not already assigned during order creation)
+          if (shipmentId && !existingMeta.ithinkAwbCode) {
             try {
-              const awbRes = await assignAwb(shipmentId)
-              existingMeta.shiprocketAwbCode = awbRes.awb_code
-              existingMeta.shiprocketLabelUrl = awbRes.label_url
-              existingMeta.shiprocketCourierName = awbRes.courier_name
-              courierName = awbRes.courier_name
+              const awbRes = await getAwb(shipmentId)
+              existingMeta.ithinkAwbCode = awbRes.awb_code
+              existingMeta.ithinkLabelUrl = awbRes.label_url
+              existingMeta.ithinkCourierName = awbRes.courier_name
+              courierName = awbRes.courier_name || null
             } catch (awbErr: any) {
-              existingMeta.shiprocketAwbError = awbErr.message
+              existingMeta.ithinkAwbError = awbErr.message
             }
-          } else if (existingMeta.shiprocketAwbCode) {
-            courierName = (existingMeta.shiprocketCourierName as string) || null
+          } else if (existingMeta.ithinkAwbCode) {
+            courierName = (existingMeta.ithinkCourierName as string) || null
           }
 
-          // Generate pickup
+          // Generate pickup / manifest
           if (shipmentId) {
             try {
               const pickupRes = await generatePickup(shipmentId)
-              existingMeta.shiprocketPickupToken = pickupRes.pickup_token
-              existingMeta.shiprocketPickupDate = pickupRes.pickup_date
-              existingMeta.shiprocketPickupTime = pickupRes.pickup_time
-              existingMeta.shiprocketPickupStatus = pickupRes.status
+              existingMeta.ithinkPickupToken = pickupRes.pickup_token
+              existingMeta.ithinkPickupDate = pickupRes.pickup_date
+              existingMeta.ithinkPickupTime = pickupRes.pickup_time
+              existingMeta.ithinkPickupStatus = pickupRes.status
             } catch (pickErr: any) {
-              existingMeta.shiprocketPickupError = pickErr.message
+              existingMeta.ithinkPickupError = pickErr.message
             }
           }
 
           updates.metadata = existingMeta
-          if ((existingMeta.shiprocketAwbCode as string) && !updates.trackingNumber) {
-            updates.trackingNumber = existingMeta.shiprocketAwbCode as string
+          if ((existingMeta.ithinkAwbCode as string) && !updates.trackingNumber) {
+            updates.trackingNumber = existingMeta.ithinkAwbCode as string
           }
-          updates.deliveryAgentName = courierName || (existingMeta.shiprocketCourierName as string) || 'Shiprocket'
-          updates.deliveryAgentPhone = 'Track via Shiprocket'
+          updates.deliveryAgentName = courierName || (existingMeta.ithinkCourierName as string) || 'iThink Logistics'
+          updates.deliveryAgentPhone = 'Track via iThink Logistics'
           // Status stays as dispatched — admin manually moves to out_for_delivery
         }
       }
     } catch (srErr: any) {
-      shiprocketSyncError = srErr.message || 'Shiprocket sync failed'
+      ithinkSyncError = srErr.message || 'iThink Logistics sync failed'
       const existingMeta = (order.get({ plain: true }) as any).metadata || {}
       updates.metadata = {
         ...existingMeta,
-        shiprocketError: shiprocketSyncError,
+        ithinkError: ithinkSyncError,
       }
-      // Shiprocket sync failed — don't advance the visible status, so the
+      // iThink sync failed — don't advance the visible status, so the
       // admin can see the error and retry instead of the order silently
       // showing "Dispatched"/"Packing" with no real shipment behind it.
       updates.status = isPackingFlow ? 'packing' : currentStatus
@@ -446,23 +446,23 @@ export const transitionOrder = async (req: Request, res: Response) => {
     // A cancelled order is not a sale, so give the coupon back alongside the stock.
     await releaseCouponForOrder(Number(id))
 
-    // Cancel Shiprocket order
+    // Cancel iThink Logistics order
     if (currentStatus !== 'confirmed') {
-      const srOrderId = o.metadata?.shiprocketOrderId
-      if (srOrderId) {
+      const ithinkOrderId = o.metadata?.ithinkOrderId
+      if (ithinkOrderId) {
         try {
-          const cancelRes = await cancelShiprocketOrder(String(srOrderId))
+          const cancelRes = await cancelOrder(String(ithinkOrderId))
           const existingMeta = o.metadata || {}
           updates.metadata = {
             ...existingMeta,
-            shiprocketCancelStatus: cancelRes.status,
-            shiprocketCancelMessage: cancelRes.message,
+            ithinkCancelStatus: cancelRes.status,
+            ithinkCancelMessage: cancelRes.message,
           }
         } catch (cancelErr: any) {
           const existingMeta = o.metadata || {}
           updates.metadata = {
             ...existingMeta,
-            shiprocketCancelError: cancelErr.message,
+            ithinkCancelError: cancelErr.message,
           }
         }
       }
@@ -503,7 +503,7 @@ export const transitionOrder = async (req: Request, res: Response) => {
     toStatus: updates.status as string || body.nextStatus,
     changedBy: adminId(req),
     changedByType: 'admin',
-    notes: body.cancellationReason || (shiprocketSyncError ? `Attempted move to '${body.nextStatus}' — Shiprocket sync failed: ${shiprocketSyncError}` : undefined),
+    notes: body.cancellationReason || (ithinkSyncError ? `Attempted move to '${body.nextStatus}' — iThink Logistics sync failed: ${ithinkSyncError}` : undefined),
   })
 
   syncInvoiceStatus(Number(id)).catch(() => {})

@@ -144,7 +144,8 @@ export type EventItem = {
 export type BookingResult = {
   bookingId: number
   bookingNumber: string
-  razorpayOrderId: string | null
+  cashfreeOrderId: string | null
+  paymentSessionId: string | null
   amount: number
   currency: string
   status: string
@@ -195,9 +196,7 @@ export async function bookEvent(slug: string, data: {
 }
 
 export async function verifyEventBooking(data: {
-  razorpayPaymentId: string
-  razorpayOrderId: string
-  razorpaySignature: string
+  cashfreeOrderId: string
   bookingId: number
 }): Promise<BookingDetail> {
   const res = await apiFetch<{ booking: BookingDetail }>(`/storefront/events/bookings/${data.bookingId}/verify`, {

@@ -6,13 +6,7 @@ import { CheckCircle2, Loader2, AlertCircle, MapPin, Video, CalendarDays, Rotate
 import { fetchEventBooking, verifyEventBooking, type BookingDetail } from '@/lib/services/storefront.service'
 import { formatEventDateTime } from '@/lib/utils/eventFormat'
 
-type SigData = {
-  razorpayPaymentId: string
-  razorpayOrderId: string
-  razorpaySignature: string
-}
-
-const sigKey = (bookingId: number) => `sas_evsig_${bookingId}`
+const orderKey = (bookingId: number) => `sas_evorder_${bookingId}`
 
 export default function BookingConfirmation({ bookingId }: { bookingId: number }) {
   const [booking, setBooking] = useState<BookingDetail | null>(null)
@@ -23,13 +17,13 @@ export default function BookingConfirmation({ bookingId }: { bookingId: number }
     let stopped = false
     let timer: ReturnType<typeof setTimeout>
     let attempt = 0
-    let sig: SigData | null = null
+    let cashfreeOrderId: string | null = null
 
     try {
-      const raw = sessionStorage.getItem(sigKey(bookingId))
-      if (raw) sig = JSON.parse(raw)
+      const raw = sessionStorage.getItem(orderKey(bookingId))
+      if (raw) cashfreeOrderId = JSON.parse(raw) || raw
     } catch {
-      sig = null
+      cashfreeOrderId = null
     }
 
     // Hard fallback: if still loading after 15s, show stalled UI
@@ -46,7 +40,7 @@ export default function BookingConfirmation({ bookingId }: { bookingId: number }
         // Already paid — show confirmation immediately
         if (data.paymentStatus === 'paid') {
           clearTimeout(hardTimeout)
-          try { sessionStorage.removeItem(sigKey(bookingId)) } catch { /* ignore */ }
+          try { sessionStorage.removeItem(orderKey(bookingId)) } catch { /* ignore */ }
           if (!stopped) {
             setStalled(false)
             setBooking(data)
@@ -54,12 +48,12 @@ export default function BookingConfirmation({ bookingId }: { bookingId: number }
           return
         }
 
-        // Still pending — if we have sig data from Razorpay, verify now
-        if (data.paymentStatus === 'pending' && sig) {
+        // Still pending — if we have the Cashfree order id, verify now
+        if (data.paymentStatus === 'pending' && cashfreeOrderId) {
           try {
-            await verifyEventBooking({ bookingId, ...sig })
-            sig = null
-            try { sessionStorage.removeItem(sigKey(bookingId)) } catch {}
+            await verifyEventBooking({ bookingId, cashfreeOrderId })
+            cashfreeOrderId = null
+            try { sessionStorage.removeItem(orderKey(bookingId)) } catch {}
             if (stopped) return
             // Re-fetch after verify
             data = await fetchEventBooking(bookingId)
@@ -71,7 +65,7 @@ export default function BookingConfirmation({ bookingId }: { bookingId: number }
             }
             return
           } catch {
-            sig = null
+            cashfreeOrderId = null
             /* verify failed or already verified — continue polling */
           }
         }

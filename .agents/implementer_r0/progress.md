@@ -1,0 +1,22 @@
+# Progress Log - Storefront Guest Discount Alignment
+
+- [x] Reconnaissance: Examined backend `GET /api/storefront/guest-discount-popup`, catalog controller, settings service, admin panel `GuestDiscountPopupSettings.tsx`, and frontend auth/popup structure.
+- [x] Baseline check: Ran Next.js production build (`npm run build`), verified passing.
+- [x] Strategy formulated: Documented implementation plan in `plan.md`.
+- [x] Removed obsolete static `CouponPopup` from `frontend/app/page.tsx` and `frontend/homepage-bundle/app/page.tsx`.
+- [x] Eliminated redundant `CouponPopup.tsx` files (`frontend/components/ui/CouponPopup.tsx` and `frontend/homepage-bundle/components/ui/CouponPopup.tsx`).
+- [x] Updated documentation in `frontend/README.md` and `frontend/homepage-bundle/README.md`.
+- [x] Implemented dynamic, responsive, and luxury `GuestDiscountPopup.tsx` with:
+  - Backend source of truth (`enabled`, `discountPercentage`, custom `message` with `{percentage}` substitution)
+  - Logged-in user bypass (`useAuth` session check)
+  - Browsing session persistence (`sessionStorage.getItem('sas_guest_popup_dismissed')`)
+  - Multi-trigger dismissal (Close X button, backdrop click, Escape key, "Continue as Guest", "Register Now", "Log In")
+  - Z-index collision prevention (`z-[10000]` over `MobileBottomNav`'s `zIndex: 9999`)
+  - Body scroll locking (`overflow = hidden`) during display
+  - Mobile/tablet/desktop responsive layout with luxury Soil Goddess typography and colors
+- [x] Verification:
+  - `npm run build` in `frontend/`: Succeeded (0 errors, 23/23 static pages generated).
+  - `npx tsc --noEmit` in `frontend/`: Succeeded (0 type errors).
+  - `npm run build` in `backend/node`: Succeeded (0 errors).
+  - `npm run build` in `backend/panel`: Succeeded (0 errors).
+- [x] Created `handoff.md` and generated final report.

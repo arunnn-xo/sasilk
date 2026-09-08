@@ -517,6 +517,9 @@ export default function Footer() {
         </div>
       ) : null}
 
+      {/* Spacer matching fixed bottom nav height so footer content isn't hidden behind it */}
+      <div aria-hidden className="md:hidden h-[calc(64px+env(safe-area-inset-bottom))]" />
+
       <div className="fixed bottom-0 left-0 right-0 z-[100] flex h-[64px] items-center justify-between border-t border-[#D9B86E]/30 bg-[#1F080D]/95 backdrop-blur-md px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.65)] md:hidden">
         <MobileNavLink href="/" label="Home" Icon={Home} />
         <MobileNavLink href="/shop" label="Shop" Icon={ShoppingBag} />

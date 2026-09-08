@@ -115,7 +115,10 @@ router.get('/pincode/:pincode', asyncHandler(async (req, res) => {
 
 router.post('/orders/calculate-shipping', asyncHandler(orderController.calculateShipping))
 router.post('/orders/validate-coupon', optionalCustomerAuth, asyncHandler(orderController.validateCoupon))
-router.post('/orders/create-razorpay-order', optionalCustomerAuth, asyncHandler(orderController.createRazorpayOrder))
+router.post('/orders/create-cashfree-order', optionalCustomerAuth, asyncHandler(orderController.createPaidOrder))
+router.get('/payment-return', asyncHandler(async (req, res) => {
+  res.status(200).json({ ok: true, orderId: req.query.order_id ?? null })
+}))
 router.post('/orders/verify-payment', optionalCustomerAuth, asyncHandler(orderController.verifyPayment))
 router.post('/orders/:id/confirm-cod', optionalCustomerAuth, asyncHandler(orderController.confirmCodOrder))
 

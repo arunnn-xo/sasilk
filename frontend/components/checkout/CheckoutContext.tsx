@@ -11,8 +11,8 @@ type CheckoutContextType = {
   setIsProcessing: (val: boolean) => void
   paymentMethod: string
   setPaymentMethod: (val: string) => void
-  razorpayOrderId: string | null
-  setRazorpayOrderId: (val: string | null) => void
+  cashfreeOrderId: string | null
+  setCashfreeOrderId: (val: string | null) => void
   couponCode: string | null
   setCouponCode: (val: string | null) => void
   couponDiscount: number
@@ -30,7 +30,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [shippingCalculated, setShippingCalculated] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('upi')
-  const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
+  const [cashfreeOrderId, setCashfreeOrderId] = useState<string | null>(null)
   const [couponCode, setCouponCode] = useState<string | null>(null)
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponLabel, setCouponLabel] = useState('')
@@ -42,7 +42,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       shippingCalculated, setShippingCalculated,
       isProcessing, setIsProcessing,
       paymentMethod, setPaymentMethod,
-      razorpayOrderId, setRazorpayOrderId,
+      cashfreeOrderId, setCashfreeOrderId,
       couponCode, setCouponCode,
       couponDiscount, setCouponDiscount,
       couponLabel, setCouponLabel,

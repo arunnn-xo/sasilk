@@ -815,17 +815,6 @@ export function ProductGrid() {
           </div>
 
           <div className="relative z-10">
-            {/* Mobile Filter / Sort */}
-            <div className="flex md:hidden items-center justify-center gap-3 mb-6">
-              <button className="flex-1 py-2.5 rounded-full border border-[#C29B57]/70 text-xs font-bold text-[#300D14] bg-white/95 shadow-sm transition-all hover:bg-[#300D14] hover:text-[#F2C94C]">
-                Filter
-              </button>
-              <button className="flex-1 py-2.5 rounded-full border border-[#C29B57]/70 text-xs font-bold text-[#300D14] bg-white/95 shadow-sm transition-all hover:bg-[#300D14] hover:text-[#F2C94C] flex items-center justify-center gap-1.5">
-                Sort by
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-            </div>
-
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
               {products.map(p => {
                 const meta = p.metadata || {}

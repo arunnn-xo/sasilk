@@ -26,7 +26,10 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }))
 app.use(compression())
-app.use(express.json({ limit: '2mb' }))
+app.use(express.json({
+  limit: '2mb',
+  verify: (req: any, _res, buf) => { req.rawBody = buf },
+}))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser(env.COOKIE_SECRET))
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'))

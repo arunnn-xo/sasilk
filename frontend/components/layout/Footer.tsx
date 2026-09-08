@@ -2,16 +2,8 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, type CSSProperties } from 'react'
-import { usePathname } from 'next/navigation'
-import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
-import { useCart } from '@/components/cart/CartContext'
-import { STATIC_NAV_MENU } from '@/lib/data/navigation'
-import type { NavMenuItem } from '@/lib/services/storefront.service'
+import type { CSSProperties } from 'react'
 
-function filteredCollectionHref(baseHref: string, filter: string) {
-  return `${baseHref}?filter=${encodeURIComponent(filter)}`
-}
 
 /* ── Data ─────────────────────────────────────────── */
 const quickLinks = [
@@ -122,44 +114,8 @@ function KolamCornerSVG({ position }: { position: 'top-left' | 'top-right' | 'bo
   )
 }
 
-function MobileNavLink({ href, label, Icon, badge }: { href: string; label: string; Icon: LucideIcon; badge?: string }) {
-  const pathname = usePathname()
-  const isActive = pathname === href
-  const showBadge = badge && badge !== '0'
-  
-  return (
-    <Link href={href} className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 no-underline transition-all duration-200 ${isActive ? 'text-[#F2C94C]' : 'text-[#FAF6EE]/85 hover:text-[#F2C94C]'}`}>
-      <span className="relative inline-flex items-center justify-center">
-        <Icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(242,201,76,0.5)]' : ''}`} strokeWidth={isActive ? 2.3 : 2} />
-        {showBadge ? (
-          <span className="absolute -right-2.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-white/30 bg-[#D32F2F] px-1 text-[9px] font-bold leading-none text-white shadow-sm">
-            {badge}
-          </span>
-        ) : null}
-      </span>
-      <span className={`max-w-full truncate text-[10px] leading-tight ${isActive ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>{label}</span>
-      {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
-    </Link>
-  )
-}
-
-function MobileDrawerQuickLink({ href, label, Icon }: { href: string; label: string; Icon: LucideIcon }) {
-  return (
-    <Link
-      href={href}
-      className="flex min-w-0 items-center justify-center gap-2 rounded-lg border border-[#D9B86E] bg-burgundy px-3 py-3 text-sm font-bold text-[#9C1A21] no-underline shadow-[0_8px_22px_rgba(74,15,28,0.04)]"
-    >
-      <Icon className="h-4 w-4 shrink-0 text-[#BF9A4B]" />
-      <span className="truncate">{label}</span>
-    </Link>
-  )
-}
-
 export default function Footer() {
-  const { totalUnits: itemCount } = useCart()
-  const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const navMenu = STATIC_NAV_MENU
-  const [activeMobileCategory, setActiveMobileCategory] = useState<NavMenuItem | null>(null)
+
 
   const footerLogos = [
     { src: '/images/footerlogos/1.png', alt: 'Handloom Weaving', scale: 'scale-[2.4] sm:scale-[2.5] md:scale-[2.6]' },
@@ -366,174 +322,8 @@ export default function Footer() {
         </div>
       </footer>
 
-      {categoriesOpen ? (
-        <div className="fixed inset-0 z-[120] lg:hidden" role="dialog" aria-modal="true" aria-label="More categories">
-          <button
-            type="button"
-            className="absolute inset-0 bg-burgundy/55"
-            aria-label="Close categories"
-            onClick={() => {
-              setCategoriesOpen(false)
-              setActiveMobileCategory(null)
-            }}
-          />
-          <div className="absolute bottom-[64px] right-0 top-0 w-[min(88vw,390px)] overflow-hidden rounded-l-xl border-l border-[#BF9A4B]/45 bg-[#FAF6EE] shadow-[-18px_0_42px_rgba(0,0,0,0.34)] animate-[sgMobileCategoryDrawerIn_260ms_cubic-bezier(0.22,1,0.36,1)_both]">
-            <div className="flex items-start justify-between border-b border-[#D9B86E] px-5 py-5">
-              <div className="min-w-0 pr-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#BF9A4B]">SOIL GODDESS</p>
-                <h2 className="mt-1 truncate text-2xl font-semibold text-[#9C1A21]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  {activeMobileCategory ? activeMobileCategory.label : 'Categories'}
-                </h2>
-                <p className="mt-1 text-xs font-medium text-[#7A5E4B]">
-                  {activeMobileCategory ? 'Choose a collection' : 'Explore sarees and collections'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeMobileCategory) {
-                    setActiveMobileCategory(null)
-                    return
-                  }
-                  setCategoriesOpen(false)
-                }}
-                className={`flex h-12 w-12 shrink-0 items-center justify-center text-gold shadow-sm transition-colors ${
-                  activeMobileCategory ? 'rounded-full bg-[#9C1A21]' : 'rounded-sm bg-[#841920]'
-                }`}
-                aria-label={activeMobileCategory ? 'Back to categories' : 'Close categories'}
-              >
-                {activeMobileCategory ? <ChevronRight className="h-5 w-5 rotate-180" /> : <X className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <div className="relative overflow-hidden" style={{ height: 'calc(100% - 105px)' }}>
-              <div
-                className={`absolute inset-0 overflow-y-auto px-5 py-5 transition-transform duration-300 ease-out ${
-                  activeMobileCategory ? '-translate-x-full' : 'translate-x-0'
-                }`}
-                aria-hidden={Boolean(activeMobileCategory)}
-              >
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-2">
-                    <MobileDrawerQuickLink href="/track-order" label="Track Order" Icon={Truck} />
-                    <MobileDrawerQuickLink href="/sale" label="Sale" Icon={Percent} />
-                  </div>
-
-                  <div className="divide-y divide-[#D9B86E] border-y border-[#D9B86E]">
-                    {navMenu.map(category => (
-                      category.subCategories?.length ? (
-                        <button
-                          key={category.label}
-                          type="button"
-                          onClick={() => setActiveMobileCategory(category)}
-                          className="flex w-full items-center justify-between py-4 text-left text-[#2A1A1E]"
-                        >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
-                          <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
-                        </button>
-                      ) : (
-                        <Link
-                          key={category.label}
-                          href={category.href}
-                          onClick={() => setCategoriesOpen(false)}
-                          className="flex items-center justify-between py-4 text-[#2A1A1E] no-underline"
-                        >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
-                          <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
-                        </Link>
-                      )
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className={`absolute inset-0 overflow-y-auto px-5 py-5 transition-transform duration-300 ease-out ${
-                  activeMobileCategory ? 'translate-x-0' : 'translate-x-full'
-                }`}
-                aria-hidden={!activeMobileCategory}
-              >
-                {activeMobileCategory ? (
-                  <div className="space-y-5">
-                    <Link
-                      href={activeMobileCategory.href}
-                      onClick={() => setCategoriesOpen(false)}
-                      className="flex items-center justify-between rounded-lg bg-[#9C1A21] px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-gold no-underline"
-                    >
-                      View All {activeMobileCategory.label}
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-
-                    <div className="divide-y divide-[#D9B86E] border-y border-[#D9B86E]">
-                      {activeMobileCategory.subCategories?.map(sub => (
-                        <section key={sub.name} className="py-3">
-                          <Link
-                            href={filteredCollectionHref(activeMobileCategory.href, sub.name)}
-                            onClick={() => setCategoriesOpen(false)}
-                            className="flex items-center justify-between py-1 text-[15px] font-bold text-[#9C1A21] no-underline"
-                          >
-                            {sub.name}
-                            <ChevronRight className="h-5 w-5 text-[#7A5E4B]" />
-                          </Link>
-                          {sub.products?.length ? (
-                            <div className="mt-2 grid grid-cols-1 gap-1.5">
-                              {sub.products.map(product => (
-                                <Link
-                                  key={product.name}
-                                  href={filteredCollectionHref(activeMobileCategory.href, product.name)}
-                                  onClick={() => setCategoriesOpen(false)}
-                                  className="flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium leading-5 text-[#2A1A1E] no-underline hover:bg-burgundy"
-                                >
-                                  <span>{product.name}</span>
-                                  <ChevronRight className="h-4 w-4 text-[#BF9A4B]" />
-                                </Link>
-                              ))}
-                            </div>
-                          ) : null}
-                        </section>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-          <style jsx global>{`
-            @keyframes sgMobileCategoryDrawerIn {
-              from {
-                opacity: 0.92;
-                transform: translateX(100%);
-              }
-              to {
-                opacity: 1;
-                transform: translateX(0);
-              }
-            }
-          `}</style>
-        </div>
-      ) : null}
-
-      <div className="fixed bottom-0 left-0 right-0 z-[999] flex min-h-[64px] h-auto items-center justify-between border-t border-[#D9B86E]/40 bg-[#1F080D]/95 backdrop-blur-md px-2 xs:px-3 pb-[max(10px,env(safe-area-inset-bottom,12px))] pt-1.5 shadow-[0_-6px_24px_rgba(0,0,0,0.65)] lg:hidden select-none">
-        <MobileNavLink href="/" label="Home" Icon={Home} />
-        <MobileNavLink href="/shop" label="Shop" Icon={ShoppingBag} />
-        <MobileNavLink href="/wishlist" label="Wishlist" Icon={Heart} />
-        <MobileNavLink href="/cart" label="Cart" Icon={ShoppingCart} badge={String(itemCount)} />
-        <button
-          type="button"
-          onClick={() => {
-            setCategoriesOpen(true)
-            setActiveMobileCategory(null)
-          }}
-          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ${
-            categoriesOpen ? 'text-[#F2C94C]' : 'text-[#FAF6EE]/85 hover:text-[#F2C94C]'
-          }`}
-          aria-label="Open more categories"
-        >
-          <Menu className={`h-5 w-5 transition-transform ${categoriesOpen ? 'scale-110 drop-shadow-[0_0_8px_rgba(242,201,76,0.5)]' : ''}`} strokeWidth={categoriesOpen ? 2.3 : 2} />
-          <span className={`max-w-full truncate text-[10px] leading-tight ${categoriesOpen ? 'font-bold text-[#F2C94C]' : 'font-medium text-[#FAF6EE]/85'}`}>Categories</span>
-          {categoriesOpen && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full bg-[#F2C94C] shadow-[0_0_6px_#F2C94C]"></span>}
-        </button>
-      </div>
+      {/* Spacer matching fixed bottom nav height so footer content isn't hidden behind it */}
+      <div aria-hidden className="mobile-bottom-nav-spacer" />
     </>
   )
 }

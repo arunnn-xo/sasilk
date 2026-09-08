@@ -350,11 +350,11 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
   }
 
   return (
-    <main className="product-page min-h-screen bg-[#FDFBF7] font-product text-[#333333] antialiased pb-28 lg:pb-16">
+    <main className="product-page min-h-screen bg-[#FDFBF7] font-product text-[#333333] antialiased pb-44 lg:pb-16">
       
-      {/* Mobile Sticky Bottom Action Bar (Instant High-Conversion Checkout) */}
+      {/* Mobile Sticky Bottom Action Bar (Sits comfortably above persistent bottom nav) */}
       {!isOutOfStock && (
-        <div className="fixed bottom-0 left-0 z-50 w-full bg-white/95 backdrop-blur-xl border-t border-[#E8DCC4] px-4 py-3 shadow-[0_-8px_25px_rgba(0,0,0,0.08)] lg:hidden transition-all duration-300">
+        <div className="mobile-product-sticky-bar bg-white/95 backdrop-blur-xl border-t border-[#E8DCC4] px-4 py-2.5 shadow-[0_-8px_25px_rgba(0,0,0,0.08)] transition-all duration-300">
           <div className="flex items-center gap-3 max-w-md mx-auto">
             {/* Price Preview */}
             <div className="shrink-0 flex flex-col">

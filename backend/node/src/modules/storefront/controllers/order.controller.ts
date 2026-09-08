@@ -21,8 +21,8 @@ import {
 import { sequelize } from '../../../database/sequelize.js'
 import { AppError } from '../../../utils/http.js'
 import { env } from '../../../config/env.js'
-import { checkServiceability } from '../../../services/shiprocket.service.js'
-import { createRazorpayOrder as razorpayCreateOrder, verifyPayment as verifyRazorpayPayment, fetchPayment, refundPayment } from '../../../services/razorpay.service.js'
+import { checkServiceability } from '../../../services/ithink.service.js'
+import { createCashfreeOrder, isOrderPaid, refundOrder } from '../../../services/cashfree.service.js'
 import { createInvoiceForOrder } from '../../../services/invoice.service.js'
 import { getCompanyInfo, getShippingConfig } from '../../../services/settings.service.js'
 import { resolveAutoWelcomeDiscountPercentage } from '../../../services/guest-coupon.service.js'
@@ -294,11 +294,11 @@ export const createOrder = async (req: Request, res: Response) => {
 // An order the customer never actually completed: either it's still stuck at the
 // pending-payment checkpoint (checkout was abandoned), or the payment gateway reported
 // it as failed before the customer ever confirmed (payment.failed webhook cancels these
-// straight from pending_payment and stamps razorpayFailureReason). Neither should ever
+// straight from pending_payment and stamps cashfreeFailureReason). Neither should ever
 // be visible to the customer as a placed order.
 function isAbandonedCheckout(order: any): boolean {
   if (order.status === 'pending_payment') return true
-  if (order.status === 'cancelled' && order.metadata && order.metadata.razorpayFailureReason) return true
+  if (order.status === 'cancelled' && order.metadata && order.metadata.cashfreeFailureReason) return true
   return false
 }
 
@@ -438,7 +438,7 @@ async function enforceCouponPerUserLimitOrRefund(
   orderId: number,
   plainOrder: any,
   order: any,
-  razorpayPaymentId: string,
+  cashfreeOrderId?: string,
 ): Promise<void> {
   const customerId = plainOrder.customerId ?? null
   if (!customerId) return
@@ -457,15 +457,17 @@ async function enforceCouponPerUserLimitOrRefund(
 
   console.error(
     `[Order ${plainOrder.orderNumber}] Coupon ${couponId} is past its per-customer limit ` +
-    `(customer ${customerId} has ${alreadyUsed} use(s), limit ${perUserLimit}). Refunding payment ${razorpayPaymentId}.`,
+    `(customer ${customerId} has ${alreadyUsed} use(s), limit ${perUserLimit}). Refunding order ${cashfreeOrderId}.`,
   )
-  try {
-    await refundPayment(razorpayPaymentId)
-  } catch (refundErr: any) {
-    console.error(
-      `[Order ${plainOrder.orderNumber}] CRITICAL: refund FAILED for payment ${razorpayPaymentId}:`,
-      refundErr.message,
-    )
+  if (cashfreeOrderId) {
+    try {
+      await refundOrder(cashfreeOrderId)
+    } catch (refundErr: any) {
+      console.error(
+        `[Order ${plainOrder.orderNumber}] CRITICAL: refund FAILED for order ${cashfreeOrderId}:`,
+        refundErr.message,
+      )
+    }
   }
 
   // Read metadata off the live instance rather than the pre-claim snapshot, so
@@ -476,7 +478,7 @@ async function enforceCouponPerUserLimitOrRefund(
     paymentStatus: 'refunded',
     metadata: {
       ...currentMetadata,
-      razorpayPaymentId,
+      cashfreeOrderId,
       refundReason: `Coupon per-customer limit of ${perUserLimit} already reached`,
       refundedAt: new Date().toISOString(),
     },
@@ -618,7 +620,7 @@ export const getAutoDiscount = async (req: Request, res: Response) => {
   })
 }
 
-const createRazorpayOrderSchema = z.object({
+const createPaidOrderSchema = z.object({
   items: z.array(z.object({
     productId: z.number().int().positive().optional(),
     variantId: z.number().int().positive().optional(),
@@ -647,8 +649,8 @@ const createRazorpayOrderSchema = z.object({
   couponCode: z.string().max(50).optional(),
 })
 
-export const createRazorpayOrder = async (req: Request, res: Response) => {
-  const parsed = createRazorpayOrderSchema.safeParse(req.body)
+export const createPaidOrder = async (req: Request, res: Response) => {
+  const parsed = createPaidOrderSchema.safeParse(req.body)
   if (!parsed.success) {
     throw new AppError(400, parsed.error.errors.map(e => e.message).join('; '))
   }
@@ -841,12 +843,18 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
   const orderNumber = generateOrderNumber()
 
   // COD is currently disabled — every order goes through the payment gateway.
-  let razorpayOrder: any
+  let cashfreeOrder: any
+  const cashfreeOrderId = `sf_${orderNumber}`
   try {
-    razorpayOrder = await razorpayCreateOrder({
+    cashfreeOrder = await createCashfreeOrder({
       amount: grandTotal,
-      receipt: orderNumber,
-      notes: { orderNumber, paymentMethod, ...(couponCodeSaved ? { couponCode: couponCodeSaved } : {}) },
+      orderId: cashfreeOrderId,
+      customerId: auth?.sub ? `cust_${auth.sub}` : `guest_${Math.random().toString(36).slice(2, 10)}`,
+      customerName: null,
+      customerEmail: customerEmail ?? auth?.email ?? null,
+      customerPhone: shippingAddress?.phone ?? null,
+      returnUrl: `${env.API_URL}/api/storefront/payment-return?order_id={order_id}`,
+      notifyUrl: `${env.API_URL}/api/webhook/cashfree`,
     })
   } catch (err: any) {
     throw new AppError(502, `Payment gateway error: ${err.message}`)
@@ -875,7 +883,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
       shippingAddress: shippingAddress ?? null,
       metadata: {
         paymentMethod,
-        ...(razorpayOrder ? { razorpayOrderId: razorpayOrder.id } : {}),
+        cashfreeOrderId,
         ...(welcomeDiscountApplied ? { welcomeDiscountApplied: true } : {}),
       },
     }, { transaction: t })
@@ -910,9 +918,10 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
   const guestToken = !auth ? computeGuestToken(orderIdNum) : undefined
 
   res.status(201).json({
-    razorpayOrderId: razorpayOrder?.id ?? null,
-    amount: razorpayOrder?.amount ?? 0,
-    currency: razorpayOrder?.currency ?? 'INR',
+    cashfreeOrderId: cashfreeOrder?.order_id ?? null,
+    paymentSessionId: cashfreeOrder?.payment_session_id ?? null,
+    amount: cashfreeOrder?.order_amount ?? 0,
+    currency: cashfreeOrder?.order_currency ?? 'INR',
     orderId: orderIdNum,
     status: 'pending_payment',
     guestToken,
@@ -920,9 +929,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
 }
 
 const verifyPaymentSchema = z.object({
-  razorpayPaymentId: z.string().min(1),
-  razorpayOrderId: z.string().min(1),
-  razorpaySignature: z.string().min(1),
+  cashfreeOrderId: z.string().min(1),
   orderId: z.number().int().positive(),
 })
 
@@ -932,32 +939,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
     throw new AppError(400, parsed.error.errors.map(e => e.message).join('; '))
   }
 
-  const { razorpayPaymentId, razorpayOrderId, razorpaySignature, orderId } = parsed.data
-
-  const valid = verifyRazorpayPayment({
-    razorpayOrderId,
-    razorpayPaymentId,
-    razorpaySignature,
-  })
-
-  if (!valid) {
-    throw new AppError(400, 'Payment verification failed — signature mismatch')
-  }
-
-  let payment: any
-  try {
-    payment = await fetchPayment(razorpayPaymentId)
-  } catch (err: any) {
-    console.warn(`[Payment] Razorpay fetchPayment failed, proceeding with HMAC-only verification: ${err.message}`)
-  }
-  if (payment) {
-    if (payment.order_id !== razorpayOrderId) {
-      throw new AppError(400, 'Razorpay order ID does not match')
-    }
-    if (payment.status !== 'captured' && payment.status !== 'authorized') {
-      throw new AppError(400, `Payment is not successful (status: ${payment.status})`)
-    }
-  }
+  const { cashfreeOrderId, orderId } = parsed.data
 
   const order = await Order.findByPk(orderId)
   if (!order) {
@@ -974,7 +956,12 @@ export const verifyPayment = async (req: Request, res: Response) => {
     return res.json({ order: plain<any>(existingOrder), guestToken })
   }
 
-  await processPaidOrder(orderId, { razorpayPaymentId, razorpaySignature })
+  const payment = await isOrderPaid(cashfreeOrderId)
+  if (!payment.paid) {
+    throw new AppError(400, 'Payment is not successful yet. Please try again.')
+  }
+
+  await processPaidOrder(orderId, { cashfreePaymentId: payment.paymentId!, cashfreeOrderId })
 
   const auth = (req as any).auth
   const updatedOrder = plain<any>(await Order.findByPk(orderId, {
@@ -989,8 +976,8 @@ export const verifyPayment = async (req: Request, res: Response) => {
 // ─── Shared post-payment processing ──────────────────
 
 type PaymentDetails = {
-  razorpayPaymentId: string
-  razorpaySignature?: string
+  cashfreePaymentId: string
+  cashfreeOrderId?: string
   webhookConfirmed?: boolean
 }
 
@@ -1019,7 +1006,7 @@ export async function processPaidOrder(orderId: number, details: PaymentDetails)
   // Runs before stock is touched: if this order has to be refunded there is
   // then nothing to restore.
   if (couponId) {
-    await enforceCouponPerUserLimitOrRefund(couponId, Number(orderId), plainOrder, order, details.razorpayPaymentId)
+    await enforceCouponPerUserLimitOrRefund(couponId, Number(orderId), plainOrder, order, details.cashfreeOrderId)
   }
 
   // Deduct stock inside locked transaction — auto-refund on failure
@@ -1059,12 +1046,12 @@ export async function processPaidOrder(orderId: number, details: PaymentDetails)
     })
   } catch (stockErr: any) {
     // Stock deduction failed after payment — issue automatic refund
-    const razorpayPaymentId = details.razorpayPaymentId
+    const cashfreeOrderId = details.cashfreeOrderId
     try {
-      await refundPayment(razorpayPaymentId)
-      console.error(`[Order ${orderId}] Stock insufficient after payment. Full refund issued for payment ${razorpayPaymentId}.`)
+      await refundOrder(cashfreeOrderId!)
+      console.error(`[Order ${orderId}] Stock insufficient after payment. Full refund issued for order ${cashfreeOrderId}.`)
     } catch (refundErr: any) {
-      console.error(`[Order ${orderId}] CRITICAL: Refund FAILED for payment ${razorpayPaymentId}:`, refundErr.message)
+      console.error(`[Order ${orderId}] CRITICAL: Refund FAILED for order ${cashfreeOrderId}:`, refundErr.message)
     }
     // Mark order as cancelled + refunded
     await order.update({
@@ -1072,7 +1059,7 @@ export async function processPaidOrder(orderId: number, details: PaymentDetails)
       paymentStatus: 'refunded',
       metadata: {
         ...(plainOrder.metadata || {}),
-        razorpayPaymentId,
+        cashfreeOrderId,
         refundReason: stockErr.message || 'Insufficient stock after payment',
         refundedAt: new Date().toISOString(),
       },
@@ -1085,8 +1072,8 @@ export async function processPaidOrder(orderId: number, details: PaymentDetails)
     paymentStatus: 'paid',
     metadata: {
       ...(plainOrder.metadata || {}),
-      razorpayPaymentId: details.razorpayPaymentId,
-      ...(details.razorpaySignature ? { razorpaySignature: details.razorpaySignature } : {}),
+      cashfreePaymentId: details.cashfreePaymentId,
+      cashfreeOrderId: details.cashfreeOrderId,
       ...(details.webhookConfirmed ? { webhookConfirmed: true } : {}),
       paidAt: new Date().toISOString(),
     },

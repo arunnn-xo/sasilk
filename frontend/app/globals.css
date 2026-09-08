@@ -757,7 +757,7 @@ body {
 .floating-action-stack {
   position: fixed;
   right: 14px;
-  bottom: 76px;
+  bottom: calc(76px + env(safe-area-inset-bottom, 12px));
   z-index: 95;
   display: flex;
   flex-direction: column;
@@ -767,7 +767,7 @@ body {
 
 @media (min-width: 1024px) {
   .floating-action-stack {
-    bottom: 24px;
+    bottom: 28px;
   }
 }
 
@@ -843,7 +843,7 @@ body {
 @media (min-width: 640px) {
   .floating-action-stack {
     right: 20px;
-    bottom: 22px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 12px));
     gap: 14px;
   }
 
@@ -863,6 +863,80 @@ body {
     right: 28px;
     bottom: 32px;
   }
+}
+
+/* ── Mobile Persistent Bottom Navigation & Safe-Area Styles ── */
+.mobile-bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 60px;
+  padding-top: 6px;
+  padding-bottom: 10px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: rgba(31, 8, 13, 0.98);
+  border-top: 1px solid rgba(217, 184, 110, 0.4);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+}
+
+@media (min-width: 1024px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+.mobile-bottom-nav-spacer {
+  display: block;
+  width: 100%;
+  height: 72px;
+  height: calc(64px + env(safe-area-inset-bottom, 12px));
+}
+
+@media (min-width: 1024px) {
+  .mobile-bottom-nav-spacer {
+    display: none !important;
+  }
+}
+
+.mobile-product-sticky-bar {
+  position: fixed !important;
+  bottom: 64px !important;
+  bottom: calc(60px + env(safe-area-inset-bottom, 12px)) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9990 !important;
+}
+
+@media (min-width: 1024px) {
+  .mobile-product-sticky-bar {
+    display: none !important;
+  }
+}
+
+.mobile-categories-drawer {
+  bottom: 64px !important;
+  bottom: calc(60px + env(safe-area-inset-bottom, 12px)) !important;
 }
 
 /* ── Footer Premium Styles ───────────────────────── */

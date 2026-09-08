@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import QRCode from 'qrcode'
 import { Event, EventBooking } from '../../models/index.js'
 import { sequelize } from '../../database/sequelize.js'
-import { createRazorpayOrder, verifyPayment as verifyRazorpayPayment } from '../../services/razorpay.service.js'
+import { createCashfreeOrder, isOrderPaid } from '../../services/cashfree.service.js'
 import { sendEventBookingConfirmationEmail, sendAdminEventBookingAlert } from '../../services/email.service.js'
 import { sendBookingConfirmationWhatsApp } from '../../services/whatsapp.service.js'
 import { getCompanyInfo } from '../../services/settings.service.js'
@@ -186,7 +186,7 @@ export const createBooking = async (req: Request, res: Response) => {
       unitPrice,
       total,
       paymentStatus: 'pending' as const,
-      razorpayOrderId: null,
+      gatewayOrderId: null,
     }
     return t ? EventBooking.create(payload, { transaction: t }) : EventBooking.create(payload)
   }
@@ -215,7 +215,7 @@ export const createBooking = async (req: Request, res: Response) => {
     res.status(201).json({
       bookingId: booking.get('id'),
       bookingNumber,
-      razorpayOrderId: null,
+      cashfreeOrderId: null,
       amount: 0,
       currency: 'INR',
       status: 'confirmed',
@@ -223,12 +223,18 @@ export const createBooking = async (req: Request, res: Response) => {
     return
   }
 
-  let razorpayOrder: any
+  let cashfreeOrder: any
+  const cashfreeOrderId = `ev_${bookingNumber}`
   try {
-    razorpayOrder = await createRazorpayOrder({
+    cashfreeOrder = await createCashfreeOrder({
       amount: total,
-      receipt: bookingNumber,
-      notes: { bookingNumber, eventId: String(plain.id), eventName: plain.name, mode },
+      orderId: cashfreeOrderId,
+      customerId: `evcust_${bookingNumber}`,
+      customerName,
+      customerEmail,
+      customerPhone: customerMobile,
+      returnUrl: `${env.API_URL}/api/storefront/payment-return?order_id={order_id}`,
+      notifyUrl: `${env.API_URL}/api/webhook/cashfree`,
     })
   } catch (err) {
     if (err instanceof AppError) throw err
@@ -260,7 +266,7 @@ export const createBooking = async (req: Request, res: Response) => {
           unitPrice,
           total,
           paymentStatus: 'pending',
-          razorpayOrderId: razorpayOrder?.id ?? null,
+          gatewayOrderId: cashfreeOrder?.order_id ?? null,
         },
         { transaction: t },
       )
@@ -273,21 +279,20 @@ export const createBooking = async (req: Request, res: Response) => {
   res.status(201).json({
     bookingId: booking.get('id'),
     bookingNumber,
-    razorpayOrderId: razorpayOrder?.id ?? null,
-    amount: razorpayOrder?.amount ?? 0,
-    currency: razorpayOrder?.currency ?? 'INR',
+    cashfreeOrderId: cashfreeOrder?.order_id ?? null,
+    paymentSessionId: cashfreeOrder?.payment_session_id ?? null,
+    amount: cashfreeOrder?.order_amount ?? 0,
+    currency: cashfreeOrder?.order_currency ?? 'INR',
     status: 'pending_payment',
   })
 }
 
 const verifySchema = z.object({
-  razorpayPaymentId: z.string().min(1),
-  razorpayOrderId: z.string().min(1),
-  razorpaySignature: z.string().min(1),
+  cashfreeOrderId: z.string().min(1),
   bookingId: z.number().int().positive(),
 })
 
-export async function confirmPaidBooking(bookingId: number, razorpayPaymentId: string | null = null): Promise<void> {
+export async function confirmPaidBooking(bookingId: number, gatewayPaymentId: string | null = null): Promise<void> {
   const booking = await EventBooking.findByPk(bookingId, { include: [{ model: Event, as: 'event' }] })
   if (!booking) throw new AppError(404, 'Booking not found.')
   if (booking.get('paymentStatus') === 'paid') return
@@ -297,7 +302,7 @@ export async function confirmPaidBooking(bookingId: number, razorpayPaymentId: s
   const bookingPlain = booking.get({ plain: true }) as any
   const updates: Record<string, unknown> = {
     paymentStatus: 'paid',
-    razorpayPaymentId: razorpayPaymentId ?? null,
+    gatewayPaymentId: gatewayPaymentId ?? null,
   }
 
   if (bookingPlain.mode === 'offline') {
@@ -372,19 +377,20 @@ export const verifyBookingPayment = async (req: Request, res: Response) => {
   if (!parsed.success) {
     throw new AppError(400, parsed.error.errors.map(e => e.message).join('; '))
   }
-  const { razorpayPaymentId, razorpayOrderId, razorpaySignature, bookingId } = parsed.data
-  const valid = verifyRazorpayPayment({ razorpayOrderId, razorpayPaymentId, razorpaySignature })
-  if (!valid) {
-    throw new AppError(400, 'Payment verification failed.')
-  }
+  const { cashfreeOrderId, bookingId } = parsed.data
 
   const booking = await EventBooking.findByPk(bookingId)
   if (!booking) throw new AppError(404, 'Booking not found.')
-  if (booking.get('razorpayOrderId') !== razorpayOrderId) {
-    throw new AppError(400, 'Razorpay order does not match this booking.')
+  if (booking.get('gatewayOrderId') !== cashfreeOrderId) {
+    throw new AppError(400, 'Cashfree order does not match this booking.')
   }
 
-  await confirmPaidBooking(bookingId, razorpayPaymentId)
+  const { paid, paymentId } = await isOrderPaid(cashfreeOrderId)
+  if (!paid) {
+    throw new AppError(400, 'Payment verification failed.')
+  }
+
+  await confirmPaidBooking(bookingId, paymentId ?? null)
 
   const freshBooking = await EventBooking.findByPk(bookingId, {
     include: [{ model: Event, as: 'event', attributes: ['zoomLink'] }],

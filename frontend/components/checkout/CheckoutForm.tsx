@@ -11,14 +11,9 @@ import type { CustomerAddress } from '@/lib/api/auth'
 import { apiFetch } from '@/lib/api/client'
 import { useCheckout } from './CheckoutContext'
 import { fetchShippingConfig, confirmCodOrder, type ShippingConfig } from '@/lib/api/storefront'
+import { openCashfreeCheckout } from '@/lib/cashfree'
 
 type Step = 'contact' | 'shipping' | 'payment'
-
-declare global {
-  interface Window {
-    Razorpay: new (options: Record<string, unknown>) => { open: () => void }
-  }
-}
 
 export default function CheckoutForm({ isBuyNow }: { isBuyNow?: boolean }) {
   const router = useRouter()
@@ -254,76 +249,42 @@ export default function CheckoutForm({ isBuyNow }: { isBuyNow?: boolean }) {
     setActiveStep(nextStep)
   }
 
-  function loadRazorpayScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.Razorpay) return resolve()
-
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.async = true
-
-      const timeout = setTimeout(() => reject(new Error('Razorpay SDK load timed out')), 10000)
-
-      script.onload = () => { clearTimeout(timeout); resolve() }
-      script.onerror = () => { clearTimeout(timeout); reject(new Error('Failed to load Razorpay SDK')) }
-
-      document.body.appendChild(script)
-    })
+  async function pollVerifyPayment(cashfreeOrderId: string, orderId: number): Promise<void> {
+    const started = Date.now()
+    const timeout = 3 * 60 * 1000
+    const attempt = async (): Promise<void> => {
+      try {
+        await apiFetch<{ order: { id: number } }>(
+          '/storefront/orders/verify-payment',
+          {
+            method: 'POST',
+            timeoutMs: 30000,
+            body: JSON.stringify({ cashfreeOrderId, orderId }),
+          },
+        )
+        return
+      } catch {
+        if (Date.now() - started > timeout) return
+        await new Promise(r => setTimeout(r, 3000))
+        return attempt()
+      }
+    }
+    await attempt()
   }
 
-  async function handleRazorpayPayment(body: Record<string, unknown>): Promise<{ order: { id: number }; guestToken?: string }> {
-    const razorpayData = await apiFetch<{ razorpayOrderId: string | null; amount: number; currency: string; orderId: number; status?: string; guestToken?: string }>(
-      '/storefront/orders/create-razorpay-order',
+  async function handleCashfreePayment(body: Record<string, unknown>): Promise<{ order: { id: number }; guestToken?: string }> {
+    const cashfreeData = await apiFetch<{ cashfreeOrderId: string | null; paymentSessionId: string | null; amount: number; currency: string; orderId: number; status?: string; guestToken?: string }>(
+      '/storefront/orders/create-cashfree-order',
       { method: 'POST', body: JSON.stringify(body) },
     )
 
-    if (!razorpayData.razorpayOrderId) {
-      return { order: { id: razorpayData.orderId }, guestToken: razorpayData.guestToken }
+    if (!cashfreeData.cashfreeOrderId) {
+      return { order: { id: cashfreeData.orderId }, guestToken: cashfreeData.guestToken }
     }
 
-    await loadRazorpayScript()
-
-    return new Promise<{ order: { id: number }; guestToken?: string }>((resolve, reject) => {
-      const rzp = new window.Razorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: razorpayData.amount,
-        currency: razorpayData.currency || 'INR',
-        name: 'Soil Goddess',
-        description: `Order #${razorpayData.razorpayOrderId}`,
-        order_id: razorpayData.razorpayOrderId,
-        handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
-          try {
-            const verifyData = await apiFetch<{ order: { id: number }; guestToken?: string }>(
-              '/storefront/orders/verify-payment',
-              {
-                method: 'POST',
-                timeoutMs: 30000,
-                body: JSON.stringify({
-                  razorpayPaymentId: response.razorpay_payment_id,
-                  razorpayOrderId: response.razorpay_order_id,
-                  razorpaySignature: response.razorpay_signature,
-                  orderId: razorpayData.orderId,
-                }),
-              },
-            )
-            resolve(verifyData)
-          } catch (err) {
-            reject(err)
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            reject(new Error('Payment cancelled'))
-          },
-        },
-        prefill: {
-          email: email || undefined,
-          contact: phone || undefined,
-        },
-        theme: { color: '#8B1A2B' },
-      })
-      rzp.open()
-    })
+    await openCashfreeCheckout(cashfreeData.paymentSessionId!)
+    await pollVerifyPayment(cashfreeData.cashfreeOrderId, cashfreeData.orderId)
+    return { order: { id: cashfreeData.orderId }, guestToken: cashfreeData.guestToken }
   }
 
   const handlePlaceOrder = async () => {
@@ -371,14 +332,14 @@ export default function CheckoutForm({ isBuyNow }: { isBuyNow?: boolean }) {
       let guestToken: string | undefined
 
       if (paymentMethod === 'cod') {
-        const orderData = await apiFetch<{ razorpayOrderId: string; amount: number; currency: string; orderId: number; status: string; guestToken?: string }>(
-          '/storefront/orders/create-razorpay-order',
+        const orderData = await apiFetch<{ cashfreeOrderId: string; amount: number; currency: string; orderId: number; status: string; guestToken?: string }>(
+          '/storefront/orders/create-cashfree-order',
           { method: 'POST', body: JSON.stringify(body) },
         )
         data = { order: { id: orderData.orderId } }
         guestToken = orderData.guestToken
       } else {
-        data = await handleRazorpayPayment(body)
+        data = await handleCashfreePayment(body)
         guestToken = data.guestToken
       }
 
@@ -438,7 +399,7 @@ export default function CheckoutForm({ isBuyNow }: { isBuyNow?: boolean }) {
 
     try {
       const orderData = await apiFetch<{ orderId: number; status: string; guestToken?: string }>(
-        '/storefront/orders/create-razorpay-order',
+        '/storefront/orders/create-cashfree-order',
         { method: 'POST', body: JSON.stringify(body) },
       )
       setCodOrderId(orderData.orderId)
@@ -728,7 +689,7 @@ export default function CheckoutForm({ isBuyNow }: { isBuyNow?: boolean }) {
                 ) : (
                   <>
                     <Lock size={16} strokeWidth={2.5} />
-                    Pay with Razorpay
+                    Pay with Cashfree
                   </>
                 )}
               </button>

@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, Edit3, Eye, EyeOff, FolderTree, Image as ImageIcon, ListTree, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Edit3, FolderTree, Image as ImageIcon, ListTree, Loader2, Plus, Save, Trash2 } from 'lucide-react'
 import { createResource, deleteResource, getResource, listResource, resolveImageUrl, updateResource, uploadImage } from '../services/api'
 import { validateImageFile } from './ResourceShared'
 import FieldWithTooltip from '../components/FieldWithTooltip'
@@ -103,13 +103,6 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
   const [parentId, setParentId] = useState(initialParentId)
   const [name, setName] = useState(editItem ? String(editItem.name || '') : '')
   const [imageUrl, setImageUrl] = useState(editItem ? String(editItem.imageUrl || '') : '')
-  const [headerMode, setHeaderMode] = useState<'hidden' | 'normal' | 'highlighted'>(
-    editItem
-      ? Boolean(editItem.headerHighlight) ? 'highlighted'
-        : Boolean(editItem.navVisible) ? 'normal'
-        : 'hidden'
-      : 'normal'
-  )
   const [deleteTarget, setDeleteTarget] = useState<Record<string, unknown> | null>(null)
   const [deleteDialogError, setDeleteDialogError] = useState('')
 
@@ -132,11 +125,6 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
       setParentId(String(editItem.parentId || ''))
       setName(String(editItem.name || ''))
       setImageUrl(String(editItem.imageUrl || ''))
-      setHeaderMode(
-        Boolean(editItem.headerHighlight) ? 'highlighted'
-          : Boolean(editItem.navVisible) ? 'normal'
-          : 'hidden'
-      )
       setTouched({ initialized: true })
     }
   }, [editItem, touched.initialized])
@@ -417,8 +405,6 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
         : `/collections/${slug}`,
       imageUrl: imageUrl || null,
       tag: '',
-      navVisible: headerMode !== 'hidden',
-      headerHighlight: headerMode === 'highlighted',
       homeVisible: true,
     }
     saveMutation.mutate(payload)
@@ -486,26 +472,6 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
             />
             {touched.name && allErrors.name && <p className="mt-1 text-xs font-semibold text-red-600">{allErrors.name}</p>}
           </FieldWithTooltip>
-        </div>
-      </SectionCard>
-
-      <SectionCard title="Header Visibility" icon={<Eye className="h-4 w-4" />}>
-        <div className="flex gap-3">
-          {(['hidden', 'normal', 'highlighted'] as const).map(mode => (
-            <button key={mode} type="button" onClick={() => setHeaderMode(mode)}
-              className={`flex flex-1 flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all cursor-pointer
-                ${headerMode === mode
-                  ? 'border-[var(--burgundy)] bg-[var(--burgundy-soft)] shadow-sm ring-2 ring-[var(--burgundy-soft)]'
-                  : 'border-[var(--line)] bg-[#F9FAFB] hover:border-[var(--burgundy)] hover:shadow-sm'}`}
-            >
-              {mode === 'hidden' ? <EyeOff className="h-5 w-5 text-[var(--muted)]" />
-                : mode === 'normal' ? <Eye className={`h-5 w-5 ${headerMode === mode ? 'text-[var(--burgundy)]' : 'text-[var(--muted)]'}`} />
-                : <Sparkles className={`h-5 w-5 ${headerMode === mode ? 'text-[var(--burgundy)]' : 'text-[var(--muted)]'}`} />}
-              <span className={`text-[13px] font-bold capitalize ${headerMode === mode ? 'text-[var(--burgundy)]' : 'text-[var(--text)]'}`}>
-                {mode}
-              </span>
-            </button>
-          ))}
         </div>
       </SectionCard>
 
