@@ -97,7 +97,7 @@ export default function InstaReels() {
                   <div className="w-full h-full relative block">
                     {/* Thumbnail */}
                     <Image
-                      src={resolveImageUrl(reel.imageUrl) ?? ''}
+                      src={resolveImageUrl(reel.imageUrl)}
                       alt={`Instagram Reel ${reel.id}`}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -189,7 +189,7 @@ export default function InstaReels() {
                   <div className="w-full h-full relative block">
                     {reel.videoUrl ? (
                       <video
-                        src={resolveImageUrl(reel.videoUrl)}
+                        src={resolveImageUrl(reel.videoUrl, '')}
                         poster={resolveImageUrl(reel.imageUrl)}
                         controls
                         autoPlay
@@ -200,7 +200,7 @@ export default function InstaReels() {
                     ) : (
                       <>
                         <Image
-                          src={resolveImageUrl(reel.imageUrl) ?? ''}
+                          src={resolveImageUrl(reel.imageUrl)}
                           alt={`Instagram Reel ${reel.id}`}
                           fill
                           className="object-cover"

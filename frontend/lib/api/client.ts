@@ -47,16 +47,18 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
   }
 }
 
-export function resolveImageUrl(url: string | null | undefined): string | undefined {
-  if (!url) return undefined
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-    return url
+export function resolveImageUrl(url: string | null | undefined, fallback: string = '/saree1.png'): string {
+  if (!url || typeof url !== 'string') return fallback
+  const trimmed = url.trim()
+  if (!trimmed) return fallback
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed
   }
   // Uploaded files are proxied by the Next rewrite /uploads/* -> backend uploads dir,
   // so keep the relative path (same-origin). Avoids next/image hostname config.
-  if (url.startsWith('/uploads/')) {
-    return url
+  if (trimmed.startsWith('/uploads/')) {
+    return trimmed
   }
   // All other relative paths are Next.js public folder assets — return as-is
-  return url
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
