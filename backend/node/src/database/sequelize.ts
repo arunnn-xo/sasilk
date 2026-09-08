@@ -5,6 +5,12 @@ function quoteIdentifier(value: string) {
   return `\`${value.replace(/`/g, '``')}\``
 }
 
+// TiDB Cloud Serverless requires SSL — enabled when DB_SSL=true or NODE_ENV=production
+const useSSL = process.env.DB_SSL === 'true' || env.NODE_ENV === 'production'
+const sslDialectOptions = useSSL
+  ? { ssl: { rejectUnauthorized: true } }
+  : {}
+
 export const sequelize = new Sequelize(env.DB_NAME, env.DB_USER, env.DB_PASSWORD, {
   host: env.DB_HOST,
   port: env.DB_PORT,
@@ -20,6 +26,10 @@ export const sequelize = new Sequelize(env.DB_NAME, env.DB_USER, env.DB_PASSWORD
     acquire: 30000,
     idle: 10000,
   },
+  dialectOptions: {
+    ...sslDialectOptions,
+    connectTimeout: 20000,
+  },
 })
 
 export async function assertDatabaseConnection() {
@@ -32,6 +42,10 @@ export async function ensureDatabaseExists() {
     port: env.DB_PORT,
     dialect: env.DB_DIALECT,
     logging: false,
+    dialectOptions: {
+      ...sslDialectOptions,
+      connectTimeout: 20000,
+    },
   })
 
   await bootstrap.query(
@@ -39,3 +53,4 @@ export async function ensureDatabaseExists() {
   )
   await bootstrap.close()
 }
+
