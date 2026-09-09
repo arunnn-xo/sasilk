@@ -2,8 +2,10 @@ import { Cashfree, CFEnvironment } from 'cashfree-pg'
 import { env } from '../config/env.js'
 import { AppError } from '../utils/http.js'
 
+const isCashfreeProd = env.CASHFREE_ENV === 'production'
+
 const cashfree = new Cashfree(
-  env.NODE_ENV === 'production' ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX,
+  isCashfreeProd ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX,
   env.CASHFREE_CLIENT_ID,
   env.CASHFREE_CLIENT_SECRET,
 )

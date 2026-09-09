@@ -40,6 +40,9 @@ const envSchema = z.object({
   CASHFREE_CLIENT_ID: z.string().min(1),
   CASHFREE_CLIENT_SECRET: z.string().min(1),
   CASHFREE_WEBHOOK_SECRET: z.string().optional().default(''),
+  CASHFREE_ENV: z
+    .preprocess(val => (typeof val === 'string' ? val.toLowerCase() : val), z.enum(['test', 'sandbox', 'production']))
+    .default('sandbox'),
   SHIPPING_ENV: z.enum(['test', 'production']).default('test'),
   WHATSAPP_ENABLED: z
     .preprocess(
