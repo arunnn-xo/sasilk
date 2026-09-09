@@ -50,6 +50,6 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   console.error(error)
   return res.status(500).json({
     message: 'Internal server error',
-    ...(env.NODE_ENV === 'development' ? { detail: String(error?.message ?? error) } : {}),
+    detail: String(error?.message ?? error),
   })
 }
