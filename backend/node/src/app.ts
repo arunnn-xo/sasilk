@@ -35,9 +35,19 @@ app.use(cookieParser(env.COOKIE_SECRET))
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'))
 app.use(cors({
   origin(origin, callback) {
-    if (env.NODE_ENV === 'development') return callback(null, true)
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true)
-    return callback(new Error(`CORS blocked for origin: ${origin}`))
+    if (!origin) return callback(null, true)
+    const clean = origin.replace(/\/$/, '')
+    const isAllowed =
+      env.NODE_ENV === 'development' ||
+      allowedOrigins.has(origin) ||
+      allowedOrigins.has(clean) ||
+      clean.endsWith('.vercel.app') ||
+      clean.includes('localhost') ||
+      clean.includes('127.0.0.1')
+    if (isAllowed) {
+      return callback(null, true)
+    }
+    return callback(null, false)
   },
   credentials: true,
 }))
