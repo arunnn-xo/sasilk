@@ -178,7 +178,11 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
       }
       return chain
     }
-    const items = allItems.filter((item: any) => item.parentId && (!isChild || depthOf(item.id) >= 2))
+    const items = allItems.filter((item: any) => {
+      if (!item.parentId) return false
+      const depth = depthOf(item.id)
+      return isChild ? depth >= 2 : depth === 1
+    })
 
     return (
       <div className="space-y-6">
