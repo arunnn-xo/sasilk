@@ -3,204 +3,43 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { fetchBanners } from '@/lib/api/storefront'
+import { resolveImageUrl } from '@/lib/api/client'
+import type { StorefrontBanner } from '@/lib/api/types'
 
-/* ── Placeholder Images for Canvas Preview ─── */
-const PRODUCT_IMAGES = [
-  '/saree1.png',
-  '/saree2.png',
-  '/saree3.png',
-  '/saree4.png',
-  '/saree5.png',
-  '/saree6.png',
-]
-
-const HERO_MODEL_IMG = '/hero-model.png'
-const BG_SAREE_IMG = '/slide2-bg-new.png'
-
-/* ── Integrated BounceCards Component ─── */
-function BounceCards({
-  className = '',
-  images = [],
-  containerWidth = 950,
-  containerHeight = 220,
-  animationDelay = 0.2,
-  animationStagger = 0.08,
-  transformStyles = [],
-  enableHover = true,
-  isActive = true,
-}: {
-  className?: string
-  images: string[]
-  containerWidth?: number
-  containerHeight?: number
-  animationDelay?: number
-  animationStagger?: number
-  transformStyles?: string[]
-  enableHover?: boolean
-  isActive?: boolean
-}) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
-
-  const getNoRotationTransform = (transformStr: string): string => {
-    const hasRotate = /rotate\([\s\S]*?\)/.test(transformStr)
-    if (hasRotate) {
-      return transformStr.replace(/rotate\([\s\S]*?\)/, 'rotate(0deg)')
-    } else if (transformStr === 'none') {
-      return 'rotate(0deg)'
-    } else {
-      return `${transformStr} rotate(0deg)`
-    }
-  }
-
-  const getPushedTransform = (baseTransform: string, offsetX: number): string => {
-    const translateRegex = /translate\(([-0-9.]+)px\)/
-    const match = baseTransform.match(translateRegex)
-    if (match) {
-      const currentX = parseFloat(match[1])
-      const newX = currentX + offsetX
-      return baseTransform.replace(translateRegex, `translate(${newX}px)`)
-    } else {
-      return baseTransform === 'none' ? `translate(${offsetX}px)` : `${baseTransform} translate(${offsetX}px)`
-    }
-  }
-
-  return (
-    <div
-      className={`relative flex items-center ${className}`}
-      style={{ width: containerWidth, height: containerHeight }}
-    >
-      <style>{`
-        @keyframes slideInBounce {
-          0% { transform: translateX(-150px) scale(0.5); opacity: 0; }
-          75% { transform: translateX(10px) scale(1.02); opacity: 1; }
-          100% { transform: translateX(0) scale(1); opacity: 1; }
-        }
-      `}</style>
-
-      {images.map((src, idx) => {
-        let currentTransform = transformStyles[idx] || 'none'
-        let scale = 1
-        let zIndex = 10
-
-        if (enableHover && hoveredIdx !== null) {
-          if (hoveredIdx === idx) {
-            currentTransform = getNoRotationTransform(currentTransform)
-            scale = 1.05
-            zIndex = 50
-          } else {
-            const offsetX = idx < hoveredIdx ? -40 : 40
-            currentTransform = getPushedTransform(currentTransform, offsetX)
-          }
-        }
-
-        currentTransform = `${currentTransform} scale(${scale})`
-
-        return (
-          <div
-            key={`${isActive}-${idx}`}
-            className="absolute"
-            style={{
-              animation: isActive ? `slideInBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards` : 'none',
-              animationDelay: `${animationDelay + (idx * animationStagger)}s`,
-              opacity: isActive ? 0 : 1,
-              zIndex: zIndex,
-            }}
-          >
-            <Link
-              href="/collections/organic-sarees"
-              className="cursor-pointer shadow-lg rounded-md overflow-hidden bg-white/90 border-2 border-white/80 block"
-              style={{
-                width: 140,
-                height: 200,
-                transform: currentTransform,
-                transformOrigin: 'bottom center',
-                transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-              onMouseEnter={() => setHoveredIdx(idx)}
-              onMouseLeave={() => setHoveredIdx(null)}
-            >
-              <div
-                className="w-full h-full bg-cover bg-top"
-                style={{ backgroundImage: `url(${src})` }}
-              />
-            </Link>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/* ── Slide 1: Modern Lifestyle Banner 1 ─── */
-function Slide1({ isActive }: { isActive?: boolean }) {
-  return (
-    <div className="relative w-full h-full overflow-hidden flex items-center justify-between">
-      {/* Clickable background image */}
-      <Link href="/collections/organic-sarees" className="absolute inset-0 z-0 block cursor-pointer">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/lifestyle_banner_1.png)' }}
-        />
-      </Link>
-
-      {/* Left Bottom: BounceCards animated strip */}
-      <div className="absolute bottom-6 left-6 md:left-12 z-30 pointer-events-auto overflow-hidden md:overflow-visible w-full md:w-auto px-0 hidden md:block">
-        <div className="flex justify-start items-center w-full overflow-x-auto scrollbar-hide">
-          <BounceCards
-            images={PRODUCT_IMAGES}
-            transformStyles={PRODUCT_IMAGES.map((_, i) => `translate(${i * 140}px) rotate(0deg)`)}
-            containerWidth={PRODUCT_IMAGES.length * 140 + 20}
-            containerHeight={220}
-            isActive={isActive}
-            enableHover={true}
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ── Slide 2: Modern Lifestyle Banner 2 ─────── */
-function Slide2() {
-  return (
-    <Link href="/collections/organic-sarees" className="relative w-full h-full block overflow-hidden cursor-pointer">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(/lifestyle_banner_2.png)` }}
-      />
-    </Link>
-  )
-}
-
-/* ── Slide 3: Modern Lifestyle Banner 3 ─── */
-function Slide3() {
-  return (
-    <Link href="/collections/organic-sarees" className="relative w-full h-full block overflow-hidden cursor-pointer">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url('/lifestyle_banner_3.png')` }}
-      />
-    </Link>
-  )
-}
-
-/* ── Main Hero Carousel ──────────────────────────── */
+/* ── Main Hero Carousel (dynamic banners only) ────────── */
 export default function HeroSection() {
+  const [mounted, setMounted] = useState(false)
+  const [banners, setBanners] = useState<StorefrontBanner[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
 
-  const slides = [
-    { id: 0, bg: 'transparent', content: <Slide1 isActive={currentSlide === 0} /> },
-    { id: 1, bg: '#2D4A22', content: <Slide2 /> },
-    { id: 2, bg: '#D99C5B', content: <Slide3 /> },
-  ]
+  useEffect(() => {
+    setMounted(true)
+    let cancelled = false
+    fetchBanners()
+      .then(data => {
+        if (!cancelled && data.length > 0) setBanners(data)
+      })
+      .catch(() => {
+        if (!cancelled) setBanners([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
-  const next = () => setCurrentSlide(p => (p + 1) % slides.length)
-  const prev = () => setCurrentSlide(p => (p === 0 ? slides.length - 1 : p - 1))
+  const count = banners.length
+
+  const next = () => setCurrentSlide(p => (p + 1) % count)
+  const prev = () => setCurrentSlide(p => (p === 0 ? count - 1 : p - 1))
 
   useEffect(() => {
+    if (count <= 1) return
     const t = setInterval(next, 5000)
     return () => clearInterval(t)
-  }, [])
+  }, [count])
+
+  if (!mounted || count === 0) return null
 
   return (
     <div
@@ -209,20 +48,56 @@ export default function HeroSection() {
     >
       {/* Slide track */}
       <div className="relative w-full h-full bg-[#0a0a0a]">
-        {slides.map((slide, idx) => (
-          <div
-            key={slide.id}
-            className="absolute inset-0 w-full h-full transition-opacity duration-[1200ms] ease-in-out"
-            style={{ 
-              background: slide.bg,
-              opacity: currentSlide === idx ? 1 : 0,
-              pointerEvents: currentSlide === idx ? 'auto' : 'none',
-              zIndex: currentSlide === idx ? 10 : 1
-            }}
-          >
-            {slide.content}
-          </div>
-        ))}
+        {banners.map((banner, idx) => {
+          const href = banner.ctaUrl || '/shop'
+          const wrap = (
+            <div
+              key={banner.id ?? `slide-${idx}`}
+              className="absolute inset-0 w-full h-full transition-opacity duration-[1200ms] ease-in-out"
+              style={{
+                opacity: currentSlide === idx ? 1 : 0,
+                pointerEvents: currentSlide === idx ? 'auto' : 'none',
+                zIndex: currentSlide === idx ? 10 : 1,
+              }}
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${resolveImageUrl(banner.imageUrl)})` }}
+              />
+              {(banner.title || banner.subtitle) && (
+                <div className="absolute inset-0 flex items-center justify-start px-6 md:px-16">
+                  <div className="max-w-xl text-left">
+                    {banner.title && (
+                      <h2
+                        className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg"
+                        style={{ fontFamily: 'Playfair Display, serif', color: '#FFFFFF' }}
+                      >
+                        {banner.title}
+                      </h2>
+                    )}
+                    {banner.subtitle && (
+                      <p className="text-base md:text-xl mb-6 drop-shadow" style={{ color: '#FFFFFF' }}>
+                        {banner.subtitle}
+                      </p>
+                    )}
+                    {banner.ctaLabel && (
+                      <span className="inline-block px-8 py-3.5 text-xs font-bold uppercase tracking-[3px] rounded-sm"
+                        style={{ background: '#9C1A21', color: '#FFFFFF' }}
+                      >
+                        {banner.ctaLabel}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+          return href ? (
+            <Link key={banner.id ?? `slide-link-${idx}`} href={href} className="absolute inset-0 block w-full h-full">
+              {wrap}
+            </Link>
+          ) : wrap
+        })}
       </div>
 
       {/* Prev button */}
@@ -246,20 +121,22 @@ export default function HeroSection() {
       </button>
 
       {/* Dot indicators */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            className="h-2.5 rounded-full transition-all duration-300"
-            style={{
-              width: currentSlide === idx ? 32 : 10,
-              background: currentSlide === idx ? 'white' : 'rgba(255,255,255,0.4)',
-            }}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
-      </div>
+      {count > 1 && (
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+          {banners.map((banner, idx) => (
+            <button
+              key={banner.id ?? `dot-${idx}`}
+              onClick={() => setCurrentSlide(idx)}
+              className="h-2.5 rounded-full transition-all duration-300"
+              style={{
+                width: currentSlide === idx ? 32 : 10,
+                background: currentSlide === idx ? 'white' : 'rgba(255,255,255,0.4)',
+              }}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

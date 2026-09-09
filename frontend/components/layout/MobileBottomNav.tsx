@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation'
 import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
 import { useCart } from '@/components/cart/CartContext'
 import { useWishlist } from '@/components/wishlist/WishlistContext'
-import { STATIC_NAV_MENU } from '@/lib/data/navigation'
+import { fetchNavMenu } from '@/lib/services/storefront.service'
 import type { NavMenuItem } from '@/lib/services/storefront.service'
+import { resolveImageUrl } from '@/lib/api/client'
 
 function filteredCollectionHref(baseHref: string, filter: string) {
   return `${baseHref}?filter=${encodeURIComponent(filter)}`
@@ -94,7 +95,19 @@ export default function MobileBottomNav() {
   const { totalItems: wishlistCount } = useWishlist()
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [activeMobileCategory, setActiveMobileCategory] = useState<NavMenuItem | null>(null)
-  const navMenu = STATIC_NAV_MENU
+  const [navMenu, setNavMenu] = useState<NavMenuItem[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchNavMenu()
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) setNavMenu(data)
+      })
+      .catch(() => {
+        if (!cancelled) setNavMenu([])
+      })
+    return () => { cancelled = true }
+  }, [])
 
   // Automatically close categories drawer on route change
   useEffect(() => {
@@ -217,12 +230,17 @@ export default function MobileBottomNav() {
                           key={category.label}
                           type="button"
                           onClick={() => setActiveMobileCategory(category)}
-                          className="flex w-full items-center justify-between px-4 py-3.5 text-left text-[#300D14] transition-colors hover:bg-[#FAF6EE] active:bg-[#F5EADB]"
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[#300D14] transition-colors hover:bg-[#FAF6EE] active:bg-[#F5EADB]"
                         >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">
-                            {category.label}
+                          <span className="flex min-w-0 items-center gap-3">
+                            {category.imageUrl ? (
+                              <img src={resolveImageUrl(category.imageUrl)} alt="" className="h-11 w-9 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                            ) : null}
+                            <span className="min-w-0 truncate text-[15px] font-semibold">
+                              {category.label}
+                            </span>
                           </span>
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-[#BF9A4B]">
+                          <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-[#BF9A4B]">
                             <span>Explore</span>
                             <ChevronRight className="h-4 w-4 shrink-0 text-[#BF9A4B]" />
                           </div>
@@ -232,10 +250,15 @@ export default function MobileBottomNav() {
                           key={category.label}
                           href={category.href}
                           onClick={() => setCategoriesOpen(false)}
-                          className="flex items-center justify-between px-4 py-3.5 text-[#300D14] no-underline transition-colors hover:bg-[#FAF6EE] active:bg-[#F5EADB]"
+                          className="flex items-center justify-between gap-3 px-4 py-3 text-[#300D14] no-underline transition-colors hover:bg-[#FAF6EE] active:bg-[#F5EADB]"
                         >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">
-                            {category.label}
+                          <span className="flex min-w-0 items-center gap-3">
+                            {category.imageUrl ? (
+                              <img src={resolveImageUrl(category.imageUrl)} alt="" className="h-11 w-9 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                            ) : null}
+                            <span className="min-w-0 truncate text-[15px] font-semibold">
+                              {category.label}
+                            </span>
                           </span>
                           <ChevronRight className="h-4 w-4 shrink-0 text-[#7A5E4B]" />
                         </Link>
@@ -267,26 +290,61 @@ export default function MobileBottomNav() {
                       {activeMobileCategory.subCategories?.map(sub => (
                         <section key={sub.name} className="py-2.5 first:pt-0 last:pb-0">
                           <Link
-                            href={filteredCollectionHref(activeMobileCategory.href, sub.name)}
+                            href={sub.href || filteredCollectionHref(activeMobileCategory.href, sub.name)}
                             onClick={() => setCategoriesOpen(false)}
-                            className="flex items-center justify-between py-1 text-[14px] font-bold text-[#5A1827] no-underline hover:text-[#8B1A2B]"
+                            className="flex items-center justify-between gap-2 py-1 text-[14px] font-bold text-[#5A1827] no-underline hover:text-[#8B1A2B]"
                           >
-                            <span>{sub.name}</span>
-                            <ChevronRight className="h-4 w-4 text-[#BF9A4B]" />
+                            <span className="flex min-w-0 items-center gap-2">
+                              {sub.imageUrl ? (
+                                <img src={resolveImageUrl(sub.imageUrl)} alt="" className="h-9 w-7 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                              ) : null}
+                              <span className="truncate">{sub.name}</span>
+                            </span>
+                            <ChevronRight className="h-4 w-4 shrink-0 text-[#BF9A4B]" />
                           </Link>
+                          {sub.subCategories?.length ? (
+                            <div className="mt-1.5 flex flex-wrap gap-2 pl-1">
+                              {sub.subCategories.map(child => {
+                                const childImg = resolveImageUrl(child.imageUrl || '')
+                                return (
+                                  <Link
+                                    key={child.name}
+                                    href={child.href || filteredCollectionHref(activeMobileCategory.href, child.name)}
+                                    onClick={() => setCategoriesOpen(false)}
+                                    className="flex w-[104px] flex-col items-center gap-1 rounded-lg border border-[#D9B86E]/40 bg-white px-1.5 py-1.5 text-center no-underline hover:bg-[#F5EADB]"
+                                  >
+                                    {childImg ? (
+                                      <img src={childImg} alt={child.name} className="h-12 w-10 rounded object-cover" loading="lazy" />
+                                    ) : (
+                                      <span className="flex h-12 w-10 items-center justify-center rounded bg-[#F5EADB] text-[10px] font-bold text-[#5A1827]">{child.name.slice(0, 2).toUpperCase()}</span>
+                                    )}
+                                    <span className="max-w-full truncate text-[10px] font-semibold text-[#2A1A1E]">{child.name}</span>
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          ) : null}
                           {sub.products?.length ? (
                             <div className="mt-1.5 grid grid-cols-1 gap-1 pl-2">
-                              {sub.products.map(product => (
+                              {sub.products.map(product => {
+                                const prodImg = resolveImageUrl(product.imageUrl || '')
+                                return (
                                 <Link
                                   key={product.name}
                                   href={filteredCollectionHref(activeMobileCategory.href, product.name)}
                                   onClick={() => setCategoriesOpen(false)}
-                                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-xs font-medium text-[#2A1A1E] no-underline hover:bg-[#F5EADB]"
+                                  className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-[#2A1A1E] no-underline hover:bg-[#F5EADB]"
                                 >
-                                  <span>{product.name}</span>
-                                  <ChevronRight className="h-3.5 w-3.5 text-[#BF9A4B]" />
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    {prodImg ? (
+                                      <img src={prodImg} alt="" className="h-9 w-7 flex-shrink-0 rounded border border-[#D9B86E]/30 object-cover" loading="lazy" />
+                                    ) : null}
+                                    <span className="truncate">{product.name}</span>
+                                  </span>
+                                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#BF9A4B]" />
                                 </Link>
-                              ))}
+                                )
+                              })}
                             </div>
                           ) : null}
                         </section>

@@ -4,13 +4,7 @@ import { useEffect, useState } from 'react'
 import { fetchAnnouncementBar } from '@/lib/services/storefront.service'
 
 export default function AnnouncementBar() {
-  const [messages, setMessages] = useState<string[]>([
-    'Shipping Worldwide',
-    'Easy Return & Exchange*',
-    'EMI Option Available*',
-    'Saving Scheme available*',
-    'Delivery Time: 1 - 3 Weeks',
-  ])
+  const [messages, setMessages] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
@@ -20,11 +14,14 @@ export default function AnnouncementBar() {
           setMessages(data.map(a => a.text))
         }
       } catch {
-        // Keep default messages on error
+        // No announcements available
       }
     }
     load()
   }, [])
+
+  // Only render when real announcements exist
+  if (messages.length === 0) return null
 
   const doubled = [...messages, ...messages]
 

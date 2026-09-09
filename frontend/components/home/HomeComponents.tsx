@@ -9,22 +9,31 @@ import { fetchCategories } from '@/lib/services/storefront.service'
 import { fetchArtWave, fetchStorefrontHome, fetchProducts as fetchApiProducts } from '@/lib/api/storefront'
 import { resolveImageUrl } from '@/lib/api/client'
 import type { StorefrontArtWaveItem } from '@/lib/api/types'
-import { newArrivals } from '@/lib/data'
 
 /* ── Summer Sufiana Collection Banner ─────────────── */
 export function CollectionBanner() {
-  const sarees = [
-    { id: 1, img: '/saree1.png', name: 'Classic Black' },
-    { id: 2, img: '/saree2.png', name: 'Grey Gold' },
-    { id: 3, img: '/saree3.png', name: 'Vibrant Red' },
-    { id: 4, img: '/saree4.png', name: 'Rainbow Stripe' },
-    { id: 5, img: '/saree5.png', name: 'Cream Pastel' },
-    { id: 6, img: '/saree6.png', name: 'Orange Black' },
-    { id: 7, img: '/saree1.png', name: 'Purple Zari' },
-    { id: 8, img: '/saree2.png', name: 'White Floral' },
-    { id: 9, img: '/saree3.png', name: 'Yellow Gold' },
-    { id: 10, img: '/saree4.png', name: 'Blue Peacock' },
-  ]
+  const [products, setProducts] = useState<any[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadCollectionProducts() {
+      try {
+        const prods = await fetchApiProducts()
+        if (prods && prods.length > 0) {
+          const withImages = prods.filter(p => p.imageUrl || p.image || (p.images && p.images.length > 0))
+          if (!cancelled) setProducts(withImages.slice(0, 10))
+        }
+      } catch (err) {
+        console.warn('Could not load collection products:', err)
+      }
+      if (!cancelled) setLoaded(true)
+    }
+    loadCollectionProducts()
+    return () => { cancelled = true }
+  }, [])
+
+  if (!loaded || products.length === 0) return null
 
   return (
     <section className="relative overflow-hidden" style={{ background: '#5B7D3E' }}>
@@ -76,36 +85,42 @@ export function CollectionBanner() {
           </div>
         </div>
 
-        {/* Saree cards horizontal scroll */}
+        {/* Product cards horizontal scroll */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {sarees.map((saree) => (
-            <Link
-              key={saree.id}
-              href="/collections/organic-sarees"
-              className="flex-shrink-0 rounded-xl overflow-hidden block no-underline group"
-              style={{
-                width: 'clamp(110px, 14vw, 170px)',
-                aspectRatio: '3/4',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.transform = 'translateY(-6px) scale(1.03)'
-                el.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.transform = ''
-                el.style.boxShadow = ''
-              }}
-            >
-              <img
-                src={saree.img}
-                alt={saree.name}
-                className="w-full h-full object-cover"
-              />
-            </Link>
-          ))}
+          {products.map((product, index) => {
+            const img = resolveImageUrl(product.imageUrl || product.image || product.images?.[0]?.imageUrl) || ''
+            const name = product.name || 'Silk Collection'
+            const slug = product.slug || product.href?.replace('/products/', '') || product.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+            const href = product.href || `/products/${slug}`
+            return (
+              <Link
+                key={product.id || index}
+                href={href}
+                className="flex-shrink-0 rounded-xl overflow-hidden block no-underline group"
+                style={{
+                  width: 'clamp(110px, 14vw, 170px)',
+                  aspectRatio: '3/4',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = 'translateY(-6px) scale(1.03)'
+                  el.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = ''
+                  el.style.boxShadow = ''
+                }}
+              >
+                <img
+                  src={img}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+              </Link>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -705,6 +720,7 @@ export function CategoryGrid() {
 /* ── New Arrivals Product Grid ────────────────────── */
 export function ProductGrid() {
   const [products, setProducts] = useState<any[]>([])
+  const [loaded, setLoaded] = useState(false)
   const { addItem, setDrawerOpen } = useCart()
 
   useEffect(() => {
@@ -714,18 +730,21 @@ export function ProductGrid() {
         const homeData = await fetchStorefrontHome()
         if (!cancelled && homeData?.newArrivals && homeData.newArrivals.length > 0) {
           setProducts(homeData.newArrivals.slice(0, 4))
+          setLoaded(true)
           return
         }
         const prods = await fetchApiProducts()
         if (!cancelled && prods && prods.length > 0) {
           setProducts(prods.slice(0, 4))
+          setLoaded(true)
           return
         }
       } catch (err) {
-        console.warn('Could not load dynamic products, using fallback:', err)
+        console.warn('Could not load dynamic products:', err)
       }
       if (!cancelled) {
-        setProducts(newArrivals.slice(0, 4))
+        setProducts([])
+        setLoaded(true)
       }
     }
     loadDynamicProducts()
@@ -747,6 +766,9 @@ export function ProductGrid() {
     })
     setDrawerOpen(true)
   }
+
+  // Show nothing until loaded and only when real products exist
+  if (!loaded || products.length === 0) return null
 
   return (
     <section className="relative overflow-hidden bg-[#FAF6EE] py-10">
@@ -840,7 +862,7 @@ export function ProductGrid() {
                 const fabric = (meta.fabric as string) || p.type || 'Pure Silk'
                 const occasion = (meta.occasion as string) || 'Bridal & Festive'
                 const badge = p.tag || (p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller')
-                const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || '/saree1.png'
+                const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || ''
                 const rawColors = (p.variants || [])
                   .filter((v: any) => v.colorName)
                   .map((v: any) => ({
@@ -1320,9 +1342,7 @@ export function ArtWaveSection() {
           </div>
         </div>
         
-        {!featured ? (
-          <StaticArtFallback />
-        ) : (
+        {!featured ? null : (
           <div className="w-full max-w-3xl mx-auto">
             {/* Featured media with video playback */}
             <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(90,24,39,0.15)] bg-burgundy/5 border border-[#D9B86E] group">
@@ -1360,30 +1380,6 @@ export function ArtWaveSection() {
         )}
       </div>
     </section>
-  )
-}
-
-function StaticArtFallback() {
-  return (
-    <div className="w-full max-w-3xl mx-auto flex items-center justify-center">
-      <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(90,24,39,0.15)] group bg-burgundy/5 border border-[#D9B86E] flex items-center justify-center cursor-pointer">
-        {/* Subtle floral watermark behind video placeholder */}
-        <div className="absolute inset-0 opacity-[0.05] bg-[url('/borderdesign/flower-motif.png')] bg-repeat"></div>
-        
-        {/* Placeholder Message */}
-        <div className="text-center z-10 p-8">
-          <div className="w-20 h-20 mx-auto rounded-full bg-burgundy/80 backdrop-blur-sm flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 group-hover:bg-burgundy transition-all duration-300">
-            <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-white border-b-[12px] border-b-transparent ml-2"></div>
-          </div>
-          <p className="font-montserrat text-[var(--charcoal)] font-medium tracking-widest uppercase text-sm">
-            Client Video Coming Soon
-          </p>
-          <p className="font-montserrat text-gold text-xs mt-2 max-w-md mx-auto leading-relaxed">
-            Space reserved for the brand video. Once provided, it will automatically play here.
-          </p>
-        </div>
-      </div>
-    </div>
   )
 }
 

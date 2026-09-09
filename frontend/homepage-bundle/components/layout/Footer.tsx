@@ -6,7 +6,7 @@ import { useState, useEffect, type CSSProperties } from 'react'
 import { ChevronRight, Heart, Home, Menu, Percent, ShoppingBag, ShoppingCart, Truck, X, type LucideIcon } from 'lucide-react'
 import { useCart } from '@/lib/context/CartContext'
 import { fetchNavMenu, type NavMenuItem } from '@/lib/services/storefront.service'
-import { STATIC_NAV_MENU } from '@/lib/data/navigation'
+import { resolveImageUrl } from '@/lib/api/client'
 
 function filteredCollectionHref(baseHref: string, filter: string) {
   return `${baseHref}?filter=${encodeURIComponent(filter)}`
@@ -159,11 +159,19 @@ function MobileDrawerQuickLink({ href, label, Icon }: { href: string; label: str
 export default function Footer() {
   const { itemCount } = useCart()
   const [categoriesOpen, setCategoriesOpen] = useState(false)
-  const [navMenu, setNavMenu] = useState<NavMenuItem[]>(STATIC_NAV_MENU)
+  const [navMenu, setNavMenu] = useState<NavMenuItem[]>([])
   const [activeMobileCategory, setActiveMobileCategory] = useState<NavMenuItem | null>(null)
 
   useEffect(() => {
-    setNavMenu(STATIC_NAV_MENU)
+    let cancelled = false
+    fetchNavMenu()
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) setNavMenu(data)
+      })
+      .catch(() => {
+        if (!cancelled) setNavMenu([])
+      })
+    return () => { cancelled = true }
   }, [])
 
   const footerLogos = [
@@ -430,9 +438,14 @@ export default function Footer() {
                           key={category.label}
                           type="button"
                           onClick={() => setActiveMobileCategory(category)}
-                          className="flex w-full items-center justify-between py-4 text-left text-[#2A1A1E]"
+                          className="flex w-full items-center justify-between gap-3 py-3 text-left text-[#2A1A1E]"
                         >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
+                          <span className="flex min-w-0 items-center gap-3">
+                            {category.imageUrl && (
+                              <img src={resolveImageUrl(category.imageUrl)} alt="" className="h-11 w-9 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                            )}
+                            <span className="min-w-0 truncate text-[15px] font-semibold">{category.label}</span>
+                          </span>
                           <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
                         </button>
                       ) : (
@@ -440,9 +453,14 @@ export default function Footer() {
                           key={category.label}
                           href={category.href}
                           onClick={() => setCategoriesOpen(false)}
-                          className="flex items-center justify-between py-4 text-[#2A1A1E] no-underline"
+                          className="flex items-center justify-between gap-3 py-3 text-[#2A1A1E] no-underline"
                         >
-                          <span className="min-w-0 pr-3 text-[15px] font-semibold">{category.label}</span>
+                          <span className="flex min-w-0 items-center gap-3">
+                            {category.imageUrl && (
+                              <img src={resolveImageUrl(category.imageUrl)} alt="" className="h-11 w-9 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                            )}
+                            <span className="min-w-0 truncate text-[15px] font-semibold">{category.label}</span>
+                          </span>
                           <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
                         </Link>
                       )
@@ -472,26 +490,61 @@ export default function Footer() {
                       {activeMobileCategory.subCategories?.map(sub => (
                         <section key={sub.name} className="py-3">
                           <Link
-                            href={filteredCollectionHref(activeMobileCategory.href, sub.name)}
+                            href={sub.href || filteredCollectionHref(activeMobileCategory.href, sub.name)}
                             onClick={() => setCategoriesOpen(false)}
-                            className="flex items-center justify-between py-1 text-[15px] font-bold text-[#9C1A21] no-underline"
+                            className="flex items-center justify-between gap-2 py-1 text-[15px] font-bold text-[#9C1A21] no-underline"
                           >
-                            {sub.name}
-                            <ChevronRight className="h-5 w-5 text-[#7A5E4B]" />
+                            <span className="flex min-w-0 items-center gap-2">
+                              {sub.imageUrl && (
+                                <img src={resolveImageUrl(sub.imageUrl)} alt="" className="h-9 w-7 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
+                              )}
+                              <span className="truncate">{sub.name}</span>
+                            </span>
+                            <ChevronRight className="h-5 w-5 shrink-0 text-[#7A5E4B]" />
                           </Link>
+                          {sub.subCategories?.length ? (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {sub.subCategories.map(child => {
+                                const childImg = resolveImageUrl(child.imageUrl || '')
+                                return (
+                                  <Link
+                                    key={child.name}
+                                    href={child.href || filteredCollectionHref(activeMobileCategory.href, child.name)}
+                                    onClick={() => setCategoriesOpen(false)}
+                                    className="flex w-[104px] flex-col items-center gap-1 rounded-lg border border-[#D9B86E]/40 bg-white px-1.5 py-1.5 text-center no-underline hover:bg-[#F5EADB]"
+                                  >
+                                    {childImg ? (
+                                      <img src={childImg} alt={child.name} className="h-12 w-10 rounded object-cover" loading="lazy" />
+                                    ) : (
+                                      <span className="flex h-12 w-10 items-center justify-center rounded bg-[#F5EADB] text-[10px] font-bold text-[#9C1A21]">{child.name.slice(0, 2).toUpperCase()}</span>
+                                    )}
+                                    <span className="max-w-full truncate text-[10px] font-semibold text-[#2A1A1E]">{child.name}</span>
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          ) : null}
                           {sub.products?.length ? (
                             <div className="mt-2 grid grid-cols-1 gap-1.5">
-                              {sub.products.map(product => (
+                              {sub.products.map(product => {
+                                const prodImg = resolveImageUrl(product.imageUrl || '')
+                                return (
                                 <Link
                                   key={product.name}
                                   href={filteredCollectionHref(activeMobileCategory.href, product.name)}
                                   onClick={() => setCategoriesOpen(false)}
-                                  className="flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium leading-5 text-[#2A1A1E] no-underline hover:bg-burgundy"
+                                  className="flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm font-medium leading-5 text-[#2A1A1E] no-underline hover:bg-burgundy"
                                 >
-                                  <span>{product.name}</span>
-                                  <ChevronRight className="h-4 w-4 text-[#BF9A4B]" />
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    {prodImg ? (
+                                      <img src={prodImg} alt="" className="h-9 w-7 flex-shrink-0 rounded border border-[#D9B86E]/30 object-cover" loading="lazy" />
+                                    ) : null}
+                                    <span className="truncate">{product.name}</span>
+                                  </span>
+                                  <ChevronRight className="h-4 w-4 shrink-0 text-[#BF9A4B]" />
                                 </Link>
-                              ))}
+                                )
+                              })}
                             </div>
                           ) : null}
                         </section>

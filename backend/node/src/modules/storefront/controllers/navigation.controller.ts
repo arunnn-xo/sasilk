@@ -10,12 +10,12 @@ import { plain, decodeJsonValue } from './helpers.js'
 
 export const getNavMenu = async (_req: Request, res: Response) => {
   const allCategories = await Category.findAll({
-    where: { active: true, navVisible: true },
+    where: { active: true },
     order: [['sortOrder', 'ASC'], ['id', 'ASC']],
     raw: true,
   }) as any[]
 
-  const topLevel = allCategories.filter((c: any) => !c.parentId)
+  const topLevel = allCategories.filter((c: any) => !c.parentId && c.navVisible)
 
   if (topLevel.length === 0) {
     return res.json({ navigation: [] })
@@ -69,6 +69,7 @@ export const getNavMenu = async (_req: Request, res: Response) => {
     return {
       label: cat.name,
       href: cat.href,
+      imageUrl: cat.imageUrl || null,
       isSale: cat.tag === 'Sale',
       isHighlighted: !!cat.headerHighlight,
       ...(children.length > 0 ? { subCategories: children } : {}),

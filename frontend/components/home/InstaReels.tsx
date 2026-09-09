@@ -15,26 +15,20 @@ import 'swiper/css/effect-coverflow'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 
-// Static fallback when admin has not added any reels
-const staticFallback: StorefrontReel[] = [
-  { id: 1, imageUrl: '/saree1.png', views: '1L', sortOrder: 0 },
-  { id: 2, imageUrl: '/saree2.png', views: '52K', sortOrder: 1 },
-  { id: 3, imageUrl: '/saree3.png', views: '36K', sortOrder: 2 },
-  { id: 4, imageUrl: '/saree4.png', views: '27K', sortOrder: 3 },
-  { id: 5, imageUrl: '/saree5.png', views: '19K', sortOrder: 4 },
-  { id: 6, imageUrl: '/saree6.png', views: '31K', sortOrder: 5 },
-]
-
 export default function InstaReels() {
   const [mounted, setMounted] = useState(false)
   const [activeSlideIndex, setActiveSlideIndex] = useState<number | null>(null)
   const [reelsData, setReelsData] = useState<StorefrontReel[]>([])
 
-  const displayData = reelsData.length > 0 ? reelsData : staticFallback
-
   useEffect(() => {
     setMounted(true)
-    fetchReels().then(setReelsData)
+    let cancelled = false
+    fetchReels().then(data => {
+      if (!cancelled) setReelsData(data || [])
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Lock body scroll only when modal is open
@@ -47,7 +41,10 @@ export default function InstaReels() {
     }
   }, [activeSlideIndex])
 
-  if (!mounted) return null;
+  const displayData = reelsData
+
+  // Render nothing until mounted and only when real reels exist
+  if (!mounted || displayData.length === 0) return null
 
   return (
     <>

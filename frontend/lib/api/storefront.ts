@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontArtWaveItem, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
+import type { CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontArtWaveItem, StorefrontBanner, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
 
 export async function fetchAnnouncementMessages() {
   try {
@@ -61,6 +61,16 @@ export async function fetchCategories(section?: string) {
   try {
     const query = section ? `?section=${encodeURIComponent(section)}` : ''
     return await apiFetch<StorefrontCategory[]>(`/storefront/categories${query}`)
+  } catch {
+    return []
+  }
+}
+
+export async function fetchBanners(placement?: string) {
+  try {
+    const query = placement ? `?placement=${encodeURIComponent(placement)}` : ''
+    const data = await apiFetch<{ banners: StorefrontBanner[] }>(`/storefront/banners${query}`)
+    return data.banners || []
   } catch {
     return []
   }
