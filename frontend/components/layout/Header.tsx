@@ -4,13 +4,13 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, ShoppingBag, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
 import AnnouncementBar from '@/components/layout/AnnouncementBar'
 import { useCart } from '@/components/cart/CartContext'
-import { fetchEvents, type NavMenuItem, type EventItem } from '@/lib/services/storefront.service'
-import { STATIC_NAV_MENU } from '@/lib/data/navigation'
+import { fetchNavMenu, fetchEvents, type NavMenuItem, type EventItem } from '@/lib/services/storefront.service'
+import { resolveImageUrl } from '@/lib/api/client'
 import { formatEventDateTime } from '@/lib/utils/eventFormat'
 
 function filteredCollectionHref(baseHref: string, filter: string) {
@@ -27,10 +27,22 @@ export default function Header() {
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [accountReady, setAccountReady] = useState(false)
-  const navMenu = STATIC_NAV_MENU
+  const [navMenu, setNavMenu] = useState<NavMenuItem[]>([])
   const [activeEventsCount, setActiveEventsCount] = useState(0)
   const [featuredEvent, setFeaturedEvent] = useState<EventItem | null>(null)
   const mobileSearchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchNavMenu()
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) setNavMenu(data)
+      })
+      .catch(() => {
+        if (!cancelled) setNavMenu([])
+      })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -305,18 +317,6 @@ export default function Header() {
               Home
             </span>
             {pathname === '/' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
-          </Link>
-
-          {/* Divider */}
-          <div className="hidden 2xl:block h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
-
-          {/* Shop (Visible on wide screens to prevent center encroachment) */}
-          <Link href="/shop" className="action-item group hidden 2xl:flex flex-col items-center gap-1 px-1.5 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline">
-            <ShoppingBag size={26} color="var(--burgundy)" strokeWidth={1.6} className="fill-transparent transition-colors duration-300 group-hover:fill-[#9c1a21] group-active:fill-[#9c1a21]" />
-            <span className="text-[11px] tracking-wide whitespace-nowrap" style={{ color: 'var(--muted)', fontWeight: 500 }}>
-              Shop
-            </span>
-            {pathname === '/shop' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full" style={{ background: 'var(--burgundy)' }} />}
           </Link>
 
           {/* Divider */}
@@ -600,29 +600,46 @@ export default function Header() {
                   <div className="w-full px-8 xl:px-12 flex h-[480px] relative z-10">
                     
                     {/* Left Column: Subcategories */}
-                    <div className="w-[300px] flex-shrink-0 border-r border-[var(--ivory-dark)] bg-[#FAF6EE] py-6 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                      {cat.subCategories.map(sub => {
-                        const currentActive = activeSubcats[cat.label] || cat.subCategories![0].name;
-                        return (
-                        <div
-                          key={sub.name}
-                          onMouseEnter={() => setActiveSubcats(prev => ({ ...prev, [cat.label]: sub.name }))}
-                          className={`px-8 py-3.5 cursor-pointer transition-all duration-300 flex justify-between items-center border-b border-[#D9B86E]/50 last:border-0 ${
-                            currentActive === sub.name 
-                              ? 'bg-white text-[var(--burgundy)] shadow-[inset_4px_0_0_var(--gold)]' 
-                              : 'text-[#444444] hover:text-[var(--burgundy)] hover:bg-white/60'
-                          }`}
-                        >
-                          <span className={`text-[15px] uppercase ${currentActive === sub.name ? 'font-bold' : 'font-bold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
-                            {sub.name}
+                    <div className="w-[300px] flex-shrink-0 border-r border-[var(--ivory-dark)] bg-[#FAF6EE] flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                      {cat.imageUrl && (
+                        <div className="relative h-[86px] overflow-hidden border-b border-[#D9B86E]/40 flex-shrink-0">
+                          <img src={resolveImageUrl(cat.imageUrl)} alt={cat.label} className="w-full h-full object-cover" loading="lazy" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#5A1827]/85 via-[#5A1827]/25 to-transparent"></div>
+                          <span className="absolute bottom-2 left-6 right-2 text-[13px] font-bold uppercase tracking-[0.14em] text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                            {cat.label}
                           </span>
-                          {sub.directLink ? (
-                             <span className="text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold">View</span>
-                          ) : (
-                             <span className={`text-[18px] font-bold transition-transform duration-300 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
-                          )}
                         </div>
-                      )})}
+                      )}
+                      <div className="flex-1 overflow-y-auto py-2">
+                        {cat.subCategories.map(sub => {
+                          const currentActive = activeSubcats[cat.label] || cat.subCategories![0].name;
+                          const subImg = resolveImageUrl(sub.imageUrl || '')
+                          return (
+                          <div
+                            key={sub.name}
+                            onMouseEnter={() => setActiveSubcats(prev => ({ ...prev, [cat.label]: sub.name }))}
+                            className={`px-6 py-3 cursor-pointer transition-all duration-300 flex justify-between items-center border-b border-[#D9B86E]/50 last:border-0 ${
+                              currentActive === sub.name 
+                                ? 'bg-white text-[var(--burgundy)] shadow-[inset_4px_0_0_var(--gold)]' 
+                                : 'text-[#444444] hover:text-[var(--burgundy)] hover:bg-white/60'
+                            }`}
+                          >
+                            <span className="flex items-center gap-3 min-w-0">
+                              {subImg ? (
+                                <img src={subImg} alt="" className="w-9 h-11 object-cover rounded border border-[#D9B86E]/40 flex-shrink-0" loading="lazy" />
+                              ) : null}
+                              <span className={`text-[14px] uppercase truncate ${currentActive === sub.name ? 'font-bold' : 'font-bold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
+                                {sub.name}
+                              </span>
+                            </span>
+                            {sub.directLink ? (
+                               <span className="text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold flex-shrink-0">View</span>
+                            ) : (
+                               <span className={`text-[18px] font-bold transition-transform duration-300 flex-shrink-0 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
+                            )}
+                          </div>
+                        )})}
+                      </div>
                     </div>
 
                     {/* Right Column: Products Grid */}
@@ -682,35 +699,56 @@ export default function Header() {
                                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                                   Categories
                                 </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {childCats.map(child => (
-                                    <Link
-                                      key={child.name}
-                                      href={child.href || filteredCollectionHref(cat.href, child.name)}
-                                      className="rounded-full border border-[#D9B86E]/60 bg-white px-4 py-1.5 text-[13px] font-semibold text-[var(--burgundy)] no-underline transition-all duration-300 hover:border-[var(--burgundy)] hover:bg-[var(--burgundy)] hover:text-[#FAF6EE]"
-                                      style={{ fontFamily: '"Assistant", sans-serif', letterSpacing: '0.03em' }}
-                                    >
-                                      {child.name}
-                                    </Link>
-                                  ))}
+                                <div className="flex flex-wrap gap-4">
+                                  {childCats.map(child => {
+                                    const childImg = resolveImageUrl(child.imageUrl || '')
+                                    return (
+                                      <Link
+                                        key={child.name}
+                                        href={child.href || filteredCollectionHref(cat.href, child.name)}
+                                        className="group/child no-underline w-[88px] text-center"
+                                        title={child.name}
+                                      >
+                                        {childImg ? (
+                                          <div className="w-[76px] h-[92px] mx-auto overflow-hidden rounded-lg border border-[#D9B86E]/40 bg-white shadow-sm">
+                                            <img src={childImg} alt={child.name} className="w-full h-full object-cover transition-transform duration-500 group-hover/child:scale-105" loading="lazy" />
+                                          </div>
+                                        ) : (
+                                          <div className="w-[76px] h-[92px] mx-auto flex items-center justify-center rounded-lg border border-[#D9B86E]/40 bg-[#FAF6EE] px-2 text-[11px] font-bold text-[var(--burgundy)] leading-tight">
+                                            {child.name}
+                                          </div>
+                                        )}
+                                        <span className="mt-1.5 block text-[12px] font-semibold text-[#2C2C2C] group-hover/child:text-[var(--burgundy)] leading-tight">
+                                          {child.name}
+                                        </span>
+                                      </Link>
+                                    )
+                                  })}
                                 </div>
                               </div>
                             )}
 
                             {products.length > 0 && (
-                              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-5 pb-6">
-                                {products.map((prod, i) => (
+                              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pb-6">
+                                {products.map((prod, i) => {
+                                  const prodImg = resolveImageUrl(prod.imageUrl || '')
+                                  return (
                                   <Link 
                                     key={prod.name} 
                                     href={filteredCollectionHref(cat.href, prod.name)}
-                                    className="text-[16px] text-[#2C2C2C] hover:text-[var(--burgundy-dark)] transition-all duration-300 flex items-center gap-2.5 no-underline group/link hover:translate-x-1.5 py-1"
+                                    className="group/prod flex items-center gap-2.5 no-underline rounded-md p-1.5 hover:bg-[#FAF6EE] transition-colors duration-300"
                                     style={{ animationDelay: `${i * 20}ms` }}
                                   >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#D1C6B4] group-hover/link:bg-[var(--gold)] transition-colors duration-300 group-hover/link:shadow-[0_0_8px_var(--gold)]"></span>
-                                    <span className="font-semibold group-hover/link:font-bold" style={{ fontFamily: '"Assistant", sans-serif', letterSpacing: '0.03em' }}>{prod.name}</span>
-                                    {prod.isHot && <span title="Hot Selling" className="text-[13px] animate-pulse drop-shadow-md ml-auto mr-2">🔥</span>}
+                                    {prodImg ? (
+                                      <img src={prodImg} alt={prod.name} className="w-10 h-[52px] object-cover rounded border border-[#D9B86E]/30 flex-shrink-0" loading="lazy" />
+                                    ) : (
+                                      <span className="w-10 h-[52px] flex items-center justify-center rounded border border-[#D9B86E]/30 bg-[#FAF6EE] flex-shrink-0 text-[12px] text-[#BF9A4B]">›</span>
+                                    )}
+                                    <span className="text-[13px] font-semibold text-[#2C2C2C] group-hover/prod:text-[var(--burgundy-dark)] leading-tight">{prod.name}</span>
+                                    {prod.isHot && <span title="Hot Selling" className="text-[12px] ml-auto">🔥</span>}
                                   </Link>
-                                ))}
+                                  )
+                                })}
                               </div>
                             )}
 
