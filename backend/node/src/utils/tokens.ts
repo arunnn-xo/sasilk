@@ -16,11 +16,14 @@ const customerCookie = 'threads_customer_token'
 const adminCookie = 'threads_admin_token'
 const guestCookie = 'threads_guest_session'
 
+const isProd = env.NODE_ENV === 'production'
+const sameSite: 'none' | 'lax' = isProd ? 'none' : 'lax'
+
 function cookieOptions() {
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    secure: isProd,
+    sameSite,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   }
 }
@@ -28,8 +31,8 @@ function cookieOptions() {
 function guestCookieOptions() {
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    secure: isProd,
+    sameSite,
   }
 }
 
