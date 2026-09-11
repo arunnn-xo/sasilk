@@ -116,6 +116,11 @@ export function CollectionBanner() {
                 <img
                   src={img}
                   alt={name}
+                  onError={(e) => {
+                    if (e.currentTarget.src !== '/saree1.png') {
+                      e.currentTarget.src = '/saree1.png'
+                    }
+                  }}
                   className="w-full h-full object-cover"
                 />
               </Link>

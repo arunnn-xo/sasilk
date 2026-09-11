@@ -25,6 +25,7 @@ import {
   cleanupFile,
   filePathFromUrl,
 } from '../../../services/image.service.js'
+import { uploadBufferToCloudinary } from '../../../services/cloudinary.service.js'
 import { UPLOADS_DIR } from './upload.controller.js'
 import { adminId, paginationSchema } from './utils.js'
 
@@ -379,35 +380,16 @@ export const uploadVariantImage = async (req: Request, res: Response) => {
 
   const count = await VariantImage.count({ where: { variantId } })
   if (count >= 7) { // 1 main + 7 gallery = 8 total
-    cleanupFile(req.file.path)
     throw new AppError(422, 'Maximum 7 gallery images allowed per variant')
   }
 
-  const dimensionRuleKey = String(req.body.dimensionRule || req.query.dimensionRule || '').trim()
-  const rule = dimensionRuleKey ? DIMENSION_RULES[dimensionRuleKey] : undefined
-  let filePath = req.file.path
-  let finalFilename = req.file.filename
-
-  if (rule) {
-    const validation = await validateImageDimensions(filePath, rule)
-    if (!validation.valid) {
-      cleanupFile(filePath)
-      throw new AppError(422, validation.reason)
-    }
-    if (validation.dimensions.width > rule.maxWidth || validation.dimensions.height > rule.maxHeight) {
-      try {
-        const optimized = await optimizeImage(filePath, rule)
-        cleanupFile(filePath)
-        filePath = optimized.path
-        finalFilename = path.basename(filePath)
-      } catch {}
-    }
-  }
+  const uploadResult = await uploadBufferToCloudinary(req.file.buffer, 'sasilk/variants')
+  const finalImageUrl = uploadResult.secure_url
 
   const maxOrder = await VariantImage.max('sortOrder', { where: { variantId } }) as number | null
   const image = await VariantImage.create({
     variantId,
-    imageUrl: `/uploads/${finalFilename}`,
+    imageUrl: finalImageUrl,
     sortOrder: (maxOrder ?? -1) + 1,
   })
 
@@ -430,7 +412,7 @@ export const uploadVariantImage = async (req: Request, res: Response) => {
         const siblingMaxOrder = await VariantImage.max('sortOrder', { where: { variantId: siblingId } }) as number | null
         await VariantImage.create({
           variantId: siblingId,
-          imageUrl: `/uploads/${finalFilename}`,
+          imageUrl: finalImageUrl,
           sortOrder: (siblingMaxOrder ?? -1) + 1,
         })
       }
@@ -466,39 +448,8 @@ export const uploadVariantMainImage = async (req: Request, res: Response) => {
   if (!variant) throw new AppError(404, 'Variant not found')
   if (!req.file) throw new AppError(422, 'File is required')
 
-  // Clean up old main image file - only if not referenced in any orders
-  const oldImageUrl = variant.getDataValue('imageUrl') as string | null
-  if (oldImageUrl) {
-    const refCount = await OrderItem.count({ where: { imageUrl: oldImageUrl } })
-    if (refCount === 0) {
-      const oldPath = filePathFromUrl(oldImageUrl, UPLOADS_DIR)
-      if (oldPath) cleanupFile(oldPath)
-    }
-  }
-
-  // Validate and optimize using 'variant-main' rule
-  const dimensionRuleKey = String(req.body.dimensionRule || req.query.dimensionRule || 'variant-main').trim()
-  const rule = dimensionRuleKey ? DIMENSION_RULES[dimensionRuleKey] : undefined
-  let filePath = req.file.path
-  let finalFilename = req.file.filename
-
-  if (rule) {
-    const validation = await validateImageDimensions(filePath, rule)
-    if (!validation.valid) {
-      cleanupFile(filePath)
-      throw new AppError(422, validation.reason)
-    }
-    if (validation.dimensions.width > rule.maxWidth || validation.dimensions.height > rule.maxHeight) {
-      try {
-        const optimized = await optimizeImage(filePath, rule)
-        cleanupFile(filePath)
-        filePath = optimized.path
-        finalFilename = path.basename(filePath)
-      } catch {}
-    }
-  }
-
-  const imageUrl = `/uploads/${finalFilename}`
+  const uploadResult = await uploadBufferToCloudinary(req.file.buffer, 'sasilk/variants')
+  const imageUrl = uploadResult.secure_url
   await variant.update({ imageUrl })
 
   res.json({ imageUrl })
@@ -768,31 +719,8 @@ export const uploadProductImage = async (req: Request, res: Response) => {
   const product = await Product.findByPk(Number(productId))
   if (!product) throw new AppError(404, 'Product not found.')
 
-  const filePath = req.file.path
-  const dimensionRuleKey = String(req.body.dimensionRule || req.query.dimensionRule || '').trim()
-  const rule = dimensionRuleKey ? DIMENSION_RULES[dimensionRuleKey] : undefined
-
-  let imageUrl = `/uploads/${req.file.filename}`
-
-  if (rule) {
-    const validation = await validateImageDimensions(filePath, rule)
-
-    if (!validation.valid) {
-      cleanupFile(filePath)
-      throw new AppError(422, validation.reason)
-    }
-
-    if (validation.dimensions.width > rule.maxWidth || validation.dimensions.height > rule.maxHeight) {
-      try {
-        const optimized = await optimizeImage(filePath, rule)
-        const finalFilename = path.basename(optimized.path)
-        imageUrl = `/uploads/${finalFilename}`
-        cleanupFile(filePath)
-      } catch {
-        // optimization failed, use original
-      }
-    }
-  }
+  const uploadResult = await uploadBufferToCloudinary(req.file.buffer, 'sasilk/products')
+  const imageUrl = uploadResult.secure_url
 
   const maxSort = await ProductImage.max('sortOrder', {
     where: { productId: Number(productId) },

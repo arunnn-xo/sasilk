@@ -603,7 +603,17 @@ export default function Header() {
                     <div className="w-[300px] flex-shrink-0 border-r border-[var(--ivory-dark)] bg-[#FAF6EE] flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
                       {cat.imageUrl && (
                         <div className="relative h-[86px] overflow-hidden border-b border-[#D9B86E]/40 flex-shrink-0">
-                          <img src={resolveImageUrl(cat.imageUrl)} alt={cat.label} className="w-full h-full object-cover" loading="lazy" />
+                          <img
+                            src={resolveImageUrl(cat.imageUrl)}
+                            alt={cat.label}
+                            onError={(e) => {
+                              if (e.currentTarget.src !== '/saree1.png') {
+                                e.currentTarget.src = '/saree1.png'
+                              }
+                            }}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#5A1827]/85 via-[#5A1827]/25 to-transparent"></div>
                           <span className="absolute bottom-2 left-6 right-2 text-[13px] font-bold uppercase tracking-[0.14em] text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                             {cat.label}

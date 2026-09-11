@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
@@ -96,9 +98,18 @@ app.use(rateLimit({
 }))
 
 app.use('/api', routes)
+
+const DEFAULT_SAREE_FALLBACK = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800&auto=format&fit=crop&q=80'
+
 app.use('/uploads', (req, res, next) => {
   if (req.path.toLowerCase().endsWith('.svg')) {
     return res.status(403).json({ error: 'SVG files are blocked for security reasons.' })
+  }
+  const filename = req.path.replace(/^\/+/, '')
+  const localFile = path.resolve('uploads', filename)
+  if (!fs.existsSync(localFile)) {
+    // Missing local file on Render disk — redirect to fallback saree image to prevent 404 white cards
+    return res.redirect(302, DEFAULT_SAREE_FALLBACK)
   }
   next()
 }, express.static('uploads'))

@@ -4,10 +4,10 @@ function getApiBaseUrl(): string {
     const host = window.location.hostname
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')
     if (!isLocal && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-      return 'https://demottnapi.saitechnosolutions.co.in/api'
+      return 'https://sasilk.onrender.com/api'
     }
   }
-  return envUrl || 'http://localhost:5005/api'
+  return envUrl || 'https://sasilk.onrender.com/api'
 }
 
 function getStorefrontBaseUrl(): string {
@@ -16,10 +16,10 @@ function getStorefrontBaseUrl(): string {
     const host = window.location.hostname
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')
     if (!isLocal && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1') || envUrl.includes('172.16.'))) {
-      return 'https://demottn.saitechnosolutions.co.in'
+      return 'https://soilgoddeswebsite.vercel.app'
     }
   }
-  return envUrl || 'http://localhost:3000'
+  return envUrl || 'https://soilgoddeswebsite.vercel.app'
 }
 
 export const apiBaseUrl = getApiBaseUrl()

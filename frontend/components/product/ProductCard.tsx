@@ -108,6 +108,11 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
             key={displayImage}
             src={displayImage}
             alt={activeColor ? `${product.name} in ${activeColor.name}` : product.name}
+            onError={(e) => {
+              if (e.currentTarget.src !== '/saree1.png') {
+                e.currentTarget.src = '/saree1.png'
+              }
+            }}
             className="h-full w-full object-cover transition-all duration-500 group-hover:scale-[1.04] pointer-events-none"
           />
         </Link>
