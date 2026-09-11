@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary'
+import { v2 as cloudinary, UploadApiErrorResponse, UploadApiResponse } from 'cloudinary'
 import { Readable } from 'stream'
 
 cloudinary.config({
@@ -19,7 +19,7 @@ export async function uploadBufferToCloudinary(
         resource_type: 'auto',
         transformation: [{ quality: 'auto', fetch_format: 'auto' }],
       },
-      (error, result) => {
+      (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
         if (error) return reject(error)
         if (!result) return reject(new Error('No result from Cloudinary'))
         resolve({
