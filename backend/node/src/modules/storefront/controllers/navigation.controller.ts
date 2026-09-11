@@ -43,6 +43,39 @@ export const getNavMenu = async (_req: Request, res: Response) => {
     }
   }
 
+  const deduplicateChildren = (nodes: any[]): any[] => {
+    const result: any[] = []
+    const seen = new Map<string, any>()
+    for (const node of nodes) {
+      const key = String(node.name || node.label || '').trim().toLowerCase()
+      if (seen.has(key)) {
+        const existing = seen.get(key)
+        // Merge products
+        if (node.products && node.products.length > 0) {
+          const prodSeen = new Set((existing.products || []).map((p: any) => p.name))
+          for (const p of node.products) {
+            if (!prodSeen.has(p.name)) {
+              existing.products = existing.products || []
+              existing.products.push(p)
+            }
+          }
+        }
+        // If existing had no image but duplicate has one, use the valid image
+        if (!existing.imageUrl && node.imageUrl) {
+          existing.imageUrl = node.imageUrl
+        }
+        // Merge subCategories
+        if (node.subCategories && node.subCategories.length > 0) {
+          existing.subCategories = deduplicateChildren([...(existing.subCategories || []), ...node.subCategories])
+        }
+      } else {
+        seen.set(key, node)
+        result.push(node)
+      }
+    }
+    return result
+  }
+
   const buildNode = (cat: any): any => {
     const linkedProducts = productsByCategory.get(cat.id) || []
     const seen = new Set<string>()
@@ -53,7 +86,8 @@ export const getNavMenu = async (_req: Request, res: Response) => {
         items.push({ name: p.name, imageUrl: p.imageUrl })
       }
     }
-    const children = (byParent.get(cat.id) || []).map(buildNode)
+    const rawChildren = (byParent.get(cat.id) || []).map(buildNode)
+    const children = deduplicateChildren(rawChildren)
     return {
       name: cat.name,
       href: cat.href,
@@ -65,7 +99,8 @@ export const getNavMenu = async (_req: Request, res: Response) => {
   }
 
   const navigation = topLevel.map((cat: any) => {
-    const children = (byParent.get(cat.id) || []).map(buildNode)
+    const rawChildren = (byParent.get(cat.id) || []).map(buildNode)
+    const children = deduplicateChildren(rawChildren)
     return {
       label: cat.name,
       href: cat.href,

@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, EyeOff, FolderTree, Loader2, ArrowLeft, Save, Sparkles } from 'lucide-react'
-import { createResource, updateResource } from '../services/api'
+import { createResource, listResource, updateResource } from '../services/api'
 import type { ResourceConfig } from '../app/resources'
 import { resources } from '../app/resources'
 import FieldWithTooltip from '../components/FieldWithTooltip'
@@ -37,6 +37,11 @@ export default function CategoryFormPage() {
   const { id } = useParams()
   const location = useLocation()
   const queryClient = useQueryClient()
+
+  const { data: catData } = useQuery({
+    queryKey: ['resource', 'categories'],
+    queryFn: () => listResource('categories', 1, 200),
+  })
 
   const isEdit = Boolean(id)
   const stateItem = (location.state as { item?: Record<string, unknown> } | null)?.item || null
@@ -96,6 +101,16 @@ export default function CategoryFormPage() {
     if (!trimmedName) errors.name = 'Please enter a category name'
     else if (trimmedName.length < 2) errors.name = 'Name must be at least 2 characters'
     else if (trimmedName.length > 140) errors.name = 'Name cannot exceed 140 characters'
+    else if (catData?.items) {
+      const isDuplicate = catData.items.some((c: any) =>
+        !c.parentId &&
+        String(c.name || '').trim().toLowerCase() === trimmedName.toLowerCase() &&
+        (!isEdit || String(c.id) !== String(id))
+      )
+      if (isDuplicate) {
+        errors.name = `A category named "${trimmedName}" already exists.`
+      }
+    }
     return errors
   }
 

@@ -534,6 +534,26 @@ export const createResource = async (req: Request, res: Response) => {
   }
 
   const body = await pickWritable(req.body, config)
+
+  if (resource === 'categories') {
+    const parentId = body.parentId !== undefined && body.parentId !== null && body.parentId !== ''
+      ? Number(body.parentId)
+      : null
+    const catName = String(body.name || '').trim()
+    if (catName) {
+      const existing = await Category.findOne({
+        where: {
+          parentId,
+          name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), catName.toLowerCase()),
+        },
+        paranoid: false,
+      })
+      if (existing) {
+        throw new AppError(422, `A category or subcategory named "${catName}" already exists under this parent.`)
+      }
+    }
+  }
+
   const row = await config.model.create(body)
 
   if (resource === 'coupons' && Array.isArray(req.body.customerIds)) {
@@ -619,6 +639,26 @@ export const updateResource = async (req: Request, res: Response) => {
 
   const oldImageUrls = collectImageUrls(row, config)
   const body = await pickWritable(req.body, config)
+
+  if (resource === 'categories') {
+    const parentId = body.parentId !== undefined
+      ? (body.parentId !== null && body.parentId !== '' ? Number(body.parentId) : null)
+      : row.getDataValue('parentId')
+    const catName = body.name !== undefined ? String(body.name).trim() : String(row.getDataValue('name') || '').trim()
+    if (catName) {
+      const existing = await Category.findOne({
+        where: {
+          id: { [Op.ne]: Number(id) },
+          parentId,
+          name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), catName.toLowerCase()),
+        },
+        paranoid: false,
+      })
+      if (existing) {
+        throw new AppError(422, `Another category or subcategory named "${catName}" already exists under this parent.`)
+      }
+    }
+  }
 
   // Capture old values before update (for price drop & stock auto-notify)
   const oldPriceValue = config.entity === 'product' && body.price != null

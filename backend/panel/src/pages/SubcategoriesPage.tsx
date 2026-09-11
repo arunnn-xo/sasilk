@@ -354,7 +354,18 @@ export default function SubcategoriesPage({ level = 'sub' }: SubcategoriesPagePr
   const validateAll = () => {
     const errors: Record<string, string> = {}
     if (!parentId) errors.parentId = 'Please select a parent category'
-    if (!name.trim()) errors.name = 'Name is required'
+    const trimmed = name.trim()
+    if (!trimmed) errors.name = 'Name is required'
+    else {
+      const isDuplicate = categories.some((c: any) =>
+        String(c.parentId || '') === String(parentId || '') &&
+        String(c.name || '').trim().toLowerCase() === trimmed.toLowerCase() &&
+        (!isEdit || String(c.id) !== String(id))
+      )
+      if (isDuplicate) {
+        errors.name = `A ${isChild ? 'child' : 'sub'} category named "${trimmed}" already exists under this category.`
+      }
+    }
     if (!imageUrl) errors.imageUrl = 'Subcategory image is required'
     return errors
   }
