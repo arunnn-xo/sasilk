@@ -187,13 +187,18 @@ export const resources: ResourceConfig[] = [
     title: 'The Art of Weaving',
     eyebrow: 'Homepage The Art of Weaving Section',
     Icon: Film,
-    columns: ['id', 'videoUrl', 'imageUrl', 'active'],
+    columns: ['id', 'title', 'videoUrl', 'imageUrl', 'active'],
     fields: [
+      {
+        name: 'title',
+        label: 'Title (Optional)',
+        kind: 'text',
+      },
       {
         name: 'videoUrl',
         label: 'Video Upload / URL',
         kind: 'video',
-        required: true,
+        required: false,
         dimensionLabel: 'MP4, WebM, or MOV — Max 50 MB.',
       },
       {

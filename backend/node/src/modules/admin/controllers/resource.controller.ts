@@ -121,11 +121,11 @@ export const reelCreateSchema = z.object({
 })
 
 export const artWaveCreateSchema = z.object({
-  title: z.string().min(1, 'Title is required.').max(180, 'Title is too long.'),
-  subtitle: z.union([z.string().max(255, 'Subtitle is too long.'), z.null()]).optional(),
+  title: z.union([z.string().max(180, 'Title is too long.'), z.null()]).optional(),
+  subtitle: z.union([z.string().max(500, 'Subtitle is too long.'), z.null()]).optional(),
   description: z.union([z.string().max(4000, 'Description is too long.'), z.null()]).optional(),
-  imageUrl: z.union([z.string().max(255, 'Image URL is too long.'), z.null()]).optional().default(''),
-  videoUrl: z.string().min(1, 'Video URL is required.').max(512, 'Video URL is too long.'),
+  imageUrl: z.union([z.string().max(2048, 'Image URL is too long.'), z.null()]).optional().default(''),
+  videoUrl: z.union([z.string().max(2048, 'Video URL is too long.'), z.null()]).optional().default(''),
   mediaType: z.enum(['image', 'video']).optional().default('video'),
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
   active: z.boolean().optional().default(true),
@@ -278,6 +278,13 @@ export const resourceConfig: Record<string, ResourceConfig> = {
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
     validationSchema: artWaveCreateSchema,
+    beforeSave: body => ({
+      ...body,
+      title: (typeof body.title === 'string' && body.title.trim()) || 'The Art of Weaving',
+      imageUrl: body.imageUrl || '',
+      videoUrl: body.videoUrl || '',
+      mediaType: body.videoUrl ? 'video' : 'image',
+    }),
   },
 }
 
