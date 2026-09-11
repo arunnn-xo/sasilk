@@ -1,12 +1,9 @@
 function getApiBaseUrl(): string {
   const isServer = typeof window === 'undefined'
   let url = isServer
-    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://demottnapi.saitechnosolutions.co.in/api')
-    : (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://demottnapi.saitechnosolutions.co.in/api')
+    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://sasilk.onrender.com/api')
+    : (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://sasilk.onrender.com/api')
 
-  if (url.includes('demottn.saitechnosolutions.co.in') && !url.includes('demottnapi')) {
-    url = url.replace('demottn.saitechnosolutions.co.in', 'demottnapi.saitechnosolutions.co.in')
-  }
   if (!url.endsWith('/api') && !url.includes('/api/')) {
     url = `${url.replace(/\/$/, '')}/api`
   }

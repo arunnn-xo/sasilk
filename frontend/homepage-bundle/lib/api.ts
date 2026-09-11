@@ -1,4 +1,4 @@
-const rawApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://localhost:5005/api'
+const rawApiBaseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://sasilk.onrender.com/api'
 
 export const API_BASE_URL = rawApiBaseUrl.replace(/\/+$/, '')
 export const API_PROXY_BASE_URL = '/api/backend'
