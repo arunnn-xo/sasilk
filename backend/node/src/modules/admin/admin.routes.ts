@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import multer from 'multer'
 import path from 'node:path'
-import crypto from 'node:crypto'
 import { requireAdminAuth } from '../../middleware/auth.js'
 import { AppError, asyncHandler } from '../../utils/http.js'
 import { UPLOADS_DIR } from './controllers/upload.controller.js'
@@ -82,21 +81,9 @@ import {
 } from './controllers/resource.controller.js'
 
 
-function hashedFilename(originalName: string): string {
-  const ext = path.extname(originalName) || '.jpg'
-  const hash = crypto.randomBytes(12).toString('hex')
-  return `${hash}${ext}`
-}
-
-const storage = multer.diskStorage({
-  destination: UPLOADS_DIR,
-  filename: (_req, file, cb) => {
-    cb(null, hashedFilename(file.originalname))
-  },
-})
-
+// memoryStorage: files go into req.file.buffer for Cloudinary upload
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp']
@@ -128,7 +115,7 @@ const uploadExcel = multer({
 })
 
 const uploadVideo = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']
