@@ -132,7 +132,7 @@ export default function Header() {
       )}
 
       {/* Mobile Top Row */}
-      <div className="flex lg:hidden w-full items-center justify-between px-2 sm:px-4 py-2 relative h-[72px] sm:h-[82px]" style={{ background: '#FAF6EE' }}>
+      <div className="flex lg:hidden w-full items-center justify-between px-2 sm:px-4 py-2 relative h-[72px] sm:h-[82px] bg-white">
         {/* Search Box (Left) */}
         <div className="flex-shrink-0 z-10">
           <button
@@ -158,13 +158,7 @@ export default function Header() {
               width={260} 
               height={180} 
               unoptimized
-              style={{ 
-                height: 'auto',
-                maxHeight: '144px',
-                width: 'auto', 
-                filter: 'drop-shadow(0px 2px 8px rgba(107,26,42,0.12)) contrast(1.08)'
-              }} 
-              className="object-contain w-auto h-auto max-h-[144px]" 
+              className="object-contain w-auto h-auto max-h-[58px] sm:max-h-[66px]" 
               priority 
             />
           </Link>
@@ -297,12 +291,7 @@ export default function Header() {
               width={600} 
               height={480} 
               unoptimized
-              style={{ 
-                height: '173px', 
-                width: 'auto', 
-                filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
-              }} 
-              className="object-contain" 
+              className="object-contain w-auto h-[115px] xl:h-[128px]" 
               priority 
             />
           </Link>

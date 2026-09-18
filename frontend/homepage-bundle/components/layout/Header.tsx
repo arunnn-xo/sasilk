@@ -7,7 +7,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
-import { useCart } from '@/lib/context/CartContext'
+import AnnouncementBar from '@/components/layout/AnnouncementBar'
+import { useCart } from '@/components/cart/CartContext'
 import { fetchNavMenu, fetchEvents, type NavMenuItem, type EventItem } from '@/lib/services/storefront.service'
 import { resolveImageUrl } from '@/lib/api/client'
 import { formatEventDateTime } from '@/lib/utils/eventFormat'
@@ -21,7 +22,7 @@ const ACCOUNT_READY_KEY = 'soil_goddess_account_ready'
 export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
-  const { itemCount } = useCart()
+  const { totalUnits: itemCount } = useCart()
   const [showMobileBanner, setShowMobileBanner] = useState(true)
   const [activeSubcats, setActiveSubcats] = useState<Record<string, string>>({})
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
@@ -98,13 +99,15 @@ export default function Header() {
   }, [mobileSearchOpen])
 
   return (
-    <header
-      className="sticky top-0 z-[100]"
-      style={{
-        background: 'white',
-        boxShadow: '0 2px 20px rgba(107,26,42,0.06)',
-      }}
-    >
+    <>
+      <AnnouncementBar />
+      <header
+        className="sticky top-0 z-[100]"
+        style={{
+          background: 'white',
+          boxShadow: '0 2px 20px rgba(107,26,42,0.06)',
+        }}
+      >
       {/* Mobile App Download Banner */}
       {showMobileBanner && (
         <div className="flex lg:hidden w-full items-center justify-between px-4 py-2 bg-gradient-to-r from-[#F6E9D5] to-[#E2C792] shadow-sm relative z-[101]">
@@ -129,7 +132,7 @@ export default function Header() {
       )}
 
       {/* Mobile Top Row */}
-      <div className="flex lg:hidden w-full items-center justify-between px-2 sm:px-4 py-2 relative h-[72px] sm:h-[82px]" style={{ background: '#FAF6EE' }}>
+      <div className="flex lg:hidden w-full items-center justify-between px-2 sm:px-4 py-2 relative h-[72px] sm:h-[82px] bg-white">
         {/* Search Box (Left) */}
         <div className="flex-shrink-0 z-10">
           <button
@@ -154,13 +157,8 @@ export default function Header() {
               alt="Soil Goddess" 
               width={260} 
               height={180} 
-              style={{ 
-                height: 'auto',
-                maxHeight: '144px',
-                width: 'auto', 
-                filter: 'drop-shadow(0px 2px 8px rgba(107,26,42,0.12)) contrast(1.08)'
-              }} 
-              className="object-contain w-auto h-auto max-h-[144px]" 
+              unoptimized
+              className="object-contain w-auto h-auto max-h-[58px] sm:max-h-[66px]" 
               priority 
             />
           </Link>
@@ -292,14 +290,8 @@ export default function Header() {
               alt="Soil Goddess" 
               width={600} 
               height={480} 
-              style={{ 
-                height: '350px', 
-                width: 'auto', 
-                marginTop: '-85px', 
-                marginBottom: '-85px',
-                filter: 'drop-shadow(0px 6px 20px rgba(107,26,42,0.22)) contrast(1.12) brightness(1.03)'
-              }} 
-              className="object-contain" 
+              unoptimized
+              className="object-contain w-auto h-[115px] xl:h-[128px]" 
               priority 
             />
           </Link>
@@ -564,10 +556,11 @@ export default function Header() {
       </div>
 
       {/* Main nav */}
-      <nav
-        className="hidden lg:block relative border-t border-b border-[#D9B86E]/40"
-        style={{ backgroundColor: '#edb651' }}
-      >
+      {navMenu.length > 0 && (
+        <nav
+          className="hidden lg:block relative border-t border-b border-[#D9B86E]/40"
+          style={{ backgroundColor: '#edb651' }}
+        >
         <div className="w-full px-4 lg:px-6 flex items-center justify-start">
           {navMenu.map(cat => (
             <div 
@@ -583,7 +576,7 @@ export default function Header() {
                 <Link
                   href={cat.href}
                   className={`${
-                    cat.isSale ? 'text-[#9C1A21] font-extrabold' : 'text-[#300D14]'
+                    cat.isSale ? 'text-[#9C1A21] font-extrabold' : cat.isHighlighted ? 'text-[var(--burgundy)] animate-theme-text-blink' : 'text-[#300D14]'
                   } px-2 xl:px-3 py-3 text-[12px] xl:text-[13px] tracking-[0.08em] uppercase font-bold no-underline inline-block transition-colors hover:text-[#9C1A21]`}
                 >
                   {cat.label}
@@ -596,9 +589,9 @@ export default function Header() {
                   <div className="w-full px-8 xl:px-12 flex h-[480px] relative z-10">
                     
                     {/* Left Column: Subcategories */}
-                    <div className="w-[300px] flex-shrink-0 border-r border-[var(--ivory-dark)] bg-[#FAF6EE] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                    <div className="w-[300px] flex-shrink-0 border-r border-[var(--ivory-dark)] bg-[#FAF6EE] flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
                       {cat.imageUrl && (
-                        <div className="relative h-[80px] overflow-hidden border-b border-[#D9B86E]/40">
+                        <div className="relative h-[86px] overflow-hidden border-b border-[#D9B86E]/40 flex-shrink-0">
                           <img
                             src={resolveImageUrl(cat.imageUrl)}
                             alt={cat.label}
@@ -616,34 +609,35 @@ export default function Header() {
                           </span>
                         </div>
                       )}
-                      <div className="py-2">
-                      {cat.subCategories.map(sub => {
-                        const currentActive = activeSubcats[cat.label] || cat.subCategories![0].name;
-                        return (
-                        <div
-                          key={sub.name}
-                          onMouseEnter={() => setActiveSubcats(prev => ({ ...prev, [cat.label]: sub.name }))}
-                          className={`px-8 py-3.5 cursor-pointer transition-all duration-300 flex justify-between items-center border-b border-[#D9B86E]/50 last:border-0 ${
-                            currentActive === sub.name 
-                              ? 'bg-white text-[var(--burgundy)] shadow-[inset_4px_0_0_var(--gold)]' 
-                              : 'text-[#444444] hover:text-[var(--burgundy)] hover:bg-white/60'
-                          }`}
-                        >
-                          <span className="flex items-center gap-3 min-w-0">
-                            {sub.imageUrl && (
-                              <img src={resolveImageUrl(sub.imageUrl)} alt="" className="h-10 w-8 flex-shrink-0 rounded border border-[#D9B86E]/40 object-cover" loading="lazy" />
-                            )}
-                            <span className={`text-[15px] uppercase truncate ${currentActive === sub.name ? 'font-bold' : 'font-bold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
-                              {sub.name}
+                      <div className="flex-1 overflow-y-auto py-2">
+                        {cat.subCategories.map(sub => {
+                          const currentActive = activeSubcats[cat.label] || cat.subCategories![0].name;
+                          const subImg = resolveImageUrl(sub.imageUrl || '')
+                          return (
+                          <div
+                            key={sub.name}
+                            onMouseEnter={() => setActiveSubcats(prev => ({ ...prev, [cat.label]: sub.name }))}
+                            className={`px-6 py-3 cursor-pointer transition-all duration-300 flex justify-between items-center border-b border-[#D9B86E]/50 last:border-0 ${
+                              currentActive === sub.name 
+                                ? 'bg-white text-[var(--burgundy)] shadow-[inset_4px_0_0_var(--gold)]' 
+                                : 'text-[#444444] hover:text-[var(--burgundy)] hover:bg-white/60'
+                            }`}
+                          >
+                            <span className="flex items-center gap-3 min-w-0">
+                              {subImg ? (
+                                <img src={subImg} alt="" className="w-9 h-11 object-cover rounded border border-[#D9B86E]/40 flex-shrink-0" loading="lazy" />
+                              ) : null}
+                              <span className={`text-[14px] uppercase truncate ${currentActive === sub.name ? 'font-bold' : 'font-bold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
+                                {sub.name}
+                              </span>
                             </span>
-                          </span>
-                          {sub.directLink ? (
-                             <span className="text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold">View</span>
-                          ) : (
-                             <span className={`text-[18px] font-bold transition-transform duration-300 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
-                          )}
-                        </div>
-                      )})}
+                            {sub.directLink ? (
+                               <span className="text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold flex-shrink-0">View</span>
+                            ) : (
+                               <span className={`text-[18px] font-bold transition-transform duration-300 flex-shrink-0 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
+                            )}
+                          </div>
+                        )})}
                       </div>
                     </div>
 
@@ -684,43 +678,46 @@ export default function Header() {
                             <p className="text-[14px] text-[#444] font-medium mb-8 z-10 max-w-md leading-relaxed" style={{ fontFamily: '"Assistant", sans-serif' }}>
                               Experience the epitome of luxury and tradition. Explore our handpicked collection of <strong className="text-[var(--burgundy)]">{activeSubcatData.name}</strong> tailored perfectly for you.
                             </p>
-                            <Link href={filteredCollectionHref(cat.href, activeSubcatData.name)} className="z-10 px-10 py-3.5 bg-[var(--burgundy)] text-gold text-[12px] font-bold tracking-[0.2em] uppercase hover:bg-[#841920] transition-all duration-300 no-underline shadow-[0_4px_15px_rgba(107,26,42,0.3)] hover:shadow-[0_6px_20px_rgba(107,26,42,0.4)] hover:-translate-y-1 rounded-sm">
+                            <Link href={activeSubcatData.href || filteredCollectionHref(cat.href, activeSubcatData.name)} className="z-10 px-10 py-3.5 bg-[var(--burgundy)] text-gold text-[12px] font-bold tracking-[0.2em] uppercase hover:bg-[#841920] transition-all duration-300 no-underline shadow-[0_4px_15px_rgba(107,26,42,0.3)] hover:shadow-[0_6px_20px_rgba(107,26,42,0.4)] hover:-translate-y-1 rounded-sm">
                               Explore Collection
                             </Link>
                           </div>
                             )
                           } else {
+                            const childCats = activeSubcatData.subCategories || []
+                            const products = activeSubcatData.products || []
                             return (
                           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 min-h-full flex flex-col">
                             <h3 className="text-[30px] font-bold mb-8 pb-4 border-b border-[var(--ivory-dark)] flex items-center gap-4" style={{ fontFamily: 'Playfair Display, serif', color: 'var(--burgundy)' }}>
                               <span className="w-10 h-[2px] bg-[var(--gold)] inline-block"></span>
                               {activeSubcatData.name}
                             </h3>
-                            {activeSubcatData.subCategories && activeSubcatData.subCategories.length > 0 && (
-                              <div className="mb-8">
+
+                            {childCats.length > 0 && (
+                              <div className="mb-7">
                                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                                   Categories
                                 </p>
                                 <div className="flex flex-wrap gap-4">
-                                  {activeSubcatData.subCategories.map(child => {
+                                  {childCats.map(child => {
                                     const childImg = resolveImageUrl(child.imageUrl || '')
                                     return (
                                       <Link
                                         key={child.name}
                                         href={child.href || filteredCollectionHref(cat.href, child.name)}
-                                        className="group/child no-underline w-[84px] text-center"
+                                        className="group/child no-underline w-[88px] text-center"
                                         title={child.name}
                                       >
                                         {childImg ? (
-                                          <div className="w-[72px] h-[84px] mx-auto overflow-hidden rounded-lg border border-[var(--ivory-dark)] bg-white shadow-sm">
+                                          <div className="w-[76px] h-[92px] mx-auto overflow-hidden rounded-lg border border-[#D9B86E]/40 bg-white shadow-sm">
                                             <img src={childImg} alt={child.name} className="w-full h-full object-cover transition-transform duration-500 group-hover/child:scale-105" loading="lazy" />
                                           </div>
                                         ) : (
-                                          <div className="w-[72px] h-[84px] mx-auto flex items-center justify-center rounded-lg border border-[var(--ivory-dark)] bg-white px-1.5 text-[10px] font-bold text-[var(--burgundy)] leading-tight text-center">
+                                          <div className="w-[76px] h-[92px] mx-auto flex items-center justify-center rounded-lg border border-[#D9B86E]/40 bg-[#FAF6EE] px-2 text-[11px] font-bold text-[var(--burgundy)] leading-tight">
                                             {child.name}
                                           </div>
                                         )}
-                                        <span className="mt-1.5 block text-[11px] font-semibold text-[#2C2C2C] group-hover/child:text-[var(--burgundy)] leading-tight">
+                                        <span className="mt-1.5 block text-[12px] font-semibold text-[#2C2C2C] group-hover/child:text-[var(--burgundy)] leading-tight">
                                           {child.name}
                                         </span>
                                       </Link>
@@ -729,27 +726,39 @@ export default function Header() {
                                 </div>
                               </div>
                             )}
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-5 pb-6">
-                              {activeSubcatData.products?.map((prod, i) => {
-                                const prodImg = resolveImageUrl(prod.imageUrl || '')
-                                return (
-                                <Link 
-                                  key={prod.name} 
-                                  href={filteredCollectionHref(cat.href, prod.name)}
-                                  className="flex items-center gap-2.5 no-underline group/link hover:bg-[#F5EADB]/60 rounded-lg p-1.5 transition-colors duration-300"
-                                  style={{ animationDelay: `${i * 20}ms` }}
-                                >
-                                  {prodImg ? (
-                                    <img src={prodImg} alt={prod.name} className="w-10 h-[52px] object-cover rounded border border-[#D9B86E]/30 flex-shrink-0" loading="lazy" />
-                                  ) : (
-                                    <span className="w-10 h-[52px] flex items-center justify-center rounded border border-[#D9B86E]/30 bg-[#F5EADB]/60 flex-shrink-0 text-[12px] text-[#BF9A4B]">›</span>
-                                  )}
-                                  <span className="text-[14px] font-semibold leading-tight text-[#2C2C2C] group-hover/link:text-[var(--burgundy-dark)]" style={{ fontFamily: '"Assistant", sans-serif' }}>{prod.name}</span>
-                                  {prod.isHot && <span title="Hot Selling" className="text-[13px] animate-pulse ml-auto mr-1">🔥</span>}
-                                </Link>
-                                )
-                              })}
-                            </div>
+
+                            {products.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pb-6">
+                                {products.map((prod, i) => {
+                                  const prodImg = resolveImageUrl(prod.imageUrl || '')
+                                  return (
+                                  <Link 
+                                    key={prod.name} 
+                                    href={filteredCollectionHref(cat.href, prod.name)}
+                                    className="group/prod flex items-center gap-2.5 no-underline rounded-md p-1.5 hover:bg-[#FAF6EE] transition-colors duration-300"
+                                    style={{ animationDelay: `${i * 20}ms` }}
+                                  >
+                                    {prodImg ? (
+                                      <img src={prodImg} alt={prod.name} className="w-10 h-[52px] object-cover rounded border border-[#D9B86E]/30 flex-shrink-0" loading="lazy" />
+                                    ) : (
+                                      <span className="w-10 h-[52px] flex items-center justify-center rounded border border-[#D9B86E]/30 bg-[#FAF6EE] flex-shrink-0 text-[12px] text-[#BF9A4B]">›</span>
+                                    )}
+                                    <span className="text-[13px] font-semibold text-[#2C2C2C] group-hover/prod:text-[var(--burgundy-dark)] leading-tight">{prod.name}</span>
+                                    {prod.isHot && <span title="Hot Selling" className="text-[12px] ml-auto">🔥</span>}
+                                  </Link>
+                                  )
+                                })}
+                              </div>
+                            )}
+
+                            {childCats.length === 0 && products.length === 0 && (
+                              <Link
+                                href={activeSubcatData.href || filteredCollectionHref(cat.href, activeSubcatData.name)}
+                                className="mt-4 inline-flex w-max items-center gap-2 text-[13px] font-bold uppercase tracking-[0.15em] text-[var(--burgundy)] no-underline transition-all duration-300 hover:gap-3"
+                              >
+                                Explore {activeSubcatData.name} <span className="text-[var(--gold)]">›</span>
+</Link>
+)}
                           </div>
                             )
                           }
@@ -763,8 +772,10 @@ export default function Header() {
             </div>
           ))}
         </div>
-      </nav>
+        </nav>
+      )}
 
     </header>
+    </>
   )
 }
