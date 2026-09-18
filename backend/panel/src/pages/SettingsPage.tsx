@@ -8,6 +8,7 @@ import {
   Info,
   Loader2,
   Package,
+  Settings,
   Sparkles,
   Truck,
   Upload,
@@ -302,21 +303,34 @@ export default function SettingsPage() {
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
 
+      {/* ─── Page Header ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-4 border-b border-[#EFE8DA] pb-6">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#6B1A2A] text-white shadow-md">
+          <Settings className="h-6 w-6 text-[#D9B86E]" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-[#1F080D]">Settings</h1>
+          <p className="text-sm text-[#7A6065]">
+            Manage shipping rules, storefront intro video, and store configurations
+          </p>
+        </div>
+      </div>
+
       {/* ─── Shipping Status Card ────────────────────────────────────────── */}
-      <div>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--burgundy)]/10 text-[var(--burgundy)]">
-            <Truck className="h-5 w-5" />
+      <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-[#EFE8DA] space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FBF7F8] text-[#6B1A2A] border border-[#D9B86E]/40 shadow-sm shrink-0">
+            <Truck className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Shipping Status</h1>
-            <p className="text-sm text-gray-500">Manage free shipping configuration</p>
+            <h2 className="text-xl font-bold text-[#1F080D]">Shipping & Delivery</h2>
+            <p className="text-xs sm:text-sm text-[#7A6065]">Manage free shipping threshold and delivery rules</p>
           </div>
         </div>
 
         {/* Current Status Banner */}
         <div
-          className={`mb-6 rounded-lg border p-4 ${
+          className={`rounded-lg border p-4 ${
             freeShippingEnabled ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
           }`}
         >
@@ -342,7 +356,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-5">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -380,7 +394,7 @@ export default function SettingsPage() {
           <div className="mt-6 flex items-center gap-3">
             <button type="submit" disabled={saveShipping.isPending} className="admin-btn-primary">
               {saveShipping.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Save Settings
+              Save Shipping Settings
             </button>
             {saveShipping.isSuccess && <span className="text-sm text-green-600 font-medium">Saved!</span>}
             {saveShipping.isError && <span className="text-sm text-red-500">{saveShipping.error.message}</span>}
@@ -791,6 +805,62 @@ export default function SettingsPage() {
               {saveIntroVideo.error instanceof Error ? saveIntroVideo.error.message : 'Failed to save settings.'}
             </span>
           )}
+        </div>
+      </form>
+
+      {/* ─── Home New Arrivals Configuration Card ──────────────────────── */}
+      <form
+        onSubmit={handleNewArrivalsSubmit}
+        className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-[#EFE8DA] space-y-6"
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FBF7F8] text-[#6B1A2A] border border-[#D9B86E]/40 shadow-sm shrink-0">
+            <Package className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[#1F080D]">Homepage New Arrivals</h2>
+            <p className="text-xs sm:text-sm text-[#7A6065]">Configure product display limit for new arrivals section</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={newArrivalsEnabled}
+              onChange={e => setNewArrivalsEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-[var(--burgundy)] focus:ring-[var(--burgundy)]"
+            />
+            <span className="text-sm font-medium text-gray-700">Enable New Arrivals Section on Homepage</span>
+          </label>
+
+          {newArrivalsEnabled && (
+            <div className="rounded-md border border-[#EFE8DA] bg-[#FAF6EE]/50 p-4 space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7A6065]">
+                Display Limit (1 – 12 products)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="12"
+                value={newArrivalsLimit}
+                onChange={e => setNewArrivalsLimit(e.target.value)}
+                className="w-32 rounded-xl border border-[#EFE8DA] bg-white px-3.5 py-2 text-sm font-medium outline-none transition focus:border-[#6B1A2A] focus:ring-2 focus:ring-[#6B1A2A]/20"
+              />
+              {newArrivalsTouched && !newArrivalsLimitValid && (
+                <p className="text-xs font-semibold text-red-600">Please enter a valid number between 1 and 12.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button type="submit" disabled={saveNewArrivals.isPending} className="admin-btn-primary">
+            {saveNewArrivals.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Save New Arrivals Settings
+          </button>
+          {saveNewArrivals.isSuccess && <span className="text-sm text-green-600 font-medium">Saved!</span>}
+          {saveNewArrivals.isError && <span className="text-sm text-red-500">{saveNewArrivals.error.message}</span>}
         </div>
       </form>
     </div>

@@ -112,7 +112,7 @@ export const sidebarItems: SidebarEntry[] = [
   { path: '/email-campaigns', label: 'Email Campaigns', Icon: Send },
   { path: '/events', label: 'Events', Icon: CalendarDays },
   { path: '/enquiries', label: 'Contact Enquiries', Icon: Mail },
-  { path: '/settings', label: 'Shipping Status', Icon: Settings },
+  { path: '/settings', label: 'Settings', Icon: Settings },
 ]
 
 export const resources: ResourceConfig[] = [
