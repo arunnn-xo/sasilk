@@ -25,6 +25,7 @@ import ReviewsPage from '../pages/ReviewsPage'
 import EmailCampaignsPage from '../pages/EmailCampaignsPage'
 import NotificationsPage from '../pages/NotificationsPage'
 import SettingsPage from '../pages/SettingsPage'
+import IntroVideoPage from '../pages/IntroVideoPage'
 import EventsPage from '../pages/EventsPage'
 import EventFormPage from '../pages/EventFormPage'
 import EventBookingsPage from '../pages/EventBookingsPage'
@@ -126,6 +127,7 @@ export default function App() {
         <Route path="events/:id" element={<EventFormPage />} />
         <Route path="events/:eventId/bookings" element={<EventBookingsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="intro-video" element={<IntroVideoPage />} />
           <Route path="settings" element={<SettingsPage />} />
           {/* Order pipeline routes */}
           {orderPaths.map(path => (

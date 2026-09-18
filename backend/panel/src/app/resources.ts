@@ -73,6 +73,7 @@ export function isSidebarSection(entry: SidebarEntry): entry is SidebarSection {
 export const sidebarItems: SidebarEntry[] = [
   { path: '/', label: 'Dashboard', Icon: LayoutDashboard },
   { path: '/announcements', label: 'Announcement Bar', Icon: Megaphone },
+  { path: '/intro-video', label: 'Storefront Intro Video', Icon: Film },
   { path: '/reels', label: 'Reel the Weave', Icon: Film },
   { path: '/banners', label: 'Banners', Icon: Image },
   { path: '/art-wave', label: 'The Art of Weaving', Icon: Film },
