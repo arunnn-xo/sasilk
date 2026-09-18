@@ -5,7 +5,6 @@ import {
   Check,
   ExternalLink,
   Film,
-  Image as ImageIcon,
   Info,
   Loader2,
   Upload,
@@ -17,7 +16,6 @@ import {
   listResource,
   resolveImageUrl,
   updateResource,
-  uploadImage,
   uploadVideo,
 } from '../services/api'
 
@@ -39,26 +37,21 @@ export default function IntroVideoPage() {
   // Form states
   const [introEnabled, setIntroEnabled] = useState(false)
   const [videoUrl, setVideoUrl] = useState('')
-  const [posterUrl, setPosterUrl] = useState('')
   const [skipEnabled, setSkipEnabled] = useState(true)
   const [skipAfterSeconds, setSkipAfterSeconds] = useState(0)
   const [showOncePerSession, setShowOncePerSession] = useState(true)
 
   const [isUploadingVideo, setIsUploadingVideo] = useState(false)
-  const [isUploadingPoster, setIsUploadingPoster] = useState(false)
   const [videoUploadError, setVideoUploadError] = useState('')
-  const [posterUploadError, setPosterUploadError] = useState('')
   const [videoPlaybackError, setVideoPlaybackError] = useState('')
 
   const videoInputRef = useRef<HTMLInputElement>(null)
-  const posterInputRef = useRef<HTMLInputElement>(null)
 
   // Synchronize state when data is loaded
   useEffect(() => {
     if (!isFetching && existingIntroVideo?.value) {
       setIntroEnabled(Boolean(introVideoValue.enabled))
       setVideoUrl(typeof introVideoValue.videoUrl === 'string' ? introVideoValue.videoUrl : '')
-      setPosterUrl(typeof introVideoValue.posterUrl === 'string' ? introVideoValue.posterUrl : '')
       setSkipEnabled(introVideoValue.skipEnabled !== undefined ? Boolean(introVideoValue.skipEnabled) : true)
       setSkipAfterSeconds(
         introVideoValue.skipAfterSeconds !== undefined && !isNaN(Number(introVideoValue.skipAfterSeconds))
@@ -79,7 +72,7 @@ export default function IntroVideoPage() {
         value: {
           enabled: introEnabled,
           videoUrl: videoUrl.trim(),
-          posterUrl: posterUrl.trim(),
+          posterUrl: '',
           skipEnabled,
           skipAfterSeconds: Math.min(30, Math.max(0, Number(skipAfterSeconds) || 0)),
           showOncePerSession,
@@ -134,35 +127,6 @@ export default function IntroVideoPage() {
     }
   }
 
-  // Direct Poster Image Upload Handler
-  async function handlePosterUpload(file: File) {
-    setPosterUploadError('')
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowed.includes(file.type)) {
-      setPosterUploadError('Only JPG, PNG, and WebP images are supported for the poster.')
-      if (posterInputRef.current) posterInputRef.current.value = ''
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setPosterUploadError('Poster image must be under 10 MB.')
-      if (posterInputRef.current) posterInputRef.current.value = ''
-      return
-    }
-
-    setIsUploadingPoster(true)
-    try {
-      const data = await uploadImage(file)
-      if (data?.file?.path) {
-        setPosterUrl(data.file.path)
-      }
-    } catch (err: any) {
-      setPosterUploadError(err?.message || 'Failed to upload poster image.')
-    } finally {
-      setIsUploadingPoster(false)
-      if (posterInputRef.current) posterInputRef.current.value = ''
-    }
-  }
-
   // Validation
   const isVideoUrlValid = videoUrl.trim().length > 0
   const isSkipSecondsValid = !isNaN(skipAfterSeconds) && skipAfterSeconds >= 0 && skipAfterSeconds <= 30
@@ -170,13 +134,12 @@ export default function IntroVideoPage() {
   const isSaveIntroDisabled =
     saveIntroVideo.isPending ||
     isUploadingVideo ||
-    isUploadingPoster ||
     (introEnabled && !isVideoUrlValid) ||
     !isSkipSecondsValid
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!isIntroFormValid || isUploadingVideo || isUploadingPoster) return
+    if (!isIntroFormValid || isUploadingVideo) return
     saveIntroVideo.mutate()
   }
 
@@ -404,117 +367,6 @@ export default function IntroVideoPage() {
           )}
         </div>
 
-        {/* Poster Image File Upload Section (No URL Input) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#7A6065]">
-              Poster / Cover Image (Optional Fallback)
-            </label>
-            {posterUrl && (
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Check className="h-3 w-3 text-emerald-600" /> Poster attached
-              </span>
-            )}
-          </div>
-
-          <input
-            ref={posterInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="hidden"
-            onChange={e => {
-              const file = e.target.files?.[0]
-              if (file) handlePosterUpload(file)
-            }}
-          />
-
-          {posterUrl ? (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#EFE8DA] bg-white p-3.5">
-              <div className="flex items-center gap-3 min-w-0">
-                <img
-                  src={resolveImageUrl(posterUrl)}
-                  alt="Intro Poster Thumbnail"
-                  className="h-12 w-16 object-cover rounded-lg border border-[#EFE8DA] bg-[#FAF6EE] shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-[#1F080D] truncate">
-                    {posterUrl.split('/').pop() || 'poster_thumbnail'}
-                  </p>
-                  <p className="text-[11px] text-[#7A6065]">
-                    Displayed while video is loading or buffering.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  disabled={isUploadingPoster}
-                  onClick={() => posterInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#EFE8DA] bg-white px-3.5 py-2 text-xs font-semibold text-[#1F080D] transition hover:bg-[#FAF6EE] disabled:opacity-50"
-                >
-                  {isUploadingPoster ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin text-[#6B1A2A]" />
-                      <span>Uploading…</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-3.5 w-3.5 text-[#7A6065]" />
-                      <span>Replace Poster</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  disabled={isUploadingPoster}
-                  onClick={() => {
-                    setPosterUrl('')
-                    setPosterUploadError('')
-                  }}
-                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
-                  title="Remove poster image"
-                >
-                  <X className="h-3.5 w-3.5" />
-                  <span>Remove</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div
-              onClick={() => !isUploadingPoster && posterInputRef.current?.click()}
-              className="group flex items-center justify-between gap-4 rounded-xl border border-dashed border-[#EFE8DA] bg-[#FAF6EE]/40 p-4 cursor-pointer hover:border-[#D9B86E] hover:bg-[#FAF6EE] transition"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#7A6065] shadow-sm border border-[#EFE8DA] group-hover:scale-105 transition">
-                  {isUploadingPoster ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-[#6B1A2A]" />
-                  ) : (
-                    <ImageIcon className="h-5 w-5 text-[#6B1A2A]" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-[#1F080D]">
-                    {isUploadingPoster ? 'Uploading Poster Image…' : 'Upload Poster Image'}
-                  </p>
-                  <p className="text-[11px] text-[#7A6065]">
-                    Supports JPG, PNG, and WebP images up to 10 MB.
-                  </p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#6B1A2A] group-hover:underline">
-                <Upload className="h-3.5 w-3.5" /> Choose Image
-              </span>
-            </div>
-          )}
-
-          {posterUploadError && (
-            <p className="text-xs font-semibold text-red-600 flex items-center gap-1.5 mt-1.5">
-              <Info className="h-3.5 w-3.5 shrink-0" />
-              {posterUploadError}
-            </p>
-          )}
-        </div>
-
         {/* Embedded Live Video Player Preview */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -536,7 +388,6 @@ export default function IntroVideoPage() {
                 playsInline
                 preload="metadata"
                 src={resolveImageUrl(videoUrl)}
-                poster={posterUrl ? resolveImageUrl(posterUrl) : undefined}
                 className="w-full max-h-80 object-contain rounded-xl border border-[#EFE8DA] bg-black/5"
                 onError={() => setVideoPlaybackError('Unable to load or decode video preview from this file.')}
                 onLoadedData={() => setVideoPlaybackError('')}
