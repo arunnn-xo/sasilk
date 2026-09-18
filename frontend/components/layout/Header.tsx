@@ -291,7 +291,12 @@ export default function Header() {
               width={600} 
               height={480} 
               unoptimized
-              className="object-contain w-auto h-[115px] xl:h-[128px]" 
+              style={{ 
+                height: '173px', 
+                width: 'auto', 
+                filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
+              }} 
+              className="object-contain" 
               priority 
             />
           </Link>
