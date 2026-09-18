@@ -3,7 +3,10 @@ function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')
-    if (!isLocal && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+    if (isLocal) {
+      return envUrl || 'http://localhost:5005/api'
+    }
+    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
       return 'https://sasilk.onrender.com/api'
     }
   }
@@ -15,7 +18,10 @@ function getStorefrontBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')
-    if (!isLocal && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1') || envUrl.includes('172.16.'))) {
+    if (isLocal) {
+      return envUrl || 'http://localhost:3000'
+    }
+    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1') || envUrl.includes('172.16.')) {
       return 'https://soilgoddeswebsite.vercel.app'
     }
   }

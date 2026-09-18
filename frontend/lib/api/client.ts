@@ -1,8 +1,15 @@
 function getApiBaseUrl(): string {
   const isServer = typeof window === 'undefined'
+  let defaultBase = 'https://sasilk.onrender.com/api'
+  if (!isServer) {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+      defaultBase = 'http://localhost:5005/api'
+    }
+  }
   let url = isServer
-    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://sasilk.onrender.com/api')
-    : (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://sasilk.onrender.com/api')
+    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || defaultBase)
+    : (process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || defaultBase)
 
   if (!url.endsWith('/api') && !url.includes('/api/')) {
     url = `${url.replace(/\/$/, '')}/api`
