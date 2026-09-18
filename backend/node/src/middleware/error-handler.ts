@@ -4,7 +4,7 @@ import { AppError } from '../utils/http.js'
 import { env } from '../config/env.js'
 
 const multerMessages: Record<string, string> = {
-  LIMIT_FILE_SIZE: 'File size exceeds the 5 MB limit.',
+  LIMIT_FILE_SIZE: 'File size exceeds the allowed limit.',
   LIMIT_FILE_COUNT: 'Too many files.',
   LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
 }

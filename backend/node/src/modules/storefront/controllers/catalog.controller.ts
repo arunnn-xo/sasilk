@@ -12,7 +12,7 @@ import {
   ArtWaveItem,
 } from '../../../models/index.js'
 import { plain, mapCategory, mapProduct } from './helpers.js'
-import { getShippingConfig, getGuestDiscountPopupConfig, getHomeNewArrivalsConfig } from '../../../services/settings.service.js'
+import { getShippingConfig, getGuestDiscountPopupConfig, getHomeNewArrivalsConfig, getIntroVideoConfig } from '../../../services/settings.service.js'
 
 export const getCategories = async (req: Request, res: Response) => {
   const section = typeof req.query.section === 'string' ? req.query.section : undefined
@@ -344,3 +344,9 @@ export const getGuestDiscountPopupConfiguration = async (_req: Request, res: Res
     message: config.message,
   })
 }
+
+export const getIntroVideoConfiguration = async (_req: Request, res: Response): Promise<void> => {
+  const config = await getIntroVideoConfig()
+  res.json(config)
+}
+

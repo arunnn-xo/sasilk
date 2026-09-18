@@ -28,6 +28,15 @@ export interface GuestDiscountPopupConfig {
   message: string
 }
 
+export interface IntroVideoConfig {
+  enabled: boolean
+  videoUrl: string
+  posterUrl?: string
+  skipEnabled: boolean
+  skipAfterSeconds: number
+  showOncePerSession: boolean
+}
+
 const defaultCompany: CompanyInfo = {
   name: 'Soil Goddess',
   address: '108, Heritage Handloom Arcade, Temple Road, Kanchipuram',
@@ -56,10 +65,20 @@ const defaultHomeNewArrivals: HomeNewArrivalsConfig = {
   limit: 4,
 }
 
+export const defaultIntroVideoConfig: IntroVideoConfig = {
+  enabled: false,
+  videoUrl: '',
+  posterUrl: '',
+  skipEnabled: true,
+  skipAfterSeconds: 0,
+  showOncePerSession: true,
+}
+
 let cachedCompany: CompanyInfo | null = null
 let cachedShipping: ShippingConfig | null = null
 let cachedGuestDiscountPopup: GuestDiscountPopupConfig | null = null
 let cachedHomeNewArrivals: HomeNewArrivalsConfig | null = null
+let cachedIntroVideoConfig: IntroVideoConfig | null = null
 
 export async function getCompanyInfo(): Promise<CompanyInfo> {
   if (cachedCompany) return cachedCompany
@@ -122,3 +141,38 @@ export async function getHomeNewArrivalsConfig(): Promise<HomeNewArrivalsConfig>
 export function invalidateHomeNewArrivalsCache() {
   cachedHomeNewArrivals = null
 }
+
+export async function getIntroVideoConfig(): Promise<IntroVideoConfig> {
+  if (cachedIntroVideoConfig) return cachedIntroVideoConfig
+  const setting = await Setting.findOne({ where: { key: 'intro_video_config' } })
+  if (!setting) return defaultIntroVideoConfig
+  let rawValue = setting.get('value') as unknown
+  if (typeof rawValue === 'string') {
+    try {
+      rawValue = JSON.parse(rawValue)
+    } catch {
+      rawValue = {}
+    }
+  }
+  const value = (rawValue && typeof rawValue === 'object' ? rawValue : {}) as Record<string, unknown>
+  cachedIntroVideoConfig = {
+    enabled: typeof value.enabled === 'boolean' ? value.enabled : defaultIntroVideoConfig.enabled,
+    videoUrl: typeof value.videoUrl === 'string' ? value.videoUrl.trim() : defaultIntroVideoConfig.videoUrl,
+    posterUrl: typeof value.posterUrl === 'string' ? value.posterUrl.trim() : defaultIntroVideoConfig.posterUrl,
+    skipEnabled: typeof value.skipEnabled === 'boolean' ? value.skipEnabled : defaultIntroVideoConfig.skipEnabled,
+    skipAfterSeconds: typeof value.skipAfterSeconds === 'number' && !isNaN(value.skipAfterSeconds)
+      ? Math.min(30, Math.max(0, value.skipAfterSeconds))
+      : (typeof value.skipAfterSeconds === 'string' && !isNaN(Number(value.skipAfterSeconds))
+        ? Math.min(30, Math.max(0, Number(value.skipAfterSeconds)))
+        : defaultIntroVideoConfig.skipAfterSeconds),
+    showOncePerSession: typeof value.showOncePerSession === 'boolean'
+      ? value.showOncePerSession
+      : defaultIntroVideoConfig.showOncePerSession,
+  }
+  return cachedIntroVideoConfig
+}
+
+export function invalidateIntroVideoCache(): void {
+  cachedIntroVideoConfig = null
+}
+

@@ -30,7 +30,7 @@ import { triggerPriceDropNotification } from '../../../services/price-drop.servi
 import { sendBackInStockEmail, sendNotifyMessageEmail } from '../../../services/email.service.js'
 import { StockNotification } from '../../../models/index.js'
 import { syncInvoiceStatus } from '../../../services/invoice.service.js'
-import { invalidateCompanyCache, invalidateShippingCache, invalidateGuestDiscountPopupCache, invalidateHomeNewArrivalsCache } from '../../../services/settings.service.js'
+import { invalidateCompanyCache, invalidateShippingCache, invalidateGuestDiscountPopupCache, invalidateHomeNewArrivalsCache, invalidateIntroVideoCache } from '../../../services/settings.service.js'
 import {
   cleanupFile,
   filePathFromUrl,
@@ -107,6 +107,33 @@ export const settingsSchema = z.object({
     }
     if (typeof v.limit !== 'number' || !Number.isInteger(v.limit) || v.limit < 1 || v.limit > 12) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value', 'limit'], message: 'limit must be an integer between 1 and 12.' })
+    }
+  }
+  if (data.key === 'intro_video_config') {
+    const val = data.value as any
+    if (typeof val?.enabled !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'enabled must be a boolean', path: ['value', 'enabled'] })
+    }
+    if (val?.enabled && (!val.videoUrl || typeof val.videoUrl !== 'string' || !val.videoUrl.trim())) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'videoUrl is required when intro video is enabled', path: ['value', 'videoUrl'] })
+    }
+    if (val?.videoUrl !== undefined && typeof val.videoUrl !== 'string') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'videoUrl must be a string', path: ['value', 'videoUrl'] })
+    }
+    if (val?.posterUrl !== undefined && val?.posterUrl !== null && typeof val.posterUrl !== 'string') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'posterUrl must be a string', path: ['value', 'posterUrl'] })
+    }
+    if (val?.skipEnabled !== undefined && typeof val.skipEnabled !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'skipEnabled must be a boolean', path: ['value', 'skipEnabled'] })
+    }
+    if (val?.skipAfterSeconds !== undefined) {
+      const num = Number(val.skipAfterSeconds)
+      if (isNaN(num) || num < 0 || num > 30) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'skipAfterSeconds must be a number between 0 and 30', path: ['value', 'skipAfterSeconds'] })
+      }
+    }
+    if (val?.showOncePerSession !== undefined && typeof val.showOncePerSession !== 'boolean') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'showOncePerSession must be a boolean', path: ['value', 'showOncePerSession'] })
     }
   }
 })
@@ -581,6 +608,9 @@ export const createResource = async (req: Request, res: Response) => {
     if (settingKey === 'home_new_arrivals_config') {
       invalidateHomeNewArrivalsCache()
     }
+    if (settingKey === 'intro_video_config') {
+      invalidateIntroVideoCache()
+    }
   }
 
   await writeAuditLog({
@@ -743,6 +773,9 @@ export const updateResource = async (req: Request, res: Response) => {
     if (settingKey === 'home_new_arrivals_config') {
       invalidateHomeNewArrivalsCache()
     }
+    if (settingKey === 'intro_video_config') {
+      invalidateIntroVideoCache()
+    }
   }
 
   await writeAuditLog({
@@ -827,6 +860,9 @@ export const deleteResource = async (req: Request, res: Response) => {
     }
     if (settingKey === 'home_new_arrivals_config') {
       invalidateHomeNewArrivalsCache()
+    }
+    if (settingKey === 'intro_video_config') {
+      invalidateIntroVideoCache()
     }
   }
 

@@ -56,6 +56,7 @@ router.get('/search', asyncHandler(catalogController.search))
 router.get('/home', asyncHandler(catalogController.getHome))
 router.get('/shipping-config', asyncHandler(catalogController.getShippingConfiguration))
 router.get('/guest-discount-popup', asyncHandler(catalogController.getGuestDiscountPopupConfiguration))
+router.get('/intro-video', asyncHandler(catalogController.getIntroVideoConfiguration))
 
 /* ── Reels Route ─── */
 router.get('/reels', asyncHandler(async (_req, res) => {

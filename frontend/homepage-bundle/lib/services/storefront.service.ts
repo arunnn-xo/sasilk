@@ -120,3 +120,67 @@ export async function fetchBanners(placement?: string): Promise<BannerData[]> {
   const query = placement ? `?placement=${placement}` : ''
   return apiGet<BannerData[]>(`/storefront/banners${query}`)
 }
+
+export interface IntroVideoConfig {
+  enabled: boolean
+  videoUrl: string
+  posterUrl?: string
+  skipEnabled: boolean
+  skipAfterSeconds: number
+  showOncePerSession: boolean
+}
+
+export const DEFAULT_INTRO_VIDEO_CONFIG: IntroVideoConfig = {
+  enabled: false,
+  videoUrl: '',
+  posterUrl: '',
+  skipEnabled: true,
+  skipAfterSeconds: 0,
+  showOncePerSession: true,
+}
+
+export const defaultIntroVideoConfig: IntroVideoConfig = DEFAULT_INTRO_VIDEO_CONFIG
+
+export async function fetchIntroVideoConfig(): Promise<IntroVideoConfig> {
+  try {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+    const timer = controller ? setTimeout(() => controller.abort(), 3500) : null
+
+    const endpoint = typeof window !== 'undefined'
+      ? '/api/storefront/intro-video'
+      : (() => {
+          const base = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://localhost:5005/api'
+          const cleanBase = base.replace(/\/+$/, '')
+          return cleanBase.endsWith('/api') ? `${cleanBase}/storefront/intro-video` : `${cleanBase}/api/storefront/intro-video`
+        })()
+
+    const res = await fetch(endpoint, {
+      signal: controller ? controller.signal : undefined,
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+      },
+    })
+
+    if (timer) clearTimeout(timer)
+    if (!res.ok) return DEFAULT_INTRO_VIDEO_CONFIG
+
+    const data = await res.json().catch(() => null)
+    if (!data) return DEFAULT_INTRO_VIDEO_CONFIG
+
+    const cfg = (data && typeof data === 'object' && 'config' in data && data.config) ? data.config : data
+
+    return {
+      enabled: Boolean(cfg?.enabled),
+      videoUrl: typeof cfg?.videoUrl === 'string' ? cfg.videoUrl.trim() : '',
+      posterUrl: typeof cfg?.posterUrl === 'string' ? cfg.posterUrl.trim() : '',
+      skipEnabled: cfg?.skipEnabled !== undefined ? Boolean(cfg.skipEnabled) : true,
+      skipAfterSeconds: typeof cfg?.skipAfterSeconds === 'number' && !isNaN(cfg.skipAfterSeconds)
+        ? Math.max(0, Math.min(30, cfg.skipAfterSeconds))
+        : (Number(cfg?.skipAfterSeconds) || 0),
+      showOncePerSession: cfg?.showOncePerSession !== undefined ? Boolean(cfg.showOncePerSession) : true,
+    }
+  } catch {
+    return DEFAULT_INTRO_VIDEO_CONFIG
+  }
+}
