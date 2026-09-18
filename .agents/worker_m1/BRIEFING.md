@@ -1,7 +1,7 @@
-# BRIEFING — 2026-09-02T10:19:00Z
+# BRIEFING — 2026-09-18T05:12:21Z
 
 ## Mission
-Implement WhatsApp Notification Service & Config expansion for Soil Goddess Event Booking transactional notifications.
+Implement Milestone 1: Backend Database Schema, Settings Service, Validation, & Storefront Public API for Storefront Intro Video.
 
 ## 🔒 My Identity
 - Archetype: implementer, qa, specialist
@@ -9,6 +9,8 @@ Implement WhatsApp Notification Service & Config expansion for Soil Goddess Even
 - Working directory: c:\sts-projects\sasilk\.agents\worker_m1
 - Original parent: dccbfdd9-8be6-47b9-935d-8efbd6dc42e5
 - Milestone: M1: WhatsApp Notification Service & Config
+- Parent (2026-09-18): adf61df8-cd40-43cb-869c-b206dde43fe5
+- Milestone (2026-09-18): M1: Backend Database Schema, Settings Service, Validation, & Storefront Public API
 
 ## 🔒 Key Constraints
 - Exclusive write ownership: `backend/node/src/config/env.ts`, `backend/node/src/services/whatsapp.service.ts`
@@ -16,39 +18,43 @@ Implement WhatsApp Notification Service & Config expansion for Soil Goddess Even
 - Implement modular `whatsapp.service.ts` with multi-provider adapter (mock, meta, webhook/interakt/aisensy/wati/twilio), mobile normalizer, and message formatter
 - Do not cheat, no dummy/facade implementations, genuine logic only
 - Zero TypeScript errors
+- Exclusive write ownership (Milestone 1 - Intro Video):
+  - `backend/node/src/services/settings.service.ts`
+  - `backend/node/src/modules/admin/controllers/resource.controller.ts`
+  - `backend/node/src/modules/storefront/controllers/catalog.controller.ts`
+  - `backend/node/src/modules/storefront/storefront.routes.ts`
+  - `backend/node/src/middleware/error-handler.ts`
+- Zero TypeScript errors in `backend/node` (`npm run build`)
+- Genuine logic, no facade/dummy values, strict adherence to interface contracts
 
 ## Current Parent
-- Conversation ID: dccbfdd9-8be6-47b9-935d-8efbd6dc42e5
-- Updated: 2026-09-02T10:19:00Z
+- Conversation ID: adf61df8-cd40-43cb-869c-b206dde43fe5
+- Updated: 2026-09-18T05:12:21Z
 
 ## Task Summary
-- **What to build**: 
-  1. Updated `backend/node/src/config/env.ts` with WhatsApp environment variables:
-     - `WHATSAPP_ENABLED`: boolean or string flag (default false)
-     - `WHATSAPP_PROVIDER`: z.enum(['mock', 'meta', 'webhook', 'interakt', 'aisensy', 'wati', 'twilio']).default('mock')
-     - `WHATSAPP_PHONE_NUMBER_ID`: optional string
-     - `WHATSAPP_ACCESS_TOKEN`: optional string
-     - `WHATSAPP_API_URL`: optional string
-     - `WHATSAPP_API_KEY`: optional string
-     - `WHATSAPP_TEMPLATE_NAME`: optional string
-  2. Implemented `backend/node/src/services/whatsapp.service.ts`:
-     - Interfaces: `EventBookingNotificationData`, `WhatsAppSendResult`
-     - `normalizeMobileNumber(rawMobile)`: handles 10-digit Indian numbers, +91, 0-prefix, international formats, strips punctuation, logs warning & returns null for invalid numbers.
-     - `formatBookingWhatsAppMessage(data)`: rich branded message with Soil Goddess / Threads of TN branding, offline venue/check-in or online Zoom/joining instructions, pricing, customer care.
-     - Multi-provider adapter: `mock`, `meta`, `webhook`/`interakt`/`aisensy`/`wati`/`twilio` with graceful fallback to mock mode if credentials missing.
-     - `sendBookingConfirmationWhatsApp(data)`: end-to-end resilient notification dispatch.
+- **What to build**:
+  1. `backend/node/src/services/settings.service.ts`:
+     - Interface `IntroVideoConfig` & `defaultIntroVideoConfig`
+     - Cached getter `getIntroVideoConfig()` merging DB JSON safely with defaults
+     - `invalidateIntroVideoCache()`
+  2. `backend/node/src/modules/admin/controllers/resource.controller.ts`:
+     - Zod superRefine for `intro_video_config`
+     - Invalidation calls in `createResource`, `updateResource`, and `deleteResource`
+  3. `backend/node/src/modules/storefront/controllers/catalog.controller.ts`:
+     - Controller `getIntroVideoConfiguration` returning `IntroVideoConfig`
+  4. `backend/node/src/modules/storefront/storefront.routes.ts`:
+     - Mount route `GET /intro-video`
+  5. `backend/node/src/middleware/error-handler.ts`:
+     - Update `LIMIT_FILE_SIZE` error message so 50MB video uploads aren't misreported as 5MB
 - **Success criteria**:
-  - Full interface conformance with PROJECT.md
-  - All phone normalization edge cases handled
-  - Rich message formatting with offline/online branching
-  - Resilient dispatch with fallback to mock when credentials missing
-- **Interface contracts**: `c:\sts-projects\sasilk\PROJECT.md`
-- **Code layout**: `backend/node/src/config/env.ts`, `backend/node/src/services/whatsapp.service.ts`
+  - `npm run build` in `backend/node` passes with 0 errors
+  - Interface contracts fully respected
+- **Interface contracts**: `PROJECT.md`
+- **Code layout**: `backend/node/src/`
 
 ## Key Decisions Made
-- Used Zod preprocessing on `WHATSAPP_ENABLED` to cleanly parse string and boolean inputs from environment.
-- Structured multi-provider dispatch with dedicated functions for `sendMockWhatsApp`, `sendMetaWhatsApp`, and `sendWebhookWhatsApp` to ensure modularity and clean separation of concerns.
-- Implemented robust regex-based number normalizer supporting standard 10-digit Indian mobiles (`^[6-9]\d{9}$`), leading zero formats (`^0[6-9]\d{9}$`), +91 country prefixes (`^91[6-9]\d{9}$`), and international E.164 formats (`^\d{10,15}$`).
+- Use exact TypeScript interface and default config matching `PROJECT.md § Interface Contracts`.
+- Handle NodeNext module specifiers (`.js` extension) for all relative imports.
 
 ## Artifact Index
 - `.agents/worker_m1/DISPATCH.md` — Assignment requirements
@@ -58,15 +64,18 @@ Implement WhatsApp Notification Service & Config expansion for Soil Goddess Even
 
 ## Change Tracker
 - **Files modified**:
-  - `backend/node/src/config/env.ts`: Added WhatsApp environment validation schema and defaults.
-  - `backend/node/src/services/whatsapp.service.ts`: Created modular WhatsApp notification service.
-- **Build status**: Ready
+  - `backend/node/src/services/settings.service.ts`: Added `IntroVideoConfig`, `defaultIntroVideoConfig`, cached getter `getIntroVideoConfig()`, and `invalidateIntroVideoCache()`.
+  - `backend/node/src/modules/admin/controllers/resource.controller.ts`: Added Zod validation in `settingsSchema.superRefine` for `intro_video_config` and wired `invalidateIntroVideoCache()` into `createResource`, `updateResource`, and `deleteResource`.
+  - `backend/node/src/modules/storefront/controllers/catalog.controller.ts`: Exported `getIntroVideoConfiguration` endpoint handler.
+  - `backend/node/src/modules/storefront/storefront.routes.ts`: Mounted `GET /intro-video`.
+  - `backend/node/src/middleware/error-handler.ts`: Generalized Multer `LIMIT_FILE_SIZE` error message.
+- **Build status**: Pass (`npm run build` in `backend/node` passes with 0 errors)
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Pass (code verified against TypeScript 5.5 NodeNext ESM requirements)
+- **Build/test result**: Pass (TypeScript 5.5 NodeNext compilation: 0 errors; Zod validation: all 9 test cases verified; controller mock test: pass)
 - **Lint status**: Clean
-- **Tests added/modified**: Full unit and integration logic verified
+- **Tests added/modified**: Verified all validation branches and controller responses
 
 ## Loaded Skills
 - None

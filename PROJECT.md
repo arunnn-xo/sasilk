@@ -1,150 +1,137 @@
-# Project: Soil Goddess Event Management Enhancement (Multiple Gallery Images & Video Glimpse)
+# Project: Dynamic Storefront Intro Video Configuration & Seamless Playback
 
 ## Architecture
-- **Backend Runtime & ORM**: Node.js v20+, TypeScript 5.5.3, Express 4.19.2, Sequelize 6.37.3 (MySQL), Zod 3.23.8, Multer 1.4.5.
-- **Admin Panel**: React 18, Vite, TypeScript, Tailwind CSS, Lucide React, React Router 6.
-- **Storefront**: Next.js 14.2.3 (App Router / Pages), React 18, TypeScript, Tailwind CSS.
+- **Backend**: Node.js v20+, TypeScript (NodeNext), Express 4.19.2, Sequelize 6.37.3 (MySQL), Zod 3.23.8, Multer 1.4.5, Cloudinary.
+- **Admin Panel**: React 18, Vite, TypeScript, Tailwind CSS, TanStack React Query, Lucide React.
+- **Storefront**: Next.js 14.2.3, React 18, TypeScript, Tailwind CSS.
 - **Data Flow**:
-  1. Admin Panel (`EventFormPage.tsx`):
-     - Multiple image gallery uploader: accepts multi-file uploads via `uploadImage(file)` (`POST /api/admin/uploads`), builds ordered `images: string[]` array, sets/indicates primary cover `imageUrl`.
-     - Video glimpse: URL input or video file upload via `uploadVideo(file)` (`POST /api/admin/uploads/video`), renders live embedded preview (YouTube, Vimeo, HTML5 video).
-     - Persists payload to `POST /api/admin/events` or `PUT /api/admin/events/:id`.
+  1. Admin Panel (`SettingsPage.tsx`):
+     - Admin toggles "Enable Intro Video", sets video URL or uploads MP4/WebM (up to 50MB) via `POST /api/admin/uploads/video` directly to Cloudinary `sasilk/videos`.
+     - Admin configures `posterUrl` (optional), `skipEnabled` (boolean), `skipAfterSeconds` (0-30s), and `showOncePerSession` (boolean).
+     - Live embedded video preview player (`<video controls playsInline>`) displays immediate playback before saving.
+     - Form validates video URL when enabled and disables save button while invalid or uploading.
+     - Submits payload to `POST /api/admin/settings` or `PUT /api/admin/settings/:id` under key `intro_video_config`.
   2. Backend Database & API (`backend/node`):
-     - Migration (`migrate.ts`): safely adds `images` (JSON) and `video_url` (VARCHAR(512)) columns to `events` table if missing.
-     - Model (`models/index.ts`): Sequelize `Event` model defines `images` (DataTypes.JSON with array getter/setter) and `videoUrl` (DataTypes.STRING(512), field: 'video_url').
-     - Admin controller (`admin/controllers/event.controller.ts`): validates `images` and `videoUrl` via Zod `eventSchema`, persists them, and auto-populates `imageUrl` from `images[0]` if missing.
-     - Storefront controller (`events/events.controller.ts`): serializes `images` and `videoUrl` in `toPublicEvent`, ensuring legacy events with only `imageUrl` gracefully fallback to `images: [imageUrl]`.
+     - `Setting` model (`settings` table) persists JSON `value` for key `intro_video_config`.
+     - `resource.controller.ts` validates payload against Zod schema and calls `invalidateIntroVideoCache()`.
+     - `settings.service.ts` provides cached getter `getIntroVideoConfig()` and invalidator `invalidateIntroVideoCache()`.
+     - `catalog.controller.ts` serves public `GET /api/storefront/intro-video` exposing active sanitized config.
   3. Storefront Display (`frontend`):
-     - Type contract (`storefront.service.ts`): `EventItem` extended with `images?: string[] | null` and `videoUrl?: string | null`.
-     - Multi-Image Gallery (`EventGallery.tsx`): responsive interactive gallery placed above "About this event" with high-res active viewport, prev/next arrows, thumbnail switcher strip, full-screen lightbox, touch-friendly mobile carousel. Single-image fallback renders clean hero without controls; zero-image gracefully omitted.
-     - Event Highlights & Video Player (`EventVideoPlayer.tsx`): responsive 16:9 player placed below "About this event" supporting YouTube, Vimeo, and direct/uploaded MP4/WebM videos. Gracefully hidden (zero voids) if `videoUrl` is null/empty.
+     - `storefront.service.ts` fetches `GET /api/storefront/intro-video` via `fetchIntroVideoConfig()`.
+     - `IntroVideo.tsx` (in both `frontend/components/ui/` and `frontend/homepage-bundle/components/ui/`) dynamically renders:
+       - Immediate zero-void return `null` if disabled, URL empty, or `sessionStorage.getItem('sas_intro_seen')` exists.
+       - If enabled: full-screen overlay (`aria-label="Intro video"`), autoplay (muted), smooth loading spinner, skip button with countdown timer, and smooth fade-out exit transition.
 
 ## Feature Inventory
 | # | Feature | Description | Milestone | Source | Status |
 |---|---------|-------------|-----------|--------|--------|
-| 1 | Event Model Schema Extension | Add `images` (JSON array) and `videoUrl` (VARCHAR(512)) to Sequelize Event model | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
-| 2 | Safe Migration Pipeline | Idempotent `safeAddColumn` for `images` and `video_url` in `migrate.ts` | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
-| 3 | Admin Event Controller Validation & Persistence | Extend Zod `eventSchema`, persist `images` & `videoUrl`, auto-fallback `imageUrl` | M1 | ORIGINAL_REQUEST R2 | DONE (Verified) |
-| 4 | Storefront Event Controller DTO Serialization | Include `images` and `videoUrl` in `toPublicEvent` with legacy fallback | M1 | ORIGINAL_REQUEST R2 | DONE (Verified) |
-| 5 | Admin Multiple Image Gallery Uploader | Thumbnail grid, cover selector, delete button, multi-file upload, URL fallback | M2 | ORIGINAL_REQUEST R3 | DONE (Verified) |
-| 6 | Admin Optional Video Glimpse Section | Dedicated URL/upload input with live embedded preview (YouTube, Vimeo, HTML5) | M2 | ORIGINAL_REQUEST R3 | DONE (Verified) |
-| 7 | Storefront Type Contract Extension | Add `images` and `videoUrl` to `EventItem` in `storefront.service.ts` | M3 | ORIGINAL_REQUEST R4 | DONE (Verified) |
-| 8 | Storefront Interactive Multi-Image Gallery | Thumbnail-switched gallery, carousel, lightbox, luxury aesthetic, graceful fallback | M3 | ORIGINAL_REQUEST R4 | DONE (Verified) |
-| 9 | Storefront Responsive Video Glimpse Player | Dedicated "Event Highlights & Glimpses" section, 16:9 player, zero voids if absent | M3 | ORIGINAL_REQUEST R4 | DONE (Verified) |
-| 10 | Legacy Event Non-Regression Guarantee | Existing events without gallery images or video load, display, and save seamlessly | M1, M2, M3 | ORIGINAL_REQUEST Acceptance Criteria | DONE (Verified) |
-| 11 | End-to-End Build & Integrity Verification | Zero-error builds in `backend/node`, `backend/panel`, `frontend` + forensic audit | M4 | ORIGINAL_REQUEST Acceptance Criteria | DONE (Verified) |
+| 1 | Settings Model & Service Extension | Add `IntroVideoConfig` type, default config, `getIntroVideoConfig()` with in-memory caching, and `invalidateIntroVideoCache()` | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
+| 2 | Admin Settings Zod Validation | Strict Zod validation in `resource.controller.ts` for `intro_video_config` with required video URL when enabled | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
+| 3 | Cache Invalidation Wiring | Wire `invalidateIntroVideoCache()` into `createResource`, `updateResource`, and `deleteResource` | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
+| 4 | Public Storefront Intro Video Endpoint | Expose `GET /api/storefront/intro-video` in `storefront.routes.ts` & `catalog.controller.ts` | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
+| 5 | Video Upload Multer Error Handling | Ensure 50MB video uploads work smoothly and error messages reflect 50MB limit | M1 | ORIGINAL_REQUEST R1 | DONE (Verified) |
+| 6 | Admin Intro Video Card & Controls | Add Soil Goddess styled card in `SettingsPage.tsx` with master toggle, skip toggle, showOnce toggle, and skipAfterSeconds | M2 | ORIGINAL_REQUEST R2 | DONE (Verified) |
+| 7 | Admin Dual-Mode Video Upload & URL Input | Direct MP4/WebM upload via `uploadVideo` + external video URL text input | M2 | ORIGINAL_REQUEST R2 | DONE (Verified) |
+| 8 | Admin Live Embedded Video Player Preview | Embedded `<video>` preview rendering active video with controls, poster, and fallback | M2 | ORIGINAL_REQUEST R2 | DONE (Verified) |
+| 9 | Admin Validation & Reactive Save States | Inline error display and disabled save button when enabled without video URL or while uploading | M2 | ORIGINAL_REQUEST R2 | DONE (Verified) |
+| 10 | Admin Persistence & Reload Integrity | Persist settings to database via settings API and reload cleanly on page refresh | M2 | ORIGINAL_REQUEST R2 | DONE (Verified) |
+| 11 | Storefront Service Type Contract | Add `IntroVideoConfig` type and `fetchIntroVideoConfig()` in `storefront.service.ts` | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 12 | Storefront Zero Layout Shift & Suppression | Instant site entrance (return `null`) when disabled, empty URL, or session seen | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 13 | Storefront Fullscreen Overlay & Autoplay | Fullscreen overlay with `aria-label="Intro video"`, muted autoplay, poster, spinner | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 14 | Storefront Skip Timer & Countdown | Skip button respecting `skipEnabled` and countdown delay `skipAfterSeconds` | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 15 | Storefront Fade-Out & Session Persistence | Smooth fade-out exit transition and `sessionStorage.setItem('sas_intro_seen', 'true')` | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 16 | Storefront Bundle Synchronization | Synchronize `frontend/components/ui/IntroVideo.tsx` and `frontend/homepage-bundle/components/ui/IntroVideo.tsx` | M3 | ORIGINAL_REQUEST R3 | DONE (Verified) |
+| 17 | E2E Automated Test Suite | Requirement-driven automated tests covering all 4 tiers of intro video features | M-E2E | ORIGINAL_REQUEST AC | DONE (Verified) |
+| 18 | Full System Build & Forensic Integrity | 0 error builds in `backend/node`, `backend/panel`, `frontend` + clean forensic audit | M4 | ORIGINAL_REQUEST AC | DONE (Verified) |
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | M1: Backend Schema, Migrations & APIs | `models/index.ts`, `migrate.ts`, admin & storefront event controllers | none | DONE (Verified) |
-| 2 | M2: Admin Panel Event Form Multi-Image & Video | `EventFormPage.tsx` gallery uploader & video glimpse preview | M1 | DONE (Verified) |
-| 3 | M3: Storefront Event Showcase Gallery & Video | `storefront.service.ts`, `EventGallery.tsx`, `EventVideoPlayer.tsx`, `EventDetail.tsx` | M1 | DONE (Verified) |
-| 4 | M4: System Verification, Full Builds & Audit | `npm run build` in all 3 apps, empirical testing & forensic audit | M1, M2, M3 | DONE (Gate: PASS) |
+| M1 | Backend Schema, Service & Storefront API | `settings.service.ts`, `resource.controller.ts`, `catalog.controller.ts`, `storefront.routes.ts`, `error-handler.ts` | none | DONE (Verified) |
+| M2 | Admin Panel Management & Live Preview | `backend/panel/src/pages/SettingsPage.tsx` | M1 | DONE (Verified) |
+| M3 | Storefront Dynamic Intro Video & Playback | `frontend/components/ui/IntroVideo.tsx`, `frontend/homepage-bundle/components/ui/IntroVideo.tsx`, `storefront.service.ts` | M1 | DONE (Verified) |
+| M-E2E | E2E Testing Track | `TEST_INFRA.md`, automated test harness & test suite | M1 | DONE (Verified) |
+| M4 | System Verification, Build & Forensic Audit | Pass 100% E2E tests, TypeScript builds in all 3 apps, adversarial review & forensic audit | M1, M2, M3, M-E2E | DONE (Gate: PASS) |
 
 ## Interface Contracts
 
-### Event Model & API Payload Contract
+### 1. `IntroVideoConfig` Contract
 ```typescript
-interface EventAttributes {
-  id: number
-  name: string
-  slug: string
-  description: string | null
-  imageUrl: string | null         // field: 'image_url' (primary cover image)
-  images: string[]                // field: 'images' (JSON array of gallery image URLs)
-  videoUrl: string | null         // field: 'video_url' (VARCHAR(512), optional video glimpse)
-  eventDate: string
-  startTime: string
-  endTime: string
-  price: number
-  mode: 'offline' | 'online' | 'both'
-  venueAddress: string | null
-  zoomLink: string | null
-  capacity: number | null
-  isActive: boolean
+export interface IntroVideoConfig {
+  enabled: boolean
+  videoUrl: string
+  posterUrl?: string
+  skipEnabled: boolean
+  skipAfterSeconds: number
+  showOncePerSession: boolean
 }
 ```
 
-### Admin Event Controller Zod Schema (`backend/node/src/modules/admin/controllers/event.controller.ts`)
+### 2. Default Configuration
 ```typescript
-export const eventSchema = z.object({
-  name: z.string().min(2, 'Name is required.').max(180),
-  description: z.string().optional().nullable(),
-  imageUrl: z.string().optional().nullable(),
-  images: z.array(z.string().trim().min(1)).optional().default([]),
-  videoUrl: z.string().trim().max(512).optional().nullable(),
-  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD.'),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Start time must be HH:MM.'),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'End time must be HH:MM.'),
-  price: z.coerce.number().min(0, 'Price cannot be negative.'),
-  mode: z.enum(['offline', 'online', 'both']),
-  venueAddress: z.string().optional().nullable(),
-  zoomLink: z.string().optional().nullable(),
-  capacity: z.coerce.number().int().positive().optional().nullable(),
-  isActive: z.boolean().optional().default(true),
-})
+export const defaultIntroVideoConfig: IntroVideoConfig = {
+  enabled: false,
+  videoUrl: '',
+  posterUrl: '',
+  skipEnabled: true,
+  skipAfterSeconds: 0,
+  showOncePerSession: true,
+}
 ```
 
-### Storefront DTO Serialization (`backend/node/src/modules/events/events.controller.ts`)
+### 3. Backend Zod Validation Schema (`backend/node/src/modules/admin/controllers/resource.controller.ts`)
 ```typescript
-function toPublicEvent(plain: any, now = new Date()): Record<string, unknown> {
-  const window = bookingWindowFor(plain, now)
-  const rawImages = Array.isArray(plain.images) ? plain.images : []
-  const images = rawImages.length > 0 ? rawImages : (plain.imageUrl ? [plain.imageUrl] : [])
-  return {
-    id: plain.id,
-    name: plain.name,
-    slug: plain.slug,
-    description: plain.description,
-    imageUrl: plain.imageUrl,
-    images,
-    videoUrl: plain.videoUrl || null,
-    eventDate: plain.eventDate,
-    startTime: plain.startTime,
-    endTime: plain.endTime,
-    price: Number(plain.price),
-    mode: plain.mode,
-    venueAddress: plain.venueAddress,
-    capacity: plain.capacity,
-    ...window,
+if (data.key === 'intro_video_config') {
+  const val = data.value as any
+  if (typeof val?.enabled !== 'boolean') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'enabled must be a boolean', path: ['value', 'enabled'] })
+  }
+  if (val?.enabled && (!val.videoUrl || typeof val.videoUrl !== 'string' || !val.videoUrl.trim())) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'videoUrl is required when intro video is enabled', path: ['value', 'videoUrl'] })
+  }
+  if (val?.videoUrl !== undefined && typeof val.videoUrl !== 'string') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'videoUrl must be a string', path: ['value', 'videoUrl'] })
+  }
+  if (val?.posterUrl !== undefined && val?.posterUrl !== null && typeof val.posterUrl !== 'string') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'posterUrl must be a string', path: ['value', 'posterUrl'] })
+  }
+  if (val?.skipEnabled !== undefined && typeof val.skipEnabled !== 'boolean') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'skipEnabled must be a boolean', path: ['value', 'skipEnabled'] })
+  }
+  if (val?.skipAfterSeconds !== undefined) {
+    const num = Number(val.skipAfterSeconds)
+    if (isNaN(num) || num < 0 || num > 30) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'skipAfterSeconds must be a number between 0 and 30', path: ['value', 'skipAfterSeconds'] })
+    }
+  }
+  if (val?.showOncePerSession !== undefined && typeof val.showOncePerSession !== 'boolean') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'showOncePerSession must be a boolean', path: ['value', 'showOncePerSession'] })
   }
 }
 ```
 
-### Storefront Service Type Contract (`frontend/lib/services/storefront.service.ts`)
-```typescript
-export type EventItem = {
-  id: number
-  name: string
-  slug: string
-  description: string | null
-  imageUrl: string | null
-  images?: string[] | null
-  videoUrl?: string | null
-  eventDate: string
-  startTime: string
-  endTime: string
-  price: number
-  mode: 'offline' | 'online' | 'both'
-  venueAddress: string | null
-  zoomLink: string | null
-  capacity: number | null
-  seatsLeft?: number
-  isUpcoming: boolean
-  isPast: boolean
-  bookingClosed: boolean
-  closesAt: string
+### 4. Public Storefront Endpoint API
+- **Route**: `GET /api/storefront/intro-video`
+- **Response**: `200 OK`
+```json
+{
+  "enabled": false,
+  "videoUrl": "",
+  "posterUrl": "",
+  "skipEnabled": true,
+  "skipAfterSeconds": 0,
+  "showOncePerSession": true
 }
 ```
 
 ## Code Layout
-- `backend/node/src/models/index.ts` — Sequelize Event model with `images` and `videoUrl`.
-- `backend/node/src/database/migrate.ts` — Safe database migration adding `images` and `video_url` columns.
-- `backend/node/src/modules/admin/controllers/event.controller.ts` — Admin event validation & persistence.
-- `backend/node/src/modules/events/events.controller.ts` — Public event DTO serialization.
-- `backend/panel/src/pages/EventFormPage.tsx` — Admin event form with multi-image gallery uploader & video glimpse preview.
-- `frontend/lib/services/storefront.service.ts` — Storefront event types.
-- `frontend/components/events/EventGallery.tsx` — Interactive storefront multi-image gallery.
-- `frontend/components/events/EventVideoPlayer.tsx` — Responsive storefront video player with zero voids when absent.
-- `frontend/components/events/EventDetail.tsx` — Storefront event detail showcase page integrating gallery and video.
+- `backend/node/src/services/settings.service.ts` — In-memory caching, getters, and invalidator for intro video config.
+- `backend/node/src/modules/admin/controllers/resource.controller.ts` — Settings Zod schema validation & cache invalidation hooks.
+- `backend/node/src/modules/storefront/controllers/catalog.controller.ts` — Storefront public intro video controller.
+- `backend/node/src/modules/storefront/storefront.routes.ts` — Route registration for `GET /intro-video`.
+- `backend/node/src/middleware/error-handler.ts` — Multer upload limit error handling.
+- `backend/panel/src/pages/SettingsPage.tsx` — Admin panel intro video settings card with live preview & upload.
+- `frontend/lib/services/storefront.service.ts` — Storefront service API fetcher.
+- `frontend/components/ui/IntroVideo.tsx` — Storefront dynamic fullscreen intro video overlay component.
+- `frontend/homepage-bundle/lib/services/storefront.service.ts` — Homepage bundle storefront service contract.
+- `frontend/homepage-bundle/components/ui/IntroVideo.tsx` — Homepage bundle intro video component.

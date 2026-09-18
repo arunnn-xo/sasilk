@@ -1,59 +1,139 @@
-﻿# Milestone 3 Handoff Report: Event Controller Async Notification Pipeline
+# Handoff Report — Milestone 3: Storefront Dynamic Intro Video & Seamless Playback
+
+**Agent**: Storefront Worker M3 (`worker_m3`)  
+**Date**: 2026-09-18  
+**Recipient**: Orchestrator (`adf61df8-cd40-43cb-869c-b206dde43fe5`)  
+
+---
 
 ## 1. Observation
-- **Assigned File & Exclusive Scope**:
-  ackend/node/src/modules/events/events.controller.ts
-- **Initial State**:
-  - Legacy sendGeneralEmail call in confirmPaidBooking was calling general marketing email templates without branded event layout or admin alerts.
-  - No WhatsApp notification was triggered on booking confirmation.
-  - The parameter azorpayPaymentId in confirmPaidBooking was typed as string instead of string | null = null, requiring 
-ull as any workarounds in createBooking.
-  - Deprecated inline HTML builder uildBookingConfirmationHtml and escapeHtml were present.
-- **Implemented Changes**:
-  1. Updated Imports:
-     - Imported sendEventBookingConfirmationEmail, sendAdminEventBookingAlert from ../../services/email.service.js.
-     - Imported sendBookingConfirmationWhatsApp from ../../services/whatsapp.service.js.
-     - Imported getCompanyInfo from ../../services/settings.service.js.
-     - Imported env from ../../config/env.js.
-     - Removed obsolete sendGeneralEmail import.
-  2. Refactored confirmPaidBooking(bookingId: number, razorpayPaymentId: string | null = null):
-     - Preserved idempotent guard (if (booking.get('paymentStatus') === 'paid') return).
-     - Derived eventPlain from ooking.get('event') safely supporting plain or Sequelize model instances.
-     - For offline mode, generated qrToken (SOILGODDESS-EV-...) and qrImage data URL if not already present.
-     - Updated ooking with paymentStatus: 'paid', azorpayPaymentId, qrToken, qrImage.
-     - Implemented detached asynchronous notification pipeline using setImmediate with Promise.allSettled and per-dispatch .catch error logging:
-       1. **Customer Confirmation Email**: sendEventBookingConfirmationEmail(updatedBooking.customerEmail, updatedBooking, eventPlain, company)
-       2. **Admin Alert Email**: sendAdminEventBookingAlert(env.ADMIN_EMAIL, updatedBooking, eventPlain, company)
-       3. **Customer WhatsApp Notification**: sendBookingConfirmationWhatsApp({ customerName, customerEmail, customerMobile, bookingNumber, eventName, eventDate, startTime, endTime, mode, quantity, total, venueAddress, zoomLink, companyName, supportPhone, supportEmail })
-  3. Clean Code:
-     - Removed legacy uildBookingConfirmationHtml and escapeHtml helpers.
-     - Updated createBooking to pass 
-ull directly to confirmPaidBooking.
+
+### 1.1 Files Modified Under Exclusive Ownership
+1. `frontend/lib/services/storefront.service.ts`
+   - Added interface `IntroVideoConfig`:
+     ```typescript
+     export interface IntroVideoConfig {
+       enabled: boolean
+       videoUrl: string
+       posterUrl?: string
+       skipEnabled: boolean
+       skipAfterSeconds: number
+       showOncePerSession: boolean
+     }
+     ```
+   - Added constant `DEFAULT_INTRO_VIDEO_CONFIG` and alias `defaultIntroVideoConfig`:
+     ```typescript
+     export const DEFAULT_INTRO_VIDEO_CONFIG: IntroVideoConfig = {
+       enabled: false,
+       videoUrl: '',
+       posterUrl: '',
+       skipEnabled: true,
+       skipAfterSeconds: 0,
+       showOncePerSession: true,
+     }
+     export const defaultIntroVideoConfig: IntroVideoConfig = DEFAULT_INTRO_VIDEO_CONFIG
+     ```
+   - Added async function `fetchIntroVideoConfig(): Promise<IntroVideoConfig>` with defensive 3500ms abort controller, JSON fallback, and robust schema sanitization.
+
+2. `frontend/homepage-bundle/lib/services/storefront.service.ts`
+   - Added identical `IntroVideoConfig`, `DEFAULT_INTRO_VIDEO_CONFIG`, `defaultIntroVideoConfig`, and `fetchIntroVideoConfig()` definitions to maintain cross-bundle contract compatibility.
+
+3. `frontend/components/ui/IntroVideo.tsx`
+   - Implemented dynamic intro video component:
+     - `'use client'` directive with client-side hydration guard `isClient`.
+     - Zero Layout Shift: returns `null` during SSR, during config fetch, if disabled (`config.enabled === false`), if `videoUrl` is empty, or if already seen in session (`config.showOncePerSession && sessionStorage.getItem('sas_intro_seen')`).
+     - Overlay Container: `<div role="dialog" aria-modal="true" aria-label="Intro video" className="fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-700 ...">` preserving selector compatibility for `GuestDiscountPopup.tsx`.
+     - Autoplay compliance: programmatic `video.muted = true`, `video.playsInline = true`, and catches rejected play promises to trigger `handleDismiss()` immediately rather than trapping users.
+     - Smooth loading spinner with gold/white aesthetic displayed while buffering.
+     - Skip button state machine:
+       - If `skipEnabled === true` and `skipAfterSeconds > 0` with `elapsedTime < skipAfterSeconds`: renders non-clickable countdown badge (`Skip in {remainingSeconds}s`).
+       - When `elapsedTime >= skipAfterSeconds` (or if `skipAfterSeconds === 0`): renders clickable button with `SkipForward` icon and accessible focus/hover styling.
+       - If `skipEnabled === false`: omits skip controls completely.
+     - Dismiss Transition & Session Marking:
+       - Sets `leaving = true` applying `opacity-0 pointer-events-none` over 700ms.
+       - Sets `sessionStorage.setItem('sas_intro_seen', 'true')` when `config.showOncePerSession === true`.
+       - Body scroll lock restored on dismissal/unmount.
+       - 12-second watchdog safety timer prevents infinite stalling on network delays.
+
+4. `frontend/homepage-bundle/components/ui/IntroVideo.tsx`
+   - Synchronized byte-for-byte with `frontend/components/ui/IntroVideo.tsx` (verified via `git diff --no-index` producing zero differences).
+
+### 1.2 Verification Commands & Results
+- **Git Diff Verification**:
+  ```
+  git diff --no-index frontend/components/ui/IntroVideo.tsx frontend/homepage-bundle/components/ui/IntroVideo.tsx
+  -> Exit code 0 (0 differences)
+  ```
+- **Frontend Production Build**:
+  ```
+  npm run build (in frontend/)
+  -> Exit code 0
+  -> Compiled successfully
+  -> Linting and checking validity of types ... passed
+  -> Generating static pages (23/23) ... passed
+  ```
+- **Backend Intro Video Test Suite**:
+  ```
+  npx tsx scripts/test-intro-video.ts (in backend/node/)
+  -> 65 / 65 passed (0 failed) across all 4 tiers
+  ```
+
+---
 
 ## 2. Logic Chain
-1. **Zero-Latency API Guarantees**: Email transport networks and WhatsApp provider APIs can experience network latency or transient provider outages. By wrapping the three notification dispatches in setImmediate and Promise.allSettled, the HTTP responses for createBooking (free events) and erifyBookingPayment (paid events) are returned immediately without blocking or timing out.
-2. **Provider Error Isolation**: Each dispatch within Promise.allSettled has dedicated .catch logging. If SMTP is unconfigured or fails, WhatsApp notification still dispatches and vice versa.
-3. **Parity Between Free and Paid Flows**: Both free booking creation (	otal <= 0) and paid booking verification (erifyBookingPayment and Razorpay Webhook) route through confirmPaidBooking, ensuring identical notification dispatch regardless of payment channel.
+
+1. **Contract Alignment**:
+   `PROJECT.md § Interface Contracts` and `DISPATCH.md` require `IntroVideoConfig`, `DEFAULT_INTRO_VIDEO_CONFIG`, and `fetchIntroVideoConfig()` to be accessible in both `frontend/lib/services/storefront.service.ts` and `frontend/homepage-bundle/lib/services/storefront.service.ts`. Adding these exports ensures full contract parity across both bundles.
+
+2. **Zero Layout Shift / SSR Guard**:
+   In Next.js App Router, `app/page.tsx` is prerendered statically. If the intro video component rendered a container or default backdrop before knowing whether the intro video was active in the database, disabled sites would flicker an empty overlay. By returning `null` when unmounted, during SSR, or when disabled/empty/seen, the homepage renders instantaneously with zero layout shift.
+
+3. **Autoplay Policy Handling**:
+   Mobile browsers (WebKit iOS, Chrome Android) enforce strict autoplay policies. If a browser rejects programmatic `.play()`, catching the rejection and executing `handleDismiss()` prevents the user from being trapped on a frozen screen.
+
+4. **Countdown Skip & Accessibility**:
+   The `skipAfterSeconds` configuration prevents immediate skipping if desired by the merchant. Calculating remaining seconds from video `currentTime` provides users with visible feedback before unlocking the skip button. Retaining `aria-label="Intro video"` ensures `GuestDiscountPopup.tsx` can continue querying `document.querySelector('[aria-label="Intro video"]')` to prevent overlapping modals.
+
+5. **Session Isolation**:
+   Writing `'true'` to `sessionStorage` under `sas_intro_seen` persists state across the active browser tab session without leaking across independent browser sessions.
+
+---
 
 ## 3. Caveats
-- getCompanyInfo() falls back gracefully to default company settings if database settings are not initialized.
-- In offline events, qrImage data URL is generated and persisted on the booking record for frontend pass display while email.service.ts independently creates a high-res PNG buffer attachment for the email pass.
-- No caveats: zero TypeScript compilation errors and 100% test pass rate.
+
+- In `frontend/homepage-bundle/`, independent `npm run build` is not runnable standalone due to external relative module imports (e.g. `@/lib/api/storefront`) belonging to the root Next.js app architecture. The main storefront application `frontend/` builds cleanly with exit code 0 and bundles both components.
+- No other caveats.
+
+---
 
 ## 4. Conclusion
-- Milestone M3 implementation is complete and fully verified.
-- ackend/node/src/modules/events/events.controller.ts seamlessly orchestrates transactional customer emails, admin alert emails, and customer WhatsApp messages for both online webinars and offline in-person workshops.
+
+Milestone 3 is complete, fully functional, and verified:
+- Storefront service contracts and fetchers are exported correctly in both packages.
+- `IntroVideo.tsx` delivers zero layout shift, seamless session suppression, countdown skip controls, loading indicators, autoplay rejection recovery, and 700ms smooth fade-out exit transitions.
+- All code modifications were restricted exclusively to assigned files.
+- `frontend` Next.js production build passed with 0 errors across all 23 routes.
+
+---
 
 ## 5. Verification Method
-1. **Compilation Verification**:
-   - Command: 
-pm run build in ackend/node
-   - Result: Exit code 0, 0 TypeScript errors.
-2. **4-Tier Notification Test Suite Execution**:
-   - Command: 
-px tsx scripts/test-notifications.ts in ackend/node
-   - Result: 58/58 tests passed (100% pass rate) across all 4 Tiers:
-     - Tier 1 (Feature Coverage): 26/26 passed
-     - Tier 2 (Boundary & Corner Cases): 25/25 passed
-     - Tier 3 (Cross-Feature Interactions & Idempotency): 5/5 passed
-     - Tier 4 (Real-World Scenarios): 2/2 passed
+
+To independently verify this milestone:
+
+1. **Verify Bundle Parity**:
+   ```bash
+   git diff --no-index frontend/components/ui/IntroVideo.tsx frontend/homepage-bundle/components/ui/IntroVideo.tsx
+   ```
+   *Expected result*: No output, exit code 0.
+
+2. **Verify Frontend Build**:
+   ```bash
+   cd frontend && npm run build
+   ```
+   *Expected result*: Exit code 0, 23/23 routes compiled successfully.
+
+3. **Verify Automated Intro Video Test Suite**:
+   ```bash
+   cd backend/node && npx tsx scripts/test-intro-video.ts
+   ```
+   *Expected result*: 65/65 tests passed (100% success).

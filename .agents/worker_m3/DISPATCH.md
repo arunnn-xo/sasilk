@@ -1,31 +1,86 @@
-﻿## 2026-09-02T10:20:51Z
+## 2026-09-18T05:19:20Z
 
-You are Worker M3.
+You are Storefront Worker M3 for Milestone 3: Storefront Dynamic Intro Video & Seamless Playback.
 Your working directory is: c:\sts-projects\sasilk\.agents\worker_m3
-The Original User Request is at: c:\sts-projects\sasilk\.agents\ORIGINAL_REQUEST.md
-The Project Specification is at: c:\sts-projects\sasilk\PROJECT.md
-Worker M1 Handoff is at: c:\sts-projects\sasilk\.agents\worker_m1\handoff.md
-Worker M2 Handoff is at: c:\sts-projects\sasilk\.agents\worker_m2\handoff.md
+Workspace root: c:\sts-projects\sasilk
+Authoritative request: c:\sts-projects\sasilk\.agents\ORIGINAL_REQUEST.md
+Project Blueprint: c:\sts-projects\sasilk\PROJECT.md
+Survey report: c:\sts-projects\sasilk\.agents\survey_spec_miner_1\survey_report.md
 
 MANDATORY INTEGRITY WARNING:
-DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A forensic auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
+DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A teamwork_preview_auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-Scope & Assigned Files (Exclusive Write Ownership):
-1. backend/node/src/modules/events/events.controller.ts:
-   - Import sendEventBookingConfirmationEmail, sendAdminEventBookingAlert from ../../services/email.service.js.
-   - Import sendBookingConfirmationWhatsApp from ../../services/whatsapp.service.js.
-   - Import getCompanyInfo from ../../services/settings.service.js.
-   - Import env from ../../config/env.js.
-   - Refactor confirmPaidBooking(bookingId: number, razorpayPaymentId: string | null):
-     - Ensure offline events generate qrToken and qrImage if not already present.
-     - Save updates to booking.
-     - Fetch fresh booking data and company settings.
-     - Replace the legacy sendGeneralEmail call with an asynchronous, non-blocking notification pipeline that dispatches:
-       1. Customer Confirmation Email via sendEventBookingConfirmationEmail(bookingPlain.customerEmail, bookingPlain, eventPlain, company).
-       2. Admin Alert Email via sendAdminEventBookingAlert(env.ADMIN_EMAIL, bookingPlain, eventPlain, company).
-       3. Customer WhatsApp notification via sendBookingConfirmationWhatsApp({ customerName, customerEmail, customerMobile, bookingNumber, eventName, eventDate, startTime, endTime, mode, quantity, total, venueAddress, zoomLink, companyName, supportPhone, supportEmail }).
-     - Ensure this dispatch executes detached/asynchronously (e.g. using setImmediate or Promise.allSettled([...]).catch(...)), ensuring that neither createBooking nor verifyBookingPayment is blocked or delayed by email/WhatsApp network latency or provider errors.
-     - Cleanly remove old unneeded private helpers if no longer used (like buildBookingConfirmationHtml), keeping the codebase clean.
+Write ownership (files you own exclusively):
+- `frontend/lib/services/storefront.service.ts`
+- `frontend/homepage-bundle/lib/services/storefront.service.ts`
+- `frontend/components/ui/IntroVideo.tsx`
+- `frontend/homepage-bundle/components/ui/IntroVideo.tsx`
 
-Run npm run build in backend/node to verify zero TypeScript errors.
-Write your handoff report in c:\sts-projects\sasilk\.agents\worker_m3\handoff.md and report back via send_message.
+Your mission:
+Implement Milestone 3 per `PROJECT.md § Interface Contracts` and `ORIGINAL_REQUEST.md R3`:
+1. `storefront.service.ts` (in BOTH `frontend/lib/services/storefront.service.ts` AND `frontend/homepage-bundle/lib/services/storefront.service.ts`):
+   - Export interface `IntroVideoConfig`:
+     ```typescript
+     export interface IntroVideoConfig {
+       enabled: boolean
+       videoUrl: string
+       posterUrl?: string
+       skipEnabled: boolean
+       skipAfterSeconds: number
+       showOncePerSession: boolean
+     }
+     ```
+   - Export `DEFAULT_INTRO_VIDEO_CONFIG`:
+     ```typescript
+     export const DEFAULT_INTRO_VIDEO_CONFIG: IntroVideoConfig = {
+       enabled: false,
+       videoUrl: '',
+       posterUrl: '',
+       skipEnabled: true,
+       skipAfterSeconds: 0,
+       showOncePerSession: true,
+     }
+     ```
+   - Export `fetchIntroVideoConfig(): Promise<IntroVideoConfig>`:
+     - Fetches from `/api/storefront/intro-video` (or using `apiFetch`), falling back to `DEFAULT_INTRO_VIDEO_CONFIG` on any error or missing data.
+
+2. `IntroVideo.tsx` (in BOTH `frontend/components/ui/IntroVideo.tsx` AND `frontend/homepage-bundle/components/ui/IntroVideo.tsx` - KEEP IDENTICAL):
+   - `'use client'`
+   - Guard against SSR: if `typeof window === 'undefined'`, return `null`.
+   - Dynamic configuration: fetch `fetchIntroVideoConfig()` on component mount.
+   - Zero Layout Shift / Suppression:
+     - If `config.enabled === false` OR `!config.videoUrl?.trim()`: return `null`.
+     - If `config.showOncePerSession === true` AND `sessionStorage.getItem('sas_intro_seen')`: return `null`.
+     - If fetch fails or network error: return `null` immediately.
+   - Active Overlay:
+     - Root container MUST retain `aria-label="Intro video"` (`<div aria-label="Intro video" role="dialog" aria-modal="true" className={...}>`) so `GuestDiscountPopup.tsx` does not conflict.
+     - Fullscreen overlay: `fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-700`.
+     - Video tag:
+       - `autoPlay muted playsInline preload="auto"`
+       - `src={config.videoUrl}`
+       - `poster={config.posterUrl || undefined}`
+       - If `video.play()` is rejected by browser policy: call `handleDismiss()` immediately so user is not stuck.
+       - `onEnded={handleDismiss}`
+       - `onError={handleDismiss}`
+     - Smooth loading spinner: displayed while video is buffering before playback starts.
+     - Skip button:
+       - If `config.skipEnabled`:
+         - Track playback elapsed time via `onTimeUpdate`.
+         - If `config.skipAfterSeconds > 0` and elapsed time < `skipAfterSeconds`: show countdown badge ("Skip in {remaining}s").
+         - When elapsed time >= `skipAfterSeconds` (or if `skipAfterSeconds === 0`): show active clickable "Skip" button with SkipForward icon.
+         - Clicking Skip calls `handleDismiss()`.
+     - Smooth Dismiss Transition & Session Marking:
+       - `handleDismiss`: sets fading state (`opacity-0 pointer-events-none`), waits 700ms, then sets unmounted state.
+       - If `config.showOncePerSession === true`: sets `sessionStorage.setItem('sas_intro_seen', 'true')`.
+     - Responsive sizing: mobile, tablet, laptop, desktop.
+
+3. Verification:
+   - Run `npm run build` in `frontend`. Must pass with 0 errors.
+
+Write handoff report to `c:\sts-projects\sasilk\.agents\worker_m3\handoff.md` and send message to orchestrator upon completion.
+
+## 2026-09-18T05:40:09Z
+**Context**: Storefront Worker M3 Status
+**Content**: Checking in on Milestone 3 progress and frontend build status.
+**Action**: Please report your current progress and ETA.
+

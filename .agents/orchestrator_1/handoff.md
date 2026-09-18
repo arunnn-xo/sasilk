@@ -1,68 +1,162 @@
-# Final Handoff Report: Soil Goddess Event Booking Transactional Notifications
+# Project Handoff Report: Dynamic Storefront Intro Video Configuration & Playback
+
+**Orchestrator**: `orchestrator_1` (Project Orchestrator)  
+**Date**: 2026-09-18T06:10:00Z  
+**Workspace Root**: `c:\sts-projects\sasilk`  
+**Working Directory**: `c:\sts-projects\sasilk\.agents\orchestrator_1`  
+**Authoritative Request**: `c:\sts-projects\sasilk\.agents\ORIGINAL_REQUEST.md`  
+**Project Blueprint**: `c:\sts-projects\sasilk\PROJECT.md`  
+**Gate Status**: `c:\sts-projects\sasilk\.agents\orchestrator_1\GATE_STATUS.md` (**PASS**)  
+**Audit Verdict**: **CLEAN (Zero Integrity Violations)**  
+
+---
 
 ## 1. Observation
-- **Mission**: Implement end-to-end transactional notifications for the Soil Goddess Event Booking and Masterclass registration flow, sending automated branded confirmation emails to both the Customer and Admin, as well as an automated WhatsApp confirmation message to the Customer upon successful booking creation.
-- **Implemented Modules**:
-  1. `backend/node/src/config/env.ts`:
-     - Added Zod validations and defaults for `WHATSAPP_ENABLED`, `WHATSAPP_PROVIDER`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_API_URL`, `WHATSAPP_API_KEY`, `WHATSAPP_TEMPLATE_NAME`.
-  2. `backend/node/src/services/whatsapp.service.ts`:
-     - Built modular multi-provider WhatsApp notification engine supporting Meta WhatsApp Cloud API (Graph v20.0), Webhooks / Aggregators (Interakt, Aisensy, Wati, Twilio), and Mock/Local development mode.
-     - Implemented E.164 mobile number normalization (`normalizeMobileNumber`) handling 10-digit Indian numbers, +91 prefixes, leading 0s, and delimiter cleansing.
-     - Implemented dynamic, rich branded text formatting (`formatBookingWhatsAppMessage`) for both In-Person workshops (venue address & check-in instructions) and Online masterclasses (Zoom link & webinar instructions).
-     - Implemented robust error isolation and mock fallback.
-  3. `backend/node/src/services/email.service.ts`:
-     - Implemented `sendEventBookingConfirmationEmail(to, booking, event, company)` with luxury responsive HTML styling (`wrapInEmailTemplate`), brand palette (#6B1A2A maroon, #FBF9F6 cream, #e8dcc4 border, #C29B57 gold), QR code PNG buffer generation (`qrcode.toBuffer`) attached via inline `cid:entry_qr` and downloadable file for offline events, prominent Zoom CTA for online events, and customer care details.
-     - Implemented `sendAdminEventBookingAlert(to, booking, event, company)` dispatched to `env.ADMIN_EMAIL` with complete customer contact info (Name, Email, 10-digit Mobile), booking reference, seat count, payment status, and transaction ID.
-  4. `backend/node/src/modules/events/events.controller.ts`:
-     - Refactored `confirmPaidBooking` to orchestrate detached, non-blocking asynchronous dispatches (`setImmediate` + `Promise.allSettled`) across Customer Email, Admin Email, and Customer WhatsApp notification channels.
-     - Ensured unified notification parity across free registrations (`total <= 0`), client Razorpay verification (`verifyBookingPayment`), and background Razorpay webhooks (`payment.captured`).
-     - Maintained strict idempotency guard to prevent double dispatch.
-  5. `backend/node/scripts/test-notifications.ts` & `TEST_INFRA.md` & `TEST_READY.md`:
-     - Built and certified a 4-tier automated test suite covering 58 test cases with a 100% pass rate.
-  6. `backend/node/scripts/stress-test-notifications.ts` & `backend/node/scripts/adversarial-edge-cases.ts`:
-     - Adversarial harnesses verifying 500+ concurrency, ReDoS safety, SQLi/XSS sanitization, 100% offline/online data isolation, and free vs paid pricing parity.
+
+All three core requirements (R1, R2, R3) and acceptance criteria have been implemented, verified, and certified:
+
+### 1.1 Requirement R1: Database Schema & Backend API (`backend/node`)
+1. **Settings Model & Service Extension** (`backend/node/src/services/settings.service.ts`):
+   - Defined and exported interface `IntroVideoConfig`:
+     ```typescript
+     export interface IntroVideoConfig {
+       enabled: boolean
+       videoUrl: string
+       posterUrl?: string
+       skipEnabled: boolean
+       skipAfterSeconds: number
+       showOncePerSession: boolean
+     }
+     ```
+   - Exported `defaultIntroVideoConfig` with default fallback values (`enabled: false`, `videoUrl: ''`, `posterUrl: ''`, `skipEnabled: true`, `skipAfterSeconds: 0`, `showOncePerSession: true`).
+   - Implemented `getIntroVideoConfig()` with module-scoped in-memory cache `cachedIntroVideoConfig` and defensive parsing/clamping of Sequelize `Setting.findOne({ where: { key: 'intro_video_config' } })`.
+   - Implemented and exported `invalidateIntroVideoCache()` which clears the memory cache.
+2. **Admin Validation & Cache Invalidation** (`backend/node/src/modules/admin/controllers/resource.controller.ts`):
+   - In `settingsSchema.superRefine`: strictly validates `intro_video_config` key. Validates boolean `enabled`, requires non-empty string `videoUrl` when `enabled === true`, optional string/null `posterUrl`, boolean `skipEnabled`, number `[0, 30]` `skipAfterSeconds`, and boolean `showOncePerSession`.
+   - In `createResource`, `updateResource`, and `deleteResource`: wired `invalidateIntroVideoCache()` whenever `settingKey === 'intro_video_config'`.
+3. **Public Storefront Endpoint** (`backend/node/src/modules/storefront/storefront.routes.ts` & `controllers/catalog.controller.ts`):
+   - Mounted `GET /api/storefront/intro-video` via `catalogController.getIntroVideoConfiguration`, returning sanitized config JSON.
+4. **Cloudinary Video Ingestion & Multer Error Handling** (`admin.routes.ts`, `upload.controller.ts`, `error-handler.ts`):
+   - Verified 50MB video streaming via `uploadVideoFile` to Cloudinary `sasilk/videos`.
+   - Updated `multerMessages.LIMIT_FILE_SIZE` in `error-handler.ts` to prevent misleading 5MB error reports for video uploads.
+5. **Compilation Verification**:
+   - `npm run build` in `backend/node` passes with **0 errors**. 100% of relative module imports adhere to NodeNext `.js` extension requirements.
+
+### 1.2 Requirement R2: Admin Panel Management (`backend/panel`)
+1. **Soil Goddess Intro Video Card** (`backend/panel/src/pages/SettingsPage.tsx`):
+   - Preserved existing Shipping Status card (`shipping_config`) completely intact.
+   - Added dedicated "Storefront Intro Video" card with Film header icon, deep burgundy (`#6B1A2A`) and warm gold (`#D9B86E`) accents, status indicator badge, and responsive grid layout.
+2. **Dual-Mode Video Source Selection**:
+   - Direct file upload using `uploadVideo(file)` supporting MP4, WebM, and QuickTime up to 50MB with client-side file size and mimetype checks.
+   - Text input field for direct/external video URLs.
+   - Optional poster image uploader using `uploadImage(file)` (10MB limit) and poster URL input.
+3. **Embedded Live Video Player Preview**:
+   - Live HTML5 `<video>` preview rendering `resolveImageUrl(videoUrl)` with controls, poster support, inline playback error alert, and clean empty-state placeholder when no video is selected.
+4. **Controls & Validation Safety**:
+   - Toggles for "Enable Storefront Intro Video", "Allow Skip" (`skipEnabled`), "Show Once Per Session" (`showOncePerSession`), and number input for "Skip After (seconds)" (`skipAfterSeconds`, 0–30s).
+   - Reactive validation disables the Save button when uploading, when enabled without a valid video URL, or when skip delay is out of bounds. Inline error messages provide immediate visual feedback.
+   - TanStack React Query mutation updates `intro_video_config` and automatically invalidates `['resource', 'settings']`.
+5. **Compilation Verification**:
+   - `npm run build` in `backend/panel` (`tsc --noEmit && vite build`) passes with **0 errors**.
+
+### 1.3 Requirement R3: Storefront Dynamic Intro Video (`frontend`)
+1. **Dynamic Service Layer** (`frontend/lib/services/storefront.service.ts` & `homepage-bundle`):
+   - Exported `IntroVideoConfig`, `DEFAULT_INTRO_VIDEO_CONFIG`, and `fetchIntroVideoConfig()`.
+   - Defensive 3500ms abort controller timeout, dynamic SSR/client URL resolution, and fallback to defaults on network errors.
+2. **Dynamic Intro Video Component** (`frontend/components/ui/IntroVideo.tsx` & `homepage-bundle`):
+   - Byte-for-byte identical across both bundles (0 diffs).
+   - Zero Layout Shift: returns `null` during SSR (`typeof window === 'undefined'`), before hydration, if disabled (`enabled === false`), if video URL is missing, or if already seen in session (`showOncePerSession && sessionStorage.getItem('sas_intro_seen')`).
+   - Retains `aria-label="Intro video"` on root overlay container for seamless compatibility with `GuestDiscountPopup.tsx`.
+   - Fullscreen video overlay (`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-700`).
+   - Autoplay handling: sets `video.muted = true` and `video.playsInline = true`. Catches rejected play promises and invokes `handleDismiss()` immediately to prevent user lock-out.
+   - 12-second safety watchdog timer (`WATCHDOG_TIMEOUT_MS = 12000`) guarantees fallback dismissal on network stalls.
+   - Countdown skip badge (`Skip in {remainingSeconds}s`) transitioning to an interactive Skip button with `SkipForward` icon when elapsed time reaches `skipAfterSeconds`.
+   - Smooth 700ms fade-out exit transition (`opacity-0 pointer-events-none`) with body scroll restoration.
+   - Session isolation: sets `sessionStorage.setItem('sas_intro_seen', 'true')` when `showOncePerSession: true` inside defensive `try...catch` blocks that safely handle private browsing / quota restrictions.
+3. **Compilation Verification**:
+   - `npm run build` in `frontend` passes with **0 errors** (all 23 static/dynamic routes compiled).
+
+### 1.4 E2E Test Suite & Gate Verification
+1. **4-Tier Automated Test Suite** (`backend/node/scripts/test-intro-video.ts`):
+   - 65 test assertions across 4 tiers: Tier 1 (25 Feature Coverage), Tier 2 (25 Boundary & Corner Cases), Tier 3 (10 Combinations & Cache Transitions), Tier 4 (5 Real-World Scenarios).
+   - 100% pass rate certified in `TEST_READY.md`.
+2. **Verification Gate**:
+   - Reviewer 1 (`intro_reviewer_1`): **APPROVE**
+   - Reviewer 2 (`intro_reviewer_2`): **APPROVE**
+   - Challenger 2 (`intro_challenger_2`): **APPROVE**
+   - Forensic Integrity Auditor (`intro_auditor_1`): **CLEAN** (All 10 forensic checks passed: zero facades, zero dummy mocks, zero hardcoded test returns, zero files in `.agents/`, 100% NodeNext compliance).
+   - Gate Result: **PASS**.
 
 ---
 
 ## 2. Logic Chain
-1. **Convergence**: All booking confirmation routes converge on `confirmPaidBooking` in `events.controller.ts`. Hooking the notification dispatches here guarantees 100% coverage across free direct registrations and paid Razorpay verifications while maintaining idempotency.
-2. **Zero-Latency Resilience (R4)**: Third-party SMTP or WhatsApp provider latency is completely decoupled from the Express request-response loop using `setImmediate` and `Promise.allSettled`. HTTP endpoints return 200/201 immediately with zero risk of timeouts.
-3. **Cross-Client Email Reliability (R1)**: QR codes for offline check-in are generated as high-resolution PNG buffers and attached via CID (`cid:entry_qr`) rather than base64 data URLs, ensuring reliable rendering across Gmail, Apple Mail, and Outlook.
-4. **Administrative Visibility (R2)**: Instant alerts to `ADMIN_EMAIL` contain full customer contact details and transaction metrics.
-5. **Provider Agnostic WhatsApp (R3)**: Configurable provider adapter supports Meta Cloud API and leading Indian aggregators with seamless local mock fallback.
+
+1. **Defensive Storage & Zero Layout Shift**:
+   The storefront homepage in Next.js is statically prerendered. Rendering video backdrops or empty overlays before knowing database configuration would cause cumulative layout shift (CLS) and visual flashing. Returning `null` on SSR and before hydration guarantees CLS = 0.
+2. **Browser Autoplay Compliance**:
+   Mobile operating systems (iOS WebKit and Android Chrome) prohibit unmuted programmatic media playback. Combining `muted` and `playsInline` attributes with DOM property assignments maximizes autoplay success. If strict power-saving or privacy policies reject playback, catching the rejection and immediately executing `handleDismiss()` ensures the visitor seamlessly enters the storefront without interruption.
+3. **Cache Synchronization**:
+   Intro video configuration is requested on every unique visit. Serving from `cachedIntroVideoConfig` eliminates recurrent MySQL queries, while invalidation hooks in `resource.controller.ts` ensure admin updates in `SettingsPage.tsx` are reflected instantaneously.
+4. **Dual Bundle Synchronization**:
+   Maintaining byte-for-byte synchronization between `frontend/components/ui/IntroVideo.tsx` and `frontend/homepage-bundle/components/ui/IntroVideo.tsx` prevents code drift between the main storefront application and isolated bundle deployments.
 
 ---
 
 ## 3. Caveats
-- In local development without live SMTP credentials (`EMAIL_USER`, `EMAIL_PASS`) or WhatsApp credentials (`WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`), the system logs informative mock payloads and returns clean success objects without throwing errors or blocking execution.
-- When configuring Meta Cloud API in production, set `WHATSAPP_TEMPLATE_NAME` in `.env` if initiating conversations outside the 24-hour customer window.
+
+1. **Process-Local Caching**:
+   `cachedIntroVideoConfig` is stored in Node.js process memory. In a multi-instance clustered deployment (e.g. Kubernetes pods or PM2 cluster), cache invalidation would require a distributed pub/sub bus (such as Redis). For the single-instance production architecture of SASilk, process-local caching is optimal and aligns with all other settings in `settings.service.ts`.
+2. **Cloudinary Upload Credentials**:
+   Direct video uploads to Cloudinary (`sasilk/videos`) require active network connectivity and valid Cloudinary API keys in backend `.env`. Direct video URL input operates independently of Cloudinary upload credentials.
 
 ---
 
-## 4. Conclusion & Gate Verification
-- **Gate Result**: **PASS**
-- **Forensic Auditor Verdict**: **CLEAN** (Zero shortcuts, zero dummy facades, genuine domain logic throughout).
-- **Reviewers**: Unanimous **APPROVE** (`reviewer_1`, `reviewer_2`).
-- **Challengers**: Unanimous **APPROVE** (`challenger_1`, `challenger_2`).
-- **Tests**: 70+ automated & adversarial tests passed (100% pass rate).
-- **Build**: TypeScript compilation (`npm run build`) passed with 0 errors.
+## 4. Conclusion
+
+The Dynamic Storefront Intro Video mission is **100% complete, verified, and certified**:
+- **R1 satisfied**: Database schema persistence, Zod validation, in-memory caching with invalidation, 50MB video upload endpoint, and public storefront route.
+- **R2 satisfied**: Admin Settings page intro video management card matching Soil Goddess aesthetics, dual-mode uploader, live preview player, and reactive validation.
+- **R3 satisfied**: Storefront dynamic intro video player with zero layout shift, autoplay failure recovery, countdown skip timer, session persistence, and dual bundle parity.
+- **Build integrity**: Clean builds with 0 errors across `backend/node`, `backend/panel`, and `frontend`.
+- **Integrity Forensics**: **CLEAN** (Zero shortcuts, zero dummy mocks, authentic production code).
 
 ---
 
-## 5. Verification Commands
-```powershell
-# In backend/node:
-cd c:\sts-projects\sasilk\backend\node
+## 5. Verification Method
 
-# 1. Run 4-Tier Automated Test Suite (58 tests)
-npx tsx scripts/test-notifications.ts
+To verify the deliverables independently:
 
-# 2. Run Adversarial Edge-Case Suite (12 tests)
-npx tsx scripts/adversarial-edge-cases.ts
+1. **Compile Backend**:
+   ```powershell
+   cd c:\sts-projects\sasilk\backend\node
+   npm run build
+   ```
+   *Expected result*: Exit code 0, 0 TypeScript errors.
 
-# 3. Run Adversarial Stress Test Suite (40+ vectors)
-npx tsx scripts/stress-test-notifications.ts
+2. **Compile Admin Panel**:
+   ```powershell
+   cd c:\sts-projects\sasilk\backend\panel
+   npm run build
+   ```
+   *Expected result*: Exit code 0, Vite production bundle generated.
 
-# 4. Verify TypeScript Build
-npm run build
-```
+3. **Compile Frontend**:
+   ```powershell
+   cd c:\sts-projects\sasilk\frontend
+   npm run build
+   ```
+   *Expected result*: Exit code 0, all 23 static/dynamic routes compiled.
+
+4. **Execute 4-Tier Automated Test Suite**:
+   ```powershell
+   cd c:\sts-projects\sasilk\backend\node
+   npx tsx scripts/test-intro-video.ts
+   ```
+   *Expected result*: 65/65 tests passed (100% pass rate).
+
+5. **Verify Bundle Parity**:
+   ```powershell
+   cd c:\sts-projects\sasilk
+   git diff --no-index frontend/components/ui/IntroVideo.tsx frontend/homepage-bundle/components/ui/IntroVideo.tsx
+   ```
+   *Expected result*: 0 differences (empty output).

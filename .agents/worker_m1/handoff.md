@@ -1,57 +1,110 @@
-# Milestone 1 Handoff Report: WhatsApp Notification Service & Environment Config
+# Milestone 1 Handoff Report: Backend Database Schema, Settings Service, Validation, & Storefront Public API
 
 ## 1. Observation
-- **Assigned Files & Scope**:
-  1. `backend/node/src/config/env.ts`:
-     - Added Zod validations and default values for:
-       - `WHATSAPP_ENABLED`: boolean with preprocessed string-to-boolean coercion (default `false`).
-       - `WHATSAPP_PROVIDER`: `z.enum(['mock', 'meta', 'webhook', 'interakt', 'aisensy', 'wati', 'twilio']).default('mock')`.
-       - `WHATSAPP_PHONE_NUMBER_ID`: optional string (`default('')`).
-       - `WHATSAPP_ACCESS_TOKEN`: optional string (`default('')`).
-       - `WHATSAPP_API_URL`: optional string (`default('')`).
-       - `WHATSAPP_API_KEY`: optional string (`default('')`).
-       - `WHATSAPP_TEMPLATE_NAME`: optional string (`default('')`).
-  2. `backend/node/src/services/whatsapp.service.ts`:
-     - Implemented `EventBookingNotificationData` and `WhatsAppSendResult` interface contracts exactly per `PROJECT.md`.
-     - Implemented `normalizeMobileNumber(rawMobile)`:
-       - Handles 10-digit Indian numbers (`^[6-9]\d{9}$` -> `91${cleaned}`).
-       - Handles `+91` prefix, leading zero (`09876543210` -> `919876543210`), whitespace, dashes, and brackets.
-       - Returns `null` and logs warning for invalid or missing mobile numbers, preventing runtime crashes.
-     - Implemented `formatBookingWhatsAppMessage(data)`:
-       - Personalized branded greeting (`Soil Goddess` / `Threads of TN`).
-       - Booking ID, Event Name, Date, Time slot, Seats / Quantity, Amount Paid / FREE status.
-       - Mode branching:
-         - Offline: Venue address + entry check-in reminder (presenting Booking ID or QR pass 15 mins prior).
-         - Online: Zoom joining link + webinar instructions (join 5 mins prior).
-       - Customer support contact details (phone & email).
-     - Implemented multi-provider dispatch adapter:
-       - `mock`: Logs formatted payload to console with `[WhatsApp Mock]` prefix and returns `{ success: true, provider: 'mock', messageId: 'mock-...', recipient }`.
-       - `meta`: Dispatches to Meta Graph API (`https://graph.facebook.com/v20.0/${phoneNumberId}/messages` or `WHATSAPP_API_URL`) with Bearer token authentication and template / text payload support.
-       - `webhook` / `interakt` / `aisensy` / `wati` / `twilio`: Dispatches POST request to configured `WHATSAPP_API_URL` with structured JSON body and API key authorization headers.
-       - Automatic fallback: If credentials or API URLs are missing, logs warning and seamlessly falls back to mock mode without throwing exceptions.
-     - Implemented `sendBookingConfirmationWhatsApp(data)`:
-       - Validates and normalizes phone number, builds formatted message, dispatches to configured provider, catches and handles errors gracefully, and returns `Promise<WhatsAppSendResult>`.
+- **Assigned Write Ownership Files**:
+  1. `backend/node/src/services/settings.service.ts`
+  2. `backend/node/src/modules/admin/controllers/resource.controller.ts`
+  3. `backend/node/src/modules/storefront/controllers/catalog.controller.ts`
+  4. `backend/node/src/modules/storefront/storefront.routes.ts`
+  5. `backend/node/src/middleware/error-handler.ts`
+
+- **Changes Implemented**:
+  1. **`backend/node/src/services/settings.service.ts`**:
+     - Exported interface `IntroVideoConfig`:
+       ```typescript
+       export interface IntroVideoConfig {
+         enabled: boolean
+         videoUrl: string
+         posterUrl?: string
+         skipEnabled: boolean
+         skipAfterSeconds: number
+         showOncePerSession: boolean
+       }
+       ```
+     - Exported `defaultIntroVideoConfig`:
+       ```typescript
+       export const defaultIntroVideoConfig: IntroVideoConfig = {
+         enabled: false,
+         videoUrl: '',
+         posterUrl: '',
+         skipEnabled: true,
+         skipAfterSeconds: 0,
+         showOncePerSession: true,
+       }
+       ```
+     - Declared module-scoped cache: `let cachedIntroVideoConfig: IntroVideoConfig | null = null`.
+     - Implemented `getIntroVideoConfig(): Promise<IntroVideoConfig>`:
+       - Returns `cachedIntroVideoConfig` immediately if present.
+       - Queries `Setting.findOne({ where: { key: 'intro_video_config' } })`.
+       - If not found, returns `defaultIntroVideoConfig`.
+       - Safely parses JSON string or object, merges with `defaultIntroVideoConfig` guaranteeing correct types, stores in cache, and returns.
+     - Implemented and exported `invalidateIntroVideoCache(): void`: resets `cachedIntroVideoConfig = null`.
+
+  2. **`backend/node/src/modules/admin/controllers/resource.controller.ts`**:
+     - Imported `invalidateIntroVideoCache` from `../../../services/settings.service.js`.
+     - Added Zod superRefine rules in `settingsSchema` for `key === 'intro_video_config'`:
+       - `enabled`: must be boolean.
+       - When `enabled === true`: `videoUrl` is required and must be a non-empty string.
+       - `videoUrl`: if present must be a string.
+       - `posterUrl`: if present must be a string or null/undefined.
+       - `skipEnabled`: if present must be a boolean.
+       - `skipAfterSeconds`: if present must be a number between 0 and 30.
+       - `showOncePerSession`: if present must be a boolean.
+     - Wired `invalidateIntroVideoCache()` when `settingKey === 'intro_video_config'` into:
+       - `createResource`
+       - `updateResource`
+       - `deleteResource`
+
+  3. **`backend/node/src/modules/storefront/controllers/catalog.controller.ts`**:
+     - Imported `getIntroVideoConfig` from `../../../services/settings.service.js`.
+     - Implemented and exported `getIntroVideoConfiguration = async (_req: Request, res: Response): Promise<void> => { const config = await getIntroVideoConfig(); res.json(config); }`.
+
+  4. **`backend/node/src/modules/storefront/storefront.routes.ts`**:
+     - Mounted public endpoint: `router.get('/intro-video', asyncHandler(catalogController.getIntroVideoConfiguration))`.
+
+  5. **`backend/node/src/middleware/error-handler.ts`**:
+     - Updated `LIMIT_FILE_SIZE` in `multerMessages` from `'File size exceeds the 5 MB limit.'` to `'File size exceeds the allowed limit.'` to prevent inaccurate 5 MB error messages when a 50 MB video upload exceeds limits.
+
+- **Build Output**:
+  - Ran `npm run build` in `backend/node`:
+    ```
+    > threads-of-tn-api@0.1.0 build
+    > tsc -p tsconfig.json
+    ```
+    Exit code: 0, zero errors.
+
+- **Automated Verification Test**:
+  - Ran automated validation test against compiled output `dist/`:
+    - `defaultIntroVideoConfig` matches contract exactly.
+    - All 9 Zod validation test cases (enabled valid, enabled missing videoUrl, disabled empty videoUrl, skipAfterSeconds range [0, 30], type guards on boolean/number/string) passed.
+    - Controller `getIntroVideoConfiguration` correctly queries DB, falls back to default config, and returns expected JSON.
+    - `invalidateIntroVideoCache` resets cache without error.
 
 ## 2. Logic Chain
-1. **Zero-Crash Resilience**: Customer-provided mobile numbers can vary in formatting (`+91 9876543210`, `09876543210`, `98765-43210`, or invalid/empty strings). `normalizeMobileNumber` strips formatting and applies regex validation, returning `null` with a warning log for invalid inputs. `sendBookingConfirmationWhatsApp` checks this return value and returns `{ success: false, provider: 'none', recipient, error: 'Invalid or missing mobile number' }` without throwing unhandled exceptions.
-2. **Graceful Provider Fallback**: In development, staging, or before production credentials are configured, `env.WHATSAPP_PROVIDER` defaults to `'mock'`. Furthermore, if `meta` or `webhook` providers are selected but credentials are missing in `.env`, the service automatically logs a warning and falls back to `sendMockWhatsApp`, ensuring uninterrupted event booking flow.
-3. **Context-Aware Message Formatting**: `formatBookingWhatsAppMessage` adapts the text content dynamically based on `data.mode` (`offline` vs `online`), injecting venue check-in details or Zoom webinar instructions respectively, while handling fallback defaults for empty optional fields.
+1. **Strong Typing & Single Source of Truth**: Defining `IntroVideoConfig` and `defaultIntroVideoConfig` in `settings.service.ts` provides a unified contract consumed by both the admin resource controllers and public storefront endpoints.
+2. **High-Performance In-Memory Caching with Immediate Invalidation**: Homepage intro video configuration is requested by every visitor entering the storefront. Caching `cachedIntroVideoConfig` in memory avoids recurrent MySQL queries. Calling `invalidateIntroVideoCache()` across all three mutation points (`createResource`, `updateResource`, `deleteResource`) ensures changes made in Admin Settings take effect instantaneously.
+3. **Fail-Safe Defensive Merging**: In `getIntroVideoConfig()`, raw database JSON values are explicitly sanitized and merged with `defaultIntroVideoConfig`. Missing or unexpected keys in legacy rows will never cause runtime errors or `undefined` properties on the storefront.
+4. **Boundary Validation**: Adding Zod superRefine rules in `settingsSchema` stops invalid states (e.g. enabling video without providing a URL, or specifying negative/excessive skip timers) at the HTTP layer, returning standard 422 errors with precise field paths.
+5. **Accurate Error Messages**: Updating `LIMIT_FILE_SIZE` in `error-handler.ts` ensures user feedback remains accurate across both image uploads (5MB) and video uploads (50MB).
 
 ## 3. Caveats
-- For Meta WhatsApp Cloud API in production, if initiating conversations outside the 24-hour customer care window, a pre-approved template (`WHATSAPP_TEMPLATE_NAME`) should be set in `.env`. The service supports both template and direct text payloads.
-- No caveats regarding TypeScript types or module resolution: all imports use NodeNext `.js` specifiers.
+- No caveats. All changes strictly use NodeNext `.js` module specifiers, preserve backward compatibility with existing settings, and adhere to the project's architecture.
 
 ## 4. Conclusion
-- Milestone M1 implementation is fully complete.
-- `backend/node/src/config/env.ts` and `backend/node/src/services/whatsapp.service.ts` fulfill all interface contracts and functional requirements specified in `PROJECT.md` and `DISPATCH.md`.
+- Milestone 1 (Backend Database Schema, Settings Service, Validation, & Storefront Public API) is complete, fully functional, and verified.
+- The backend is fully prepared for Milestone 2 (`SettingsPage.tsx` admin panel integration) and Milestone 3 (`IntroVideo.tsx` storefront integration).
 
 ## 5. Verification Method
-1. **Module & Type Interface Conformance**:
-   - Inspect `backend/node/src/services/whatsapp.service.ts` for export of `EventBookingNotificationData`, `WhatsAppSendResult`, `normalizeMobileNumber`, `formatBookingWhatsAppMessage`, and `sendBookingConfirmationWhatsApp`.
-   - Inspect `backend/node/src/config/env.ts` for Zod schema properties `WHATSAPP_ENABLED`, `WHATSAPP_PROVIDER`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_API_URL`, `WHATSAPP_API_KEY`, `WHATSAPP_TEMPLATE_NAME`.
-2. **Behavior Verification**:
-   - `normalizeMobileNumber('9876543210')` => `'919876543210'`
-   - `normalizeMobileNumber('+91 98765 43210')` => `'919876543210'`
-   - `normalizeMobileNumber('09876543210')` => `'919876543210'`
-   - `normalizeMobileNumber('invalid')` => `null`
-   - `sendBookingConfirmationWhatsApp(testData)` with default mock provider => logs structured payload to console and returns `{ success: true, provider: 'mock', messageId: 'mock-...', recipient: '919876543210' }`.
+1. **Compilation**:
+   - Command: `npm run build` inside `backend/node`
+   - Expected: Exits with code 0 and produces updated output in `dist/`.
+2. **Files to Inspect**:
+   - `backend/node/src/services/settings.service.ts`
+   - `backend/node/src/modules/admin/controllers/resource.controller.ts`
+   - `backend/node/src/modules/storefront/controllers/catalog.controller.ts`
+   - `backend/node/src/modules/storefront/storefront.routes.ts`
+   - `backend/node/src/middleware/error-handler.ts`
+3. **Runtime Invalidation Conditions**:
+   - If `npm run build` fails with missing module errors, ensure all relative imports in `src/` end with `.js`.
+   - If `POST /api/admin/settings` with `{ key: 'intro_video_config', value: { enabled: true, videoUrl: '' } }` returns 200 instead of 422, check `settingsSchema.superRefine` in `resource.controller.ts`.
+

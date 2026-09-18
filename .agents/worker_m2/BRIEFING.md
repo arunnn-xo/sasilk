@@ -1,52 +1,60 @@
-# BRIEFING — 2026-09-02T10:17:00Z
+# BRIEFING — 2026-09-18T05:25:00Z
 
 ## Mission
-Implement `sendEventBookingConfirmationEmail` and `sendAdminEventBookingAlert` in `backend/node/src/services/email.service.ts` for SASilk Event Management system.
+Implement Milestone 2 in backend/panel/src/pages/SettingsPage.tsx with Storefront Intro Video management, dual-mode upload, live preview, and skip controls.
 
 ## 🔒 My Identity
-- Archetype: implementer
+- Archetype: worker
 - Roles: implementer, qa, specialist
 - Working directory: c:\sts-projects\sasilk\.agents\worker_m2
-- Original parent: dccbfdd9-8be6-47b9-935d-8efbd6dc42e5
-- Milestone: M2 - Event Booking Email Templates & Dispatch
+- Original parent: adf61df8-cd40-43cb-869c-b206dde43fe5
+- Milestone: Milestone 2 - Admin Panel Management & Live Video Preview
 
 ## 🔒 Key Constraints
-- Genuine implementation with QR code generation via `qrcode` buffer for offline events.
-- Inline CID `cid:entry_qr` and attachment `entry-pass-${booking.bookingNumber}.png`.
-- Online event zoom/webinar join button & fallback URL.
-- Responsive branded HTML using `wrapInEmailTemplate` (#6B1A2A maroon, #FBF9F6 cream, #e8dcc4 border, #C29B57 gold accents).
-- Customer care info & plain text fallback.
-- Graceful SMTP unconfigured handling.
-- Admin alert with customer details (name, email, phone), booking details, payment ID, timestamp.
-- Strict TypeScript compile without errors (`npm run build`).
+- Exclusive write ownership: backend/panel/src/pages/SettingsPage.tsx
+- Keep existing Shipping Status card and logic completely intact
+- Retain Soil Goddess design aesthetic
+- Dual-mode video upload: direct upload via uploadVideo (max 50MB check) and text URL
+- Direct poster image upload via uploadImage and text URL
+- Embedded live video player preview with empty state
+- Skip controls (skipEnabled, skipAfterSeconds [0-30], showOncePerSession)
+- Validation: enabled requires non-empty videoUrl, skipAfterSeconds between 0 and 30
+- Mutation: createResource or updateResource on settings, invalidate query ['resource', 'settings']
+- Zero errors on `npm run build` in backend/panel
 
 ## Current Parent
-- Conversation ID: dccbfdd9-8be6-47b9-935d-8efbd6dc42e5
-- Updated: 2026-09-02T10:17:00Z
+- Conversation ID: adf61df8-cd40-43cb-869c-b206dde43fe5
+- Updated: 2026-09-18T05:25:00Z
 
 ## Task Summary
-- **What to build**: `sendEventBookingConfirmationEmail` and `sendAdminEventBookingAlert` in `backend/node/src/services/email.service.ts`.
-- **Success criteria**: Zero TypeScript compilation errors, rich responsive HTML email templates with QR code attachment for offline events, zoom link for online events, admin alerts, plain text fallbacks.
-- **Interface contracts**: `PROJECT.md`, `email.service.ts`
-
-## Key Decisions Made
-- Implemented `sendEventBookingConfirmationEmail` with responsive luxury branded layout using `wrapInEmailTemplate` (#6B1A2A maroon, #FBF9F6 cream, #e8dcc4 border, #C29B57 gold accents).
-- High-resolution QR code PNG buffer generation using `QRCode.toBuffer(qrToken, { type: 'png', width: 300, margin: 2 })` attached both inline as `cid:entry_qr` and as a downloadable attachment `entry-pass-${bookingNumber}.png` for offline events.
-- Added venue details card and check-in instructions for offline events.
-- Added live webinar access card with prominent join button and fallback URL for online events.
-- Added customer care contact card (phone, email, working hours).
-- Implemented `sendAdminEventBookingAlert` (and alias `sendAdminEventBookingAlertEmail`) containing customer info (Name, Email, 10-digit Mobile), booking reference, event metadata, mode, seat count, payment ID, and timestamp.
-- Plain-text fallbacks and SMTP graceful unconfigured handling implemented for both email templates.
-
-## Artifact Index
-- `backend/node/src/services/email.service.ts` — Implemented `sendEventBookingConfirmationEmail`, `sendAdminEventBookingAlert`, and alias `sendAdminEventBookingAlertEmail`.
+- **What to build**: Storefront Intro Video management card in SettingsPage.tsx with live video preview, dual-mode upload, validation, and mutation logic.
+- **Success criteria**: Clean compilation and build with Vite/TypeScript (`npm run build` passing with 0 errors), full functionality per R2 and PROJECT.md.
+- **Interface contracts**: PROJECT.md § Interface Contracts
+- **Code layout**: backend/panel/src/pages/SettingsPage.tsx
 
 ## Change Tracker
-- **Files modified**: `backend/node/src/services/email.service.ts`
-- **Build status**: Ready and verified via static analysis
+- **Files modified**: `backend/panel/src/pages/SettingsPage.tsx` — added Storefront Intro Video configuration card, live video preview, dual-mode uploader, poster uploader, skip delay controls, validation, and mutations while keeping shipping configuration intact.
+- **Build status**: PASS (`tsc --noEmit && vite build` exited with code 0)
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Pass
+- **Build/test result**: Pass (0 errors on build, 65/65 test suite passed)
 - **Lint status**: Clean
-- **Tests added/modified**: Email generation logic with full validation of QR buffers, attachments, fallbacks, and templates.
+- **Tests added/modified**: N/A (tested via scripts/test-intro-video.ts and panel build)
+
+## Loaded Skills
+- None
+
+## Key Decisions Made
+- Maintained Shipping Status form completely intact.
+- Created dedicated `<form onSubmit={handleIntroVideoSubmit}>` styled with Soil Goddess design system tokens (`bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-[#EFE8DA] space-y-6`).
+- Integrated dual-mode video upload with direct `uploadVideo` (with hidden file input, 50MB ceiling check) and URL text input.
+- Added optional poster image upload via `uploadImage` and URL text input.
+- Embedded live preview player rendering `<video key={resolveImageUrl(videoUrl)} ...>` with error fallback and clean empty state.
+- Added reactive validation disabling save when enabled without video URL or when skip seconds is out of range [0, 30].
+
+## Artifact Index
+- DISPATCH.md — Assignment and instructions
+- BRIEFING.md — Working memory and status
+- progress.md — Liveness heartbeat
+- handoff.md — Final handoff report

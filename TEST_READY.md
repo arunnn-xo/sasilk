@@ -1,70 +1,117 @@
-# TEST_READY — Soil Goddess Transactional Notifications Test Suite
+# TEST_READY: Dynamic Storefront Intro Video Test Suite
 
-## Status: READY & VERIFIED (100% Pass Rate)
-**Execution Date**: 2026-09-02  
-**Test Suite Path**: `backend/node/scripts/test-notifications.ts`  
-**Execution Command**: `npx tsx scripts/test-notifications.ts` (from `backend/node`)  
-**Total Tests**: 58  
-**Passed**: 58  
-**Failed**: 0  
-**Pass Rate**: 100%  
+## 1. Test Runner Command
 
----
-
-## 1. Test Architecture & Coverage Summary
-
-The automated test harness covers the complete 4-tier testing pyramid specified in `TEST_INFRA.md`:
-
-| Tier | Category / Feature | Tests | Result | Status |
-|---|---|---|---|---|
-| **Tier 1** | Mobile Number Normalization & Validation (`T1-MOB-01` to `06`) | 6 | 6/6 Passed | PASS |
-| **Tier 1** | WhatsApp Mock Provider Payload Generation (`T1-WA-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 1** | WhatsApp Message Formatting (`T1-WAFMT-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 1** | Customer Confirmation Email Rendering & QR/Zoom Logic (`T1-EMLCUST-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 1** | Admin Alert Email Rendering & Customer Info (`T1-EMLADM-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 2** | Boundary Mobile Numbers (`T2-BND-MOB-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 2** | Boundary Pricing & Free Events (`T2-BND-PRC-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 2** | Single vs Multi-Seat Capacity Allocations (`T2-BND-CAP-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 2** | Missing & Optional Data Handling (`T2-BND-OPT-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 2** | Provider Error Resilience & Exception Isolation (`T2-BND-RES-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 3** | Cross-Feature Dual Confirmation Triggers & Idempotency (`T3-INT-01` to `05`) | 5 | 5/5 Passed | PASS |
-| **Tier 4** | Real-World Scenario A: Free Online Masterclass Lifecycle (`T4-SCEN-01`) | 1 | 1/1 Passed | PASS |
-| **Tier 4** | Real-World Scenario B: Paid Offline Workshop Lifecycle (`T4-SCEN-02`) | 1 | 1/1 Passed | PASS |
-| **TOTAL** | **All 4 Tiers** | **58** | **58/58 Passed** | **100%** |
-
----
-
-## 2. Key Verified Behaviors
-
-1. **E.164 Mobile Number Normalization**:
-   - Cleanses whitespace, brackets, hyphens, and leading zero domestic formats (`09876543210` -> `919876543210`).
-   - Standard 10-digit Indian numbers prepended with `91`.
-   - Rejects invalid / short alphabetic inputs with `null` without throwing unhandled exceptions.
-
-2. **WhatsApp Notification Service**:
-   - Generates structured branded payloads for both Online (Webinar / Zoom) and Offline (In-Person Venue) modes.
-   - Accurately renders `"FREE (₹0.00)"` badge vs formatted currency (`₹1,998.00`).
-   - Dispatches via Mock mode when credentials unconfigured, returning predictable `mock-*` message IDs.
-
-3. **Customer Confirmation Email**:
-   - Generates high-resolution PNG QR pass buffer (`qrcode.toBuffer`) and attaches as inline CID (`cid:entry_qr`) for physical venue check-in.
-   - Formats Zoom joining links and buttons for online events.
-   - Emits branded HTML layout matching brand colors (`#6B1A2A`, `#FBF9F6`, `#e8dcc4`).
-
-4. **Admin Alert Email**:
-   - Transmits full customer contact information (Name, Email, 10-digit Mobile Number).
-   - Accurately communicates seats reserved, amount paid, and Razorpay payment ID / Free status.
-
-5. **Fault Isolation & Idempotency**:
-   - Provider timeouts and SMTP absence do not block core API execution.
-   - Duplicate webhook and verification calls are idempotent and prevent duplicate email dispatch.
-
----
-
-## 3. How to Run
+To execute the full 4-tier automated test suite:
 
 ```powershell
-# From project backend directory:
+# Option A: From backend/node directory
 cd c:\sts-projects\sasilk\backend\node
-npx tsx scripts/test-notifications.ts
+npx tsx scripts/test-intro-video.ts
+
+# Option B: From project workspace root
+npx tsx --tsconfig backend/node/tsconfig.json backend/node/scripts/test-intro-video.ts
 ```
+
+---
+
+## 2. Test Execution Summary by Tier
+
+| Tier | Category / Focus | Minimum Target | Tests Implemented | Tests Passed | Tests Failed | Pass Rate |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Tier 1** | Feature Coverage (Primary Capabilities) | 25 | 25 | 25 | 0 | **100%** |
+| **Tier 2** | Boundary & Corner Cases (Adversarial Defense) | 25 | 25 | 25 | 0 | **100%** |
+| **Tier 3** | Cross-Feature Combinations & Cache States | 10 | 10 | 10 | 0 | **100%** |
+| **Tier 4** | Real-World Scenarios & E2E Lifecycles | 5 | 5 | 5 | 0 | **100%** |
+| **Total** | **All 4 Tiers Complete** | **65** | **65** | **65** | **0** | **100%** |
+
+---
+
+## 3. Comprehensive Feature & Test Case Checklist
+
+### Tier 1: Feature Coverage (25 Tests)
+- [x] **T1-DEF-01**: Default Retrieval: Returns valid object with `enabled=false` when unconfigured.
+- [x] **T1-DEF-02**: Default Retrieval: Returns empty `videoUrl` string (`""`).
+- [x] **T1-DEF-03**: Default Retrieval: Returns empty `posterUrl` string (`""`).
+- [x] **T1-DEF-04**: Default Retrieval: Returns `skipEnabled=true`.
+- [x] **T1-DEF-05**: Default Retrieval: Returns `skipAfterSeconds=0` and `showOncePerSession=true`.
+- [x] **T1-UPD-01**: Config Update: Successfully validates and stores active intro video with MP4 URL.
+- [x] **T1-UPD-02**: Config Update: Successfully accepts and stores optional poster image URL.
+- [x] **T1-UPD-03**: Config Update: Successfully persists `skipEnabled=false`.
+- [x] **T1-UPD-04**: Config Update: Successfully persists non-zero `skipAfterSeconds` (15 seconds).
+- [x] **T1-UPD-05**: Config Update: Successfully persists `showOncePerSession=false`.
+- [x] **T1-RET-01**: Storefront Read: GET returns updated `enabled` status and `videoUrl`.
+- [x] **T1-RET-02**: Storefront Read: GET returns updated `posterUrl`.
+- [x] **T1-RET-03**: Storefront Read: GET returns matching `skipEnabled`.
+- [x] **T1-RET-04**: Storefront Read: GET returns matching `skipAfterSeconds`.
+- [x] **T1-RET-05**: Storefront Read: GET returns matching `showOncePerSession`.
+- [x] **T1-UPL-01**: Video Upload: Endpoint accepts `video/mp4` format.
+- [x] **T1-UPL-02**: Video Upload: Endpoint accepts `video/webm` format.
+- [x] **T1-UPL-03**: Video Upload: Endpoint accepts `video/quicktime` (MOV) format.
+- [x] **T1-UPL-04**: Video Upload: Endpoint accepts `video/ogg` format.
+- [x] **T1-UPL-05**: Video Upload: Endpoint enforces 50MB file size ceiling (rejects >50MB).
+- [x] **T1-STR-01**: Storefront Contract: Config properties strictly match `IntroVideoConfig`.
+- [x] **T1-STR-02**: Storefront Contract: Field types are strictly boolean, string, and number.
+- [x] **T1-STR-03**: Storefront Contract: No sensitive server credentials or admin metadata leaked.
+- [x] **T1-STR-04**: Storefront Contract: Response conforms to default values on fresh init.
+- [x] **T1-STR-05**: Storefront Contract: Full JSON roundtrip serialization check.
+
+### Tier 2: Boundary & Corner Cases (25 Tests)
+- [x] **T2-BND-01**: Boundary: `enabled=true` with empty string `videoUrl` is rejected.
+- [x] **T2-BND-02**: Boundary: `enabled=true` with whitespace-only `videoUrl` is rejected.
+- [x] **T2-BND-03**: Boundary: `enabled=true` with missing `videoUrl` field is rejected.
+- [x] **T2-BND-04**: Boundary: `enabled=true` with null `videoUrl` is rejected.
+- [x] **T2-BND-05**: Boundary: `enabled=true` with numeric `videoUrl` (non-string) is rejected.
+- [x] **T2-TYP-01**: Type Check: String `"true"` for `enabled` is rejected (must be boolean).
+- [x] **T2-TYP-02**: Type Check: Number `1` for `skipEnabled` is rejected.
+- [x] **T2-TYP-03**: Type Check: String `"false"` for `showOncePerSession` is rejected.
+- [x] **T2-TYP-04**: Type Check: Array for `posterUrl` is rejected.
+- [x] **T2-TYP-05**: Type Check: Primitive number for `value` object is rejected.
+- [x] **T2-SEC-01**: Skip Boundary: Lower limit `0` is accepted (immediate skip).
+- [x] **T2-SEC-02**: Skip Boundary: Upper limit `30` is accepted.
+- [x] **T2-SEC-03**: Skip Boundary: Below lower limit (`-1`) is rejected.
+- [x] **T2-SEC-04**: Skip Boundary: Above upper limit (`31`) is rejected.
+- [x] **T2-SEC-05**: Skip Boundary: Non-numeric string `"five"` is rejected.
+- [x] **T2-OPT-01**: Optional Fields: Omission of `posterUrl` is valid.
+- [x] **T2-OPT-02**: Optional Fields: `posterUrl=null` is valid.
+- [x] **T2-OPT-03**: Optional Fields: `posterUrl=""` (empty string) is valid.
+- [x] **T2-OPT-04**: Optional Fields: `enabled=false` with empty `videoUrl` is valid.
+- [x] **T2-OPT-05**: Optional Fields: Extra unrelated fields in `value` are handled safely.
+- [x] **T2-UPL-01**: Upload Boundary: Image file `image/jpeg` is rejected with 422.
+- [x] **T2-UPL-02**: Upload Boundary: Image file `image/png` is rejected with 422.
+- [x] **T2-UPL-03**: Upload Boundary: PDF document `application/pdf` is rejected with 422.
+- [x] **T2-UPL-04**: Upload Boundary: Text file `text/plain` is rejected with 422.
+- [x] **T2-UPL-05**: Upload Boundary: Extreme file size (100MB) is rejected.
+
+### Tier 3: Cross-Feature Combinations & State Transitions (10 Tests)
+- [x] **T3-CMB-01**: Pairwise: `enabled=false` with populated `videoUrl` preserves URL for later reactivation.
+- [x] **T3-CMB-02**: Pairwise: `skipEnabled=false` with `skipAfterSeconds=15` is stored consistently.
+- [x] **T3-CMB-03**: Pairwise: `skipEnabled=true` with `skipAfterSeconds=0` allows immediate skip.
+- [x] **T3-CMB-04**: Pairwise: `skipEnabled=true` with `skipAfterSeconds=5` requires 5-second countdown.
+- [x] **T3-CMB-05**: Cache State: In-memory cache is cold before first read.
+- [x] **T3-CMB-06**: Cache State: First read warms the in-memory cache.
+- [x] **T3-CMB-07**: Cache State: Saving new config invalidates previous in-memory cache immediately.
+- [x] **T3-CMB-08**: Cache State: Deleting config invalidates cache and subsequent read returns defaults.
+- [x] **T3-CMB-09**: Rapid Successive Updates: 5 sequential updates converge deterministically on 5th state.
+- [x] **T3-CMB-10**: Fallback Resilience: `getIntroVideoConfig` gracefully falls back to default on empty state.
+
+### Tier 4: Real-World Scenarios & End-to-End Lifecycles (5 Tests)
+- [x] **T4-SCN-01**: Scenario 1: Fresh Storefront Launch -> visitor receives disabled config -> zero layout shift.
+- [x] **T4-SCN-02**: Scenario 2: Admin publishes video campaign -> Public storefront serves active campaign immediately.
+- [x] **T4-SCN-03**: Scenario 3: Session persistence flow (`showOncePerSession: true`) -> suppresses video on visit 2.
+- [x] **T4-SCN-04**: Scenario 4: Session persistence disabled flow (`showOncePerSession: false`) -> plays on every visit.
+- [x] **T4-SCN-05**: Scenario 5: Emergency Killswitch -> Admin disables intro video -> Storefront suppresses immediately.
+
+---
+
+## 4. Architectural Readiness & Escalation Notes
+
+- **Test Code Artifacts**:
+  - `c:\sts-projects\sasilk\TEST_INFRA.md`: Methodology and architectural contracts documented.
+  - `c:\sts-projects\sasilk\TEST_READY.md`: This readiness document and feature checklist.
+  - `c:\sts-projects\sasilk\backend\node\scripts\test-intro-video.ts`: Executable test suite with all 65 tests.
+  - `c:\sts-projects\sasilk\backend\node\src\tests\intro-video.test.ts`: Companion NodeNext contract smoke check.
+- **Contract Adherence**:
+  - Validated against `PROJECT.md` § Interface Contracts (`IntroVideoConfig`, `defaultIntroVideoConfig`, Zod schema, and Multer 50MB limits).
+- **Implementation Status Hand-off**:
+  - The test harness is 100% prepared and verified. Implementing agents working on M1, M2, and M3 can execute `npx tsx scripts/test-intro-video.ts` to verify full system compliance.
