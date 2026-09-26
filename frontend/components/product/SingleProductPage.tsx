@@ -155,27 +155,32 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
     }
   }, [totalStock, qty])
 
-  // Images to display in gallery (combine variant image with full product gallery)
+  // Images to display in gallery
+  // Rule: show variant-specific images only; fall back to product gallery only when variant has NO own images
   const displayImages = useMemo(() => {
     const list: string[] = []
-    
-    // 1. Current variant image first
+
+    // 1. Current variant main image
     if (currentVariant?.imageUrl) {
       list.push(currentVariant.imageUrl)
     }
-    if (currentVariant?.images && currentVariant.images.length > 0) {
-      list.push(...currentVariant.images.map(img => img.imageUrl))
+
+    // 2. Variant-specific gallery images (uploaded per variant)
+    const hasVariantGallery = (currentVariant?.images?.length ?? 0) > 0
+    if (hasVariantGallery) {
+      list.push(...(currentVariant?.images ?? []).map(img => img.imageUrl))
     }
-    
-    // 2. Product gallery images
-    if (product.images && product.images.length > 0) {
+
+    // 3. Product-level gallery — only shown when variant has NO own gallery images
+    //    (prevents other variants' images bleeding into the current variant's gallery)
+    if (!hasVariantGallery && product.images && product.images.length > 0) {
       list.push(...product.images.map(img => img.imageUrl))
     }
-    
-    // 3. Main product image fallbacks
+
+    // 4. Main product image fallbacks (last resort)
     if (product.imageUrl) list.push(product.imageUrl)
     if (product.image) list.push(product.image)
-    
+
     // Deduplicate and filter valid strings
     const uniqueList: string[] = []
     const seen = new Set<string>()
@@ -185,9 +190,10 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
         uniqueList.push(url)
       }
     }
-    
+
     return uniqueList.length > 0 ? uniqueList : ['/saree1.png']
   }, [currentVariant, product])
+
 
   const [mainImage, setMainImage] = useState(displayImages[0] || '')
 

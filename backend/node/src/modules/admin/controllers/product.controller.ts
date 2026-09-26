@@ -393,34 +393,6 @@ export const uploadVariantImage = async (req: Request, res: Response) => {
     sortOrder: (maxOrder ?? -1) + 1,
   })
 
-  // Auto-copy gallery image to same-color sibling variants
-  try {
-    const currentVariant = await ProductVariant.findByPk(variantId, { attributes: ['productId', 'colorName'] })
-    if (currentVariant?.getDataValue('colorName')) {
-      const siblings = await ProductVariant.findAll({
-        where: {
-          productId: currentVariant.getDataValue('productId'),
-          colorName: currentVariant.getDataValue('colorName'),
-          id: { [Op.ne]: variantId },
-        },
-        attributes: ['id'],
-      })
-      for (const sibling of siblings) {
-        const siblingId = sibling.getDataValue('id') as number
-        const siblingCount = await VariantImage.count({ where: { variantId: siblingId } })
-        if (siblingCount >= 7) continue
-        const siblingMaxOrder = await VariantImage.max('sortOrder', { where: { variantId: siblingId } }) as number | null
-        await VariantImage.create({
-          variantId: siblingId,
-          imageUrl: finalImageUrl,
-          sortOrder: (siblingMaxOrder ?? -1) + 1,
-        })
-      }
-    }
-  } catch {
-    // Sibling copy failure should not block the upload response
-  }
-
   res.status(201).json({ file: image })
 }
 
