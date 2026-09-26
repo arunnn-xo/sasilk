@@ -171,15 +171,16 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
       list.push(...(currentVariant?.images ?? []).map(img => img.imageUrl))
     }
 
-    // 3. Product-level gallery — only shown when variant has NO own gallery images
-    //    (prevents other variants' images bleeding into the current variant's gallery)
-    if (!hasVariantGallery && product.images && product.images.length > 0) {
+    // 3. Fallback to product-level gallery ONLY if variant has NO images of its own
+    if (list.length === 0 && product.images && product.images.length > 0) {
       list.push(...product.images.map(img => img.imageUrl))
     }
 
-    // 4. Main product image fallbacks (last resort)
-    if (product.imageUrl) list.push(product.imageUrl)
-    if (product.image) list.push(product.image)
+    // 4. Main product image fallbacks ONLY if still completely empty (last resort)
+    if (list.length === 0) {
+      if (product.imageUrl) list.push(product.imageUrl)
+      if (product.image) list.push(product.image)
+    }
 
     // Deduplicate and filter valid strings
     const uniqueList: string[] = []
