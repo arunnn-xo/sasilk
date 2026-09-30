@@ -512,7 +512,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
             <div className="hidden lg:flex gap-3 xl:gap-4 items-start justify-center">
               {/* Vertical Thumbnails List */}
               {displayImages.length > 1 && (
-                <div className="flex flex-col gap-2 shrink-0 w-16 xl:w-20 max-h-[calc(100vh-210px)] lg:max-h-[480px] xl:max-h-[520px] overflow-y-auto scrollbar-hide py-0.5">
+                <div className="flex flex-col gap-2 shrink-0 w-14 lg:w-16 h-[340px] lg:h-[370px] xl:h-[410px] overflow-y-auto scrollbar-hide py-0.5">
                   {displayImages.map((image, index) => {
                     const isActive = (mainImage || displayImages[0]) === image
                     return (
@@ -521,7 +521,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                         type="button"
                         onClick={() => setMainImage(image)}
                         onMouseEnter={() => setMainImage(image)}
-                        className={`relative aspect-[3/4] w-full rounded-lg overflow-hidden border-2 transition-all duration-200 bg-gray-50 group cursor-pointer ${
+                        className={`relative aspect-[3/4] w-full rounded-lg overflow-hidden border-2 transition-all duration-200 bg-[#FAF6EE] group cursor-pointer ${
                           isActive 
                             ? 'border-[#6B1A2A] shadow-md ring-1 ring-[#6B1A2A]/25 scale-[1.02]' 
                             : 'border-[#EFE8DA] hover:border-[#D9B86E] opacity-75 hover:opacity-100'
@@ -531,7 +531,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                         <img
                           src={resolveImageUrl(image)}
                           alt={`Thumbnail ${index + 1}`}
-                          className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                          className="w-full h-full object-contain p-0.5 transition-transform duration-300 group-hover:scale-105"
                         />
                       </button>
                     )
@@ -540,21 +540,21 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
               )}
 
               {/* Main Portrait Viewport */}
-              <div className="relative aspect-[3/4] w-full max-w-[390px] xl:max-w-[430px] max-h-[calc(100vh-210px)] lg:max-h-[480px] xl:max-h-[520px] rounded-2xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_6px_25px_rgba(107,26,42,0.06)] group flex items-center justify-center">
+              <div className="relative aspect-[3/4] h-[340px] lg:h-[370px] xl:h-[410px] w-auto rounded-xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_4px_20px_rgba(107,26,42,0.06)] group flex items-center justify-center">
                 <img
                   src={resolveImageUrl(mainImage || displayImages[0])}
                   alt={product.name}
-                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
+                  className="w-full h-full object-contain p-1 transition-transform duration-500 group-hover:scale-105 cursor-zoom-in"
                 />
 
                 {/* Badges */}
-                <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10 pointer-events-none">
+                <div className="absolute left-3 top-3 flex flex-col gap-1 z-10 pointer-events-none">
                   {isOutOfStock ? (
-                    <span className="rounded bg-gray-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">Sold Out</span>
+                    <span className="rounded bg-gray-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-md">Sold Out</span>
                   ) : originalPrice && originalPrice > price ? (
-                    <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
+                    <span className="rounded bg-[#6B1A2A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
                   ) : product.isNew ? (
-                    <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">New Arrival</span>
+                    <span className="rounded bg-[#6B1A2A] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">New Arrival</span>
                   ) : null}
                 </div>
 
@@ -562,76 +562,76 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                 <button
                   type="button"
                   onClick={() => toggleWishlist(product.id, product.name, currentVariant?.id ?? null, selectedColor || undefined, selectedSize || undefined)}
-                  className={`absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full shadow-md backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
+                  className={`absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
                     isWished(product.id, currentVariant?.id ?? null)
                       ? 'bg-[#6B1A2A] text-white'
                       : 'bg-white/90 text-[#6B1A2A] hover:bg-white'
                   }`}
                   aria-label="Wishlist"
                 >
-                  <Heart className={`h-4 w-4 transition ${isWished(product.id, currentVariant?.id ?? null) ? 'fill-white' : ''}`} />
+                  <Heart className={`h-3.5 w-3.5 transition ${isWished(product.id, currentVariant?.id ?? null) ? 'fill-white' : ''}`} />
                 </button>
               </div>
             </div>
           </section>
 
           {/* RIGHT: Product Information & Purchase Area */}
-          <section className="w-full lg:w-[52%] xl:w-[54%] px-4 sm:px-6 py-4 lg:px-0 lg:py-0">
-            <div className="lg:sticky lg:top-24 flex flex-col">
+          <section className="w-full lg:w-[52%] xl:w-[54%] px-4 sm:px-6 py-2 lg:px-0 lg:py-0">
+            <div className="lg:sticky lg:top-20 flex flex-col">
               
               {/* Category Tag & SKU */}
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#BF9A4B]">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#BF9A4B]">
                   {product.category || 'Pure Silk Saree'}
                 </span>
                 {sku && (
-                  <span className="text-[11px] font-medium text-gray-400 tracking-wider">
+                  <span className="text-[10px] font-medium text-gray-400 tracking-wider">
                     • SKU: {sku}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="font-playfair text-xl sm:text-2xl lg:text-[26px] xl:text-[30px] font-semibold text-[#1A1A1A] leading-snug mb-2 tracking-wide">
+              <h1 className="font-playfair text-lg sm:text-xl lg:text-[22px] xl:text-[26px] font-semibold text-[#1A1A1A] leading-snug mb-1.5 tracking-wide">
                 {product.name}
               </h1>
               
               {/* Price Row */}
-              <div className="flex items-baseline gap-2.5 mb-1">
-                <span className="text-2xl sm:text-3xl font-bold text-[#6B1A2A]">
+              <div className="flex items-baseline gap-2 mb-0.5">
+                <span className="text-xl sm:text-2xl font-bold text-[#6B1A2A]">
                   {'\u20B9'}{price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
                 {originalPrice && originalPrice > price && (
-                  <span className="text-sm sm:text-base text-gray-400 line-through font-light">
+                  <span className="text-xs sm:text-sm text-gray-400 line-through font-light">
                     {'\u20B9'}{originalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 )}
                 {originalPrice && originalPrice > price && (
-                  <span className="rounded bg-[#6B1A2A]/10 text-[#6B1A2A] px-2 py-0.5 text-xs font-bold">
+                  <span className="rounded bg-[#6B1A2A]/10 text-[#6B1A2A] px-1.5 py-0.5 text-[10px] font-bold">
                     {getDiscount(price, originalPrice)}% OFF
                   </span>
                 )}
               </div>
               
-              <p className="text-[11px] text-gray-500 font-normal tracking-wide mb-4">
+              <p className="text-[10px] sm:text-[11px] text-gray-500 font-normal tracking-wide mb-2.5">
                 {product.gstRate != null && product.gstRate > 0 
                   ? `Inclusive of all taxes (${product.gstRate}% GST). Free delivery across India.` 
                   : 'Inclusive of all taxes. Free express shipping nationwide.'}
               </p>
 
               {/* Selectors Area */}
-              <div className="mb-4 flex flex-col gap-3.5 border-t border-gray-100 pt-3">
+              <div className="mb-2.5 flex flex-col gap-2 border-t border-gray-100 pt-2">
                 
                 {/* Color Selector */}
                 {colorOptions.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold tracking-wider text-gray-900 uppercase">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[11px] sm:text-xs font-semibold tracking-wider text-gray-900 uppercase">
                         Color: <span className="text-[#6B1A2A] font-bold capitalize ml-1">{selectedColor}</span>
                       </p>
                       <span className="text-[10px] text-gray-400">{colorOptions.length} available</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {colorOptions.map(variant => {
                         const isSelected = selectedColor === variant.colorName
                         return (
@@ -639,21 +639,21 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                             key={variant.colorName}
                             type="button"
                             onClick={() => setSelectedColor(variant.colorName)}
-                            className={`group relative flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all duration-200 ${
+                            className={`group relative flex items-center gap-1.5 px-2 py-1 rounded-md border transition-all duration-200 ${
                               isSelected 
                                 ? 'border-[#6B1A2A] bg-[#6B1A2A]/5 ring-1 ring-[#6B1A2A] shadow-sm' 
                                 : 'border-gray-200 bg-white hover:border-gray-400'
                             }`}
                             aria-label={`Select ${variant.colorName}`}
                           >
-                            <div className="relative h-7 w-6 rounded overflow-hidden shrink-0 border border-gray-100">
+                            <div className="relative h-6 w-5 rounded overflow-hidden shrink-0 border border-gray-100">
                               {variant.imageUrl ? (
-                                <img src={resolveImageUrl(variant.imageUrl)} alt="" className="h-full w-full object-cover object-top" />
+                                <img src={resolveImageUrl(variant.imageUrl)} alt="" className="h-full w-full object-contain" />
                               ) : (
                                 <div className="h-full w-full" style={{ backgroundColor: variant.colorHex || '#6B1A2A' }} />
                               )}
                             </div>
-                            <span className={`text-[11px] sm:text-xs font-medium ${isSelected ? 'text-[#6B1A2A] font-bold' : 'text-gray-700'}`}>
+                            <span className={`text-[11px] font-medium ${isSelected ? 'text-[#6B1A2A] font-bold' : 'text-gray-700'}`}>
                               {variant.colorName}
                             </span>
                             {isSelected && (
@@ -669,13 +669,13 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                 {/* Size Selector */}
                 {showSizeSelector && (
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold tracking-wider text-gray-900 uppercase">Size</p>
-                      <button type="button" onClick={() => setShowSizeGuide(true)} className="text-[11px] font-medium text-gray-500 underline underline-offset-4 hover:text-[#6B1A2A] transition-colors">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[11px] sm:text-xs font-semibold tracking-wider text-gray-900 uppercase">Size</p>
+                      <button type="button" onClick={() => setShowSizeGuide(true)} className="text-[10px] font-medium text-gray-500 underline underline-offset-4 hover:text-[#6B1A2A] transition-colors">
                         Size Guide
                       </button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {visibleSizeOptions.map(size => {
                         const isSelected = selectedSize === size
                         return (
@@ -683,7 +683,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                             key={size}
                             type="button"
                             onClick={() => setSelectedSize(size)}
-                            className={`flex h-8 min-w-[2.75rem] px-2.5 items-center justify-center rounded-md border text-xs font-bold transition-all duration-200 ${
+                            className={`flex h-7 min-w-[2.5rem] px-2 items-center justify-center rounded-md border text-[11px] font-bold transition-all duration-200 ${
                               isSelected 
                                 ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white shadow-sm' 
                                 : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
@@ -699,13 +699,13 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
               </div>
 
               {/* Quantity & Primary Action Buttons (Desktop & Tablet) */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2.5 mb-2.5">
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-2">
                   {/* Quantity Stepper */}
-                  <div className="flex h-10 w-24 shrink-0 items-center overflow-hidden rounded-md border border-gray-300 bg-white transition-colors focus-within:border-[#6B1A2A]">
+                  <div className="flex h-9 w-22 shrink-0 items-center overflow-hidden rounded-md border border-gray-300 bg-white transition-colors focus-within:border-[#6B1A2A]">
                     <button 
                       type="button" 
-                      className="flex h-full w-7 items-center justify-center text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30" 
+                      className="flex h-full w-6 items-center justify-center text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30" 
                       onClick={() => updateQtyAmount(-1)} 
                       disabled={qty <= 1}
                       aria-label="Decrease quantity"
@@ -720,7 +720,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                     />
                     <button 
                       type="button" 
-                      className="flex h-full w-7 items-center justify-center text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30" 
+                      className="flex h-full w-6 items-center justify-center text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 disabled:opacity-30" 
                       onClick={() => updateQtyAmount(1)} 
                       disabled={qty >= totalStock}
                       aria-label="Increase quantity"
@@ -732,7 +732,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                   {/* Buy Now Button */}
                   <button
                     type="button"
-                    className={`flex-1 rounded-md py-2.5 text-xs sm:text-sm font-bold tracking-widest text-white transition-all duration-200 shadow-md ${
+                    className={`flex-1 rounded-md py-2 text-xs font-bold tracking-widest text-white transition-all duration-200 shadow-md ${
                       isOutOfStock 
                         ? 'bg-gray-400 hover:bg-gray-500 shadow-none cursor-not-allowed' 
                         : 'bg-[#6B1A2A] hover:bg-[#521220] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
@@ -748,7 +748,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                   <button
                     type="button"
                     id={inCart ? 'add-more-btn' : 'add-to-cart-btn'}
-                    className="w-full items-center justify-center gap-2 rounded-md border border-[#6B1A2A] bg-white py-2.5 text-xs sm:text-sm font-bold tracking-widest text-[#6B1A2A] transition-all duration-200 hover:bg-[#6B1A2A] hover:text-white shadow-sm flex"
+                    className="w-full items-center justify-center gap-1.5 rounded-md border border-[#6B1A2A] bg-white py-2 text-xs font-bold tracking-widest text-[#6B1A2A] transition-all duration-200 hover:bg-[#6B1A2A] hover:text-white shadow-sm flex"
                     onClick={handleAddToCart}
                   >
                     <ShoppingCart className="h-3.5 w-3.5" />
@@ -758,10 +758,10 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
 
                 {/* Stock urgency badge */}
                 {!isOutOfStock && stockQty > 0 && stockQty <= 5 && (
-                  <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[#A34336] font-semibold animate-pulse">
-                    <span className="relative flex h-2 w-2">
+                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#A34336] font-semibold animate-pulse">
+                    <span className="relative flex h-1.5 w-1.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A34336] opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A34336]"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A34336]"></span>
                     </span>
                     Only {stockQty} sarees left in stock — order soon!
                   </div>
