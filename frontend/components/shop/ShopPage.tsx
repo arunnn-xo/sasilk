@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { ChevronDown, ChevronUp, Check, Heart, LayoutGrid, Grid3X3, Grid2X2, Loader2, RotateCcw, Search, ShoppingBag, SlidersHorizontal, Sparkles, Star, X } from 'lucide-react'
 import { fetchProducts } from '@/lib/api/storefront'
 import { resolveImageUrl } from '@/lib/api/client'
-import { getDiscount } from '@/lib/api/mappers'
+import { getDiscount, getPreferredVariant, mapVariantColors } from '@/lib/api/mappers'
 import type { StorefrontProduct } from '@/lib/api/types'
 import { useCart } from '@/components/cart/CartContext'
 import { useWishlist } from '@/components/wishlist/WishlistContext'
+import type { ProductColor } from '@/components/product/ProductCard'
 
 /* ── Filter options ─────────────────────── */
 type SortMode = 'Featured' | 'Price low to high' | 'Price high to low' | 'Newest'
@@ -53,51 +54,35 @@ function ShopCatalogCard({
   wished,
   onToggleWishlist,
   onAddToCart,
+  adding = false,
 }: {
   product: StorefrontProduct
   wished: boolean
   onToggleWishlist: () => void
-  onAddToCart: (colorName?: string) => void
+  onAddToCart: (color?: ProductColor) => void
+  adding?: boolean
 }) {
   const slug = product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   const href = `/products/${slug}`
-  const disc = getDiscount(product.price, product.originalPrice)
-  const badge = product.isNew ? 'New' : disc ? `${disc}% OFF` : null
 
-  const colorOptions = useMemo(() => {
-    const list: { colorName: string; colorHex?: string; imageUrl?: string }[] = []
-    const seenNames = new Set<string>()
-    const seenHexes = new Set<string>()
-    ;(product.variants || []).forEach(v => {
-      if (v.colorName) {
-        const nameKey = v.colorName.trim().toLowerCase()
-        const hexKey = v.colorHex ? v.colorHex.trim().toLowerCase() : ''
-        
-        const hasName = seenNames.has(nameKey)
-        const hasHex = hexKey ? seenHexes.has(hexKey) : false
-        
-        if (!hasName && !hasHex) {
-          seenNames.add(nameKey)
-          if (hexKey) seenHexes.add(hexKey)
-          list.push({
-            colorName: v.colorName,
-            colorHex: v.colorHex,
-            imageUrl: v.imageUrl || v.images?.[0]?.imageUrl || product.imageUrl || product.image
-          })
-        }
-      }
-    })
-    return list
-  }, [product])
-
-  const isOutOfStock = !!(product.stockQty != null && product.stockQty <= 0)
+  const colorOptions = useMemo(() => mapVariantColors(product), [product])
+  const defaultVariant = useMemo(() => getPreferredVariant(product), [product])
 
   const [selectedColorIdx, setSelectedColorIdx] = useState(-1)
   const [hoverColorIdx, setHoverColorIdx] = useState(-1)
   const effectiveIdx = hoverColorIdx >= 0 ? hoverColorIdx : selectedColorIdx
   const activeColor = effectiveIdx >= 0 && effectiveIdx < colorOptions.length ? colorOptions[effectiveIdx] : null
   const cartColor = selectedColorIdx >= 0 && selectedColorIdx < colorOptions.length ? colorOptions[selectedColorIdx] : null
-  const displayImage = resolveImageUrl(activeColor?.imageUrl || product.imageUrl || product.image)
+  const activePrice = activeColor?.price ?? defaultVariant?.price ?? product.price
+  const activeOriginalPrice = activeColor?.oldPrice ?? defaultVariant?.originalPrice ?? product.originalPrice
+  const activeStock = activeColor?.stock ?? defaultVariant?.stockQty ?? product.stockQty
+  const targetStock = cartColor?.stock ?? defaultVariant?.stockQty ?? product.stockQty
+  const isOutOfStock = !!(targetStock != null && targetStock <= 0)
+  const disc = getDiscount(activePrice, activeOriginalPrice)
+  const badge = product.isNew ? 'New' : disc ? `${disc}% OFF` : null
+  const displayImage = resolveImageUrl(
+    activeColor?.image || defaultVariant?.imageUrl || defaultVariant?.images?.[0]?.imageUrl || product.imageUrl || product.image,
+  )
 
   return (
     <article className="group relative flex min-w-0 flex-col rounded-2xl border border-[rgba(201,168,76,0.65)] bg-[#fffaf0] shadow-[0_10px_28px_rgba(82,0,1,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_45px_rgba(82,0,1,0.15)] overflow-hidden">
@@ -107,7 +92,7 @@ function ShopCatalogCard({
         <Link href={href} className="block h-full w-full no-underline">
           <img
             src={displayImage}
-            alt={activeColor ? `${product.name} in ${activeColor.colorName}` : product.name}
+            alt={activeColor ? `${product.name} in ${activeColor.name}` : product.name}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         </Link>
@@ -123,7 +108,7 @@ function ShopCatalogCard({
           <span className="text-[10.5px] font-bold text-white">{product.averageRating ?? 4.8}</span>
         </div>
 
-        {isOutOfStock && (
+        {activeStock != null && activeStock <= 0 && (
           <div className="absolute left-3 z-30 flex items-center rounded-md bg-rose-900/90 px-2 py-0.5 shadow-sm"
             style={{ top: badge ? '5.5rem' : '3.5rem' }}
           >
@@ -144,26 +129,43 @@ function ShopCatalogCard({
           <Heart className={`h-4.5 w-4.5 ${wished ? 'fill-current' : ''}`} />
         </button>
 
-        {colorOptions.length > 1 && (
+        {colorOptions.length > 0 && (
           <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-1.5 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-3 pb-3 pt-8 backdrop-blur-[1px]"
             onMouseLeave={() => setHoverColorIdx(-1)}
           >
-            {colorOptions.map((color, idx) => (
-              <button
-                key={color.colorName}
-                type="button"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedColorIdx(idx) }}
-                onMouseEnter={() => setHoverColorIdx(idx)}
-                className={`block h-5 w-5 rounded-full border-2 transition-all duration-200 ${
-                  idx === effectiveIdx ? 'border-[#E8C97E] scale-125 shadow-[0_0_0_2px_rgba(232,201,126,0.6)]' : 'border-white/80 hover:border-[#E8C97E] hover:scale-110'
-                }`}
-                style={{ backgroundColor: color.colorHex || '#ccc' }}
-                aria-label={color.colorName}
-              />
-            ))}
+            {colorOptions.map((color, idx) => {
+              const isActive = idx === effectiveIdx
+              const isSize = color.variantType === 'size' || (!color.hex || color.hex === '#999999')
+              return isSize ? (
+                <button
+                  key={color.variantId ? `${color.variantId}-${color.name}` : color.name}
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedColorIdx(idx) }}
+                  onMouseEnter={() => setHoverColorIdx(idx)}
+                  className={`block rounded px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider transition-all duration-200 border ${
+                    isActive ? 'border-[#E8C97E] bg-[#E8C97E] text-[#2A1A1E] scale-105 shadow-md' : 'border-white/80 bg-black/60 text-white hover:border-[#E8C97E]'
+                  }`}
+                  aria-label={`Select size ${color.name}`}
+                >
+                  {color.name}
+                </button>
+              ) : (
+                <button
+                  key={color.name}
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedColorIdx(idx) }}
+                  onMouseEnter={() => setHoverColorIdx(idx)}
+                  className={`block h-5 w-5 rounded-full border-2 transition-all duration-200 ${
+                    isActive ? 'border-[#E8C97E] scale-125 shadow-[0_0_0_2px_rgba(232,201,126,0.6)]' : 'border-white/80 hover:border-[#E8C97E] hover:scale-110'
+                  }`}
+                  style={{ backgroundColor: color.hex || '#ccc' }}
+                  aria-label={color.name}
+                />
+              )
+            })}
             {activeColor && (
-              <span className="ml-auto max-w-[80px] truncate text-[9.5px] font-bold text-white drop-shadow">
-                {activeColor.colorName}
+              <span className="ml-auto max-w-[85px] truncate text-[9.5px] font-bold text-white drop-shadow">
+                {activeColor.variantType === 'size' ? `Size: ${activeColor.name}` : activeColor.name}
               </span>
             )}
           </div>
@@ -184,18 +186,33 @@ function ShopCatalogCard({
           {product.name}
         </h3>
 
+        {/* Selected Variant / Size display chip */}
+        {(() => {
+          const displayVariant = activeColor || defaultVariant
+          const sizeText = activeColor?.variantType === 'size' ? (activeColor.size || activeColor.name) : (displayVariant?.size || '')
+          const colorText = activeColor && activeColor.variantType !== 'size' ? activeColor.name : (product.color || '')
+          if (!sizeText && !colorText) return null
+          return (
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              <span className="rounded border border-[rgba(201,168,76,0.5)] bg-[#FAF6EE] px-2 py-0.5 text-[9px] font-bold text-[#6B1A2A]">
+                {[colorText ? `Color: ${colorText}` : '', sizeText ? `Size: ${sizeText}` : ''].filter(Boolean).join(' | ')}
+              </span>
+            </div>
+          )
+        })()}
+
         <div className="mt-3 flex flex-col md:flex-row md:items-end justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[14px] md:text-[17px] font-extrabold text-[#6B1A2A] leading-none">{formatShopPrice(product.price)}</p>
-            {product.originalPrice ? (
-              <p className="text-[10px] md:text-[12px] text-slate-500 line-through mt-1 font-medium">{formatShopPrice(product.originalPrice)}</p>
+            <p className="text-[14px] md:text-[17px] font-extrabold text-[#6B1A2A] leading-none">{formatShopPrice(activePrice)}</p>
+            {activeOriginalPrice ? (
+              <p className="text-[10px] md:text-[12px] text-slate-500 line-through mt-1 font-medium">{formatShopPrice(activeOriginalPrice)}</p>
             ) : null}
           </div>
 
           <button
             type="button"
-            onClick={() => !isOutOfStock && onAddToCart(cartColor?.colorName)}
-            disabled={isOutOfStock}
+            onClick={() => !isOutOfStock && !adding && onAddToCart(cartColor || undefined)}
+            disabled={isOutOfStock || adding}
             className={`hidden md:inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 shadow-sm ${
               isOutOfStock
                 ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-100'
@@ -216,8 +233,8 @@ function ShopCatalogCard({
           </Link>
           <button
             type="button"
-            onClick={() => !isOutOfStock && onAddToCart(cartColor?.colorName)}
-            disabled={isOutOfStock}
+            onClick={() => !isOutOfStock && !adding && onAddToCart(cartColor || undefined)}
+            disabled={isOutOfStock || adding}
             className={`md:hidden inline-flex h-full w-full items-center justify-center rounded-xl border transition-all duration-300 ${
               isOutOfStock
                 ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-100'
@@ -266,6 +283,7 @@ export default function ShopPage({
   const [sortMode, setSortMode] = useState<SortMode>('Featured')
   const { wishlistIds, toggleWishlist } = useWishlist()
   const [toast, setToast] = useState('')
+  const [addingKey, setAddingKey] = useState<string | null>(null)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   // Category filter state (separate from props so clearFilters can reset it)
@@ -397,34 +415,36 @@ export default function ShopPage({
 
   const cart = useCart()
 
-  function addToCart(product: StorefrontProduct, colorName?: string) {
+  async function addToCart(product: StorefrontProduct, color?: ProductColor) {
     const slug = product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    const selectedVariant = colorName
-      ? product.variants?.find(v => v.colorName === colorName)
-      : null
-    const fallbackVariant = product.hasVariants && product.variants?.length
-      ? product.variants.find(v => v.isDefault) || product.variants[0]
-      : null
-    const variant = selectedVariant || (product.hasVariants && product.variants?.length
-      ? product.variants.find(v => (v.stockQty ?? 0) > 0) || fallbackVariant
-      : null)
-    cart.addItem({
-      id: product.id,
-      name: product.name,
-      slug,
-      price: variant ? variant.price : product.price,
-      originalPrice: variant ? (variant.originalPrice ?? product.originalPrice) : product.originalPrice,
-      image: resolveImageUrl(
-        variant?.imageUrl || variant?.images?.[0]?.imageUrl || product.imageUrl || product.image
-      ) || '',
-      color: variant?.colorName || product.color,
-      size: variant?.size,
-      variantId: variant?.id,
-      variantLabel: variant?.label,
-      stock: variant?.stockQty ?? product.stockQty,
-    })
-    cart.setDrawerOpen(true)
-    setToast(`${product.name} added to cart`)
+    const variant = color?.variantId
+      ? product.variants?.find(v => v.id === color.variantId) || getPreferredVariant(product, color.name)
+      : getPreferredVariant(product)
+    const key = `${product.id}-${variant?.id ?? 'base'}`
+    setAddingKey(key)
+    try {
+      await cart.addItem({
+        id: product.id,
+        name: product.name,
+        slug,
+        price: variant ? (variant.price ?? product.price) : product.price,
+        originalPrice: variant ? (variant.originalPrice ?? product.originalPrice) : product.originalPrice,
+        image: resolveImageUrl(
+          variant?.imageUrl || variant?.images?.[0]?.imageUrl || product.imageUrl || product.image
+        ) || '',
+        color: variant?.colorName || product.color,
+        size: variant?.size,
+        variantId: variant?.id,
+        variantLabel: variant?.label,
+        stock: variant?.stockQty ?? product.stockQty,
+      })
+      cart.setDrawerOpen(true)
+      setToast(`${product.name} added to cart`)
+    } catch (err: any) {
+      setToast(err?.message || 'Could not add this item to cart. Please try again.')
+    } finally {
+      setAddingKey(null)
+    }
     window.setTimeout(() => setToast(''), 2200)
   }
 
@@ -671,7 +691,8 @@ export default function ShopPage({
                       product={product}
                       wished={wished}
                       onToggleWishlist={() => toggleWishlist(product.id, product.name)}
-                      onAddToCart={(colorName) => addToCart(product, colorName)}
+                      onAddToCart={(color) => addToCart(product, color)}
+                      adding={addingKey?.startsWith(`${product.id}-`) ?? false}
                     />
                   )
                 })}

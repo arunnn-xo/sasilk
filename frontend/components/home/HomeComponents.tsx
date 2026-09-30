@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Shield, Clock, Globe, Truck, Play, Pause, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react'
-import ProductCard from '@/components/product/ProductCard'
+import ProductCard, { type ProductCardProduct } from '@/components/product/ProductCard'
 import { useCart } from '@/components/cart/CartContext'
 import { fetchCategories } from '@/lib/services/storefront.service'
 import { fetchArtWave, fetchStorefrontHome, fetchProducts as fetchApiProducts } from '@/lib/api/storefront'
 import { resolveImageUrl } from '@/lib/api/client'
 import type { StorefrontArtWaveItem } from '@/lib/api/types'
+import { getPreferredVariant, mapVariantColors } from '@/lib/api/mappers'
 
 /* ── Summer Sufiana Collection Banner ─────────────── */
 export function CollectionBanner() {
@@ -727,6 +728,8 @@ export function ProductGrid() {
   const [products, setProducts] = useState<any[]>([])
   const [loaded, setLoaded] = useState(false)
   const { addItem, setDrawerOpen } = useCart()
+  const [addingKey, setAddingKey] = useState<string | null>(null)
+  const [cartToast, setCartToast] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -756,20 +759,33 @@ export function ProductGrid() {
     return () => { cancelled = true }
   }, [])
 
-  const handleAddToCart = (product: any) => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      slug: product.href?.replace('/products/', '') || product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-      image: product.image,
-      price: product.price,
-      originalPrice: product.oldPrice,
-      variantId: product.variantId,
-      color: product.color,
-      size: product.size || 'Free Size',
-      qty: 1,
-    })
-    setDrawerOpen(true)
+  const handleAddToCart = async (product: ProductCardProduct) => {
+    const slug = product.href?.replace('/products/', '') || product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    const key = `${product.id ?? slug}-${product.variantId ?? 'base'}`
+    setAddingKey(key)
+    setCartToast('')
+    try {
+      await addItem({
+        id: product.id!,
+        name: product.name,
+        slug,
+        image: product.image,
+        price: product.price,
+        originalPrice: product.oldPrice,
+        variantId: product.variantId,
+        variantLabel: product.variantLabel,
+        color: product.color,
+        size: product.size,
+        stock: product.stock,
+        qty: 1,
+      })
+      setDrawerOpen(true)
+    } catch (err: any) {
+      setCartToast(err?.message || 'Could not add this item to cart. Please try again.')
+      window.setTimeout(() => setCartToast(''), 2400)
+    } finally {
+      setAddingKey(null)
+    }
   }
 
   // Show nothing until loaded and only when real products exist
@@ -796,6 +812,11 @@ export function ProductGrid() {
           <h2 className="text-[28px] md:text-[36px] font-bold mb-1" style={{ fontFamily: 'Playfair Display, serif', color: 'var(--burgundy-dark)' }}>New Arrivals</h2>
           {/* Teal-Gold Flourish under heading */}
         </div>
+        {cartToast && (
+          <div className="mx-auto mb-4 max-w-md rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-semibold text-red-700">
+            {cartToast}
+          </div>
+        )}
 
         {/* Professional Minimal Kolam Border Container */}
         <div className="relative mx-auto w-full pt-14 md:pt-16 pb-14 md:pb-16 px-6 md:px-12 bg-[#FAF6EE] shadow-sm">
@@ -868,13 +889,11 @@ export function ProductGrid() {
                 const occasion = (meta.occasion as string) || 'Bridal & Festive'
                 const badge = p.tag || (p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller')
                 const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || ''
-                const rawColors = (p.variants || [])
-                  .filter((v: any) => v.colorName)
-                  .map((v: any) => ({
-                    name: v.colorName,
-                    hex: v.colorHex || '#8B1A2B',
-                    image: resolveImageUrl(v.imageUrl || v.images?.[0]?.imageUrl) || img,
-                  }))
+                const rawColors = mapVariantColors(p)
+                const bestVariant = getPreferredVariant(p)
+                const basePrice = typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                const baseOldPrice = p.originalPrice ? (typeof p.originalPrice === 'string' ? parseFloat(p.originalPrice) : p.originalPrice) : null
+                const cardImage = resolveImageUrl(bestVariant?.imageUrl || bestVariant?.images?.[0]?.imageUrl || p.imageUrl || p.image || p.images?.[0]?.imageUrl) || img
 
                 const slug = p.slug || p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
                 const href = `/products/${slug}`
@@ -888,18 +907,25 @@ export function ProductGrid() {
                       category: p.category || 'Kanchipuram Silk',
                       fabric,
                       occasion,
-                      image: img,
-                      price: typeof p.price === 'string' ? parseFloat(p.price) : p.price,
-                      oldPrice: p.originalPrice ? (typeof p.originalPrice === 'string' ? parseFloat(p.originalPrice) : p.originalPrice) : null,
+                      image: cardImage,
+                      price: bestVariant?.price ?? basePrice,
+                      oldPrice: bestVariant?.originalPrice ?? baseOldPrice,
                       badge,
                       rating: (meta.rating as number) || 4.9,
                       reviews: (meta.reviews as number) || 18,
                       href,
                       colors: rawColors.length > 0 ? rawColors : undefined,
-                      variantId: p.variants?.[0]?.id,
-                      stock: p.stockQty,
+                      variantId: bestVariant?.id,
+                      variantLabel: bestVariant?.label,
+                      color: bestVariant?.colorName || p.color,
+                      size: bestVariant?.size,
+                      stock: bestVariant?.stockQty ?? p.stockQty,
                     }}
-                    onAddToCart={handleAddToCart}
+                    onAddToCart={(cardProduct) => {
+                      if (addingKey) return
+                      handleAddToCart(cardProduct)
+                    }}
+                    adding={addingKey?.startsWith(`${p.id}-`) ?? false}
                   />
                 )
               })}

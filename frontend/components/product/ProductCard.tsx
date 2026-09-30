@@ -9,6 +9,13 @@ export type ProductColor = {
   name: string
   hex: string
   image?: string
+  variantId?: number
+  variantLabel?: string
+  price?: number
+  oldPrice?: number | null
+  stock?: number
+  size?: string
+  variantType?: 'color' | 'size'
 }
 
 export type ProductCardProduct = {
@@ -38,6 +45,7 @@ type ProductCardProps = {
   wished?: boolean
   onToggleWishlist?: () => void
   onAddToCart?: (product: ProductCardProduct) => void
+  adding?: boolean
 }
 
 function formatPrice(value: number) {
@@ -46,31 +54,33 @@ function formatPrice(value: number) {
 
 const MAX_VISIBLE = 4
 
-export default function ProductCard({ product, wished, onToggleWishlist, onAddToCart }: ProductCardProps) {
+export default function ProductCard({ product, wished, onToggleWishlist, onAddToCart, adding = false }: ProductCardProps) {
   const { toggleWishlist: ctxToggleWishlist, isWished: ctxIsWished } = useWishlist()
   const [activeIdx, setActiveIdx] = useState(0)
   const [hoverIdx, setHoverIdx] = useState(-1)
   const [tooltipIdx, setTooltipIdx] = useState<number | null>(null)
   const effectiveIdx = hoverIdx >= 0 ? hoverIdx : activeIdx
-
-  const isWished = wished ?? ctxIsWished(Number(product.id), product.variantId ?? null)
-  const discount = product.oldPrice
-    ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
-    : null
-  const href = product.href ?? `/products/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
   
   const rawColors = product.colors ?? []
+  const hasOnlySizes = useMemo(() => {
+    return rawColors.length > 0 && rawColors.every(c => c.variantType === 'size' || (!c.hex || c.hex === '#999999'))
+  }, [rawColors])
+
   const colors = useMemo(() => {
-    const seenNames = new Set<string>()
-    const seenHexes = new Set<string>()
+    const seenKeys = new Set<string>()
     return rawColors.filter(c => {
-      const nameKey = c.name.trim().toLowerCase()
-      const hexKey = c.hex ? c.hex.trim().toLowerCase() : ''
-      if (seenNames.has(nameKey) || (hexKey && seenHexes.has(hexKey))) {
-        return false
+      const isSize = c.variantType === 'size' || (!c.hex || c.hex === '#999999')
+      if (isSize) {
+        const sizeKey = (c.size || c.name || '').trim().toLowerCase()
+        if (seenKeys.has('size:' + sizeKey)) return false
+        seenKeys.add('size:' + sizeKey)
+        return true
       }
-      seenNames.add(nameKey)
-      if (hexKey) seenHexes.add(hexKey)
+      const nameKey = (c.name || '').trim().toLowerCase()
+      const hexKey = c.hex ? c.hex.trim().toLowerCase() : ''
+      const dedupeKey = `color:${nameKey}:${hexKey}`
+      if (seenKeys.has(dedupeKey)) return false
+      seenKeys.add(dedupeKey)
       return true
     })
   }, [rawColors])
@@ -79,9 +89,27 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
   const extraCount = Math.max(0, colors.length - MAX_VISIBLE)
 
   const activeColor = colors[effectiveIdx]
-  const displayImage = activeColor?.image ?? product.image
+  const activeProduct = activeColor ? {
+    ...product,
+    image: activeColor.image ?? product.image,
+    price: activeColor.price ?? product.price,
+    oldPrice: activeColor.oldPrice ?? product.oldPrice,
+    stock: activeColor.stock ?? product.stock,
+    variantId: activeColor.variantId ?? product.variantId,
+    variantLabel: activeColor.variantLabel ?? product.variantLabel,
+    color: activeColor.variantType === 'size' ? product.color : activeColor.name,
+    size: activeColor.size || (activeColor.variantType === 'size' ? activeColor.name : product.size),
+  } : product
 
-  const isOutOfStock = product.stock != null && product.stock <= 0
+  const isWished = wished ?? ctxIsWished(Number(product.id), activeProduct.variantId ?? null)
+  const discount = activeProduct.oldPrice
+    ? Math.round(((activeProduct.oldPrice - activeProduct.price) / activeProduct.oldPrice) * 100)
+    : null
+  const href = product.href ?? `/products/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+
+  const displayImage = activeProduct.image
+
+  const isOutOfStock = activeProduct.stock != null && activeProduct.stock <= 0
 
   function selectColor(idx: number) {
     setActiveIdx(idx)
@@ -92,7 +120,7 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
   function toggleWishlist() {
     if (onToggleWishlist) { onToggleWishlist(); return }
     if (product.id != null) {
-      ctxToggleWishlist(Number(product.id), product.name, product.variantId ?? null, product.color, product.size)
+      ctxToggleWishlist(Number(product.id), product.name, activeProduct.variantId ?? null, activeProduct.color, activeProduct.size)
     }
   }
 
@@ -151,8 +179,9 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
 
             {visibleColors.map((color, idx) => {
               const isActive = effectiveIdx === idx
+              const isSize = color.variantType === 'size' || (!color.hex || color.hex === '#999999')
               return (
-                <div key={color.name} className="relative">
+                <div key={color.variantId ? `${color.variantId}-${color.name}` : color.name} className="relative">
                   {/* Tooltip — shows on hover (desktop) + on tap (mobile) */}
                   {(tooltipIdx === idx || hoverIdx === idx) && (
                     <div
@@ -164,22 +193,41 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
                     </div>
                   )}
 
-                  <button
-                    type="button"
-                    aria-label={`Select colour ${color.name}`}
-                    onMouseEnter={() => { setTooltipIdx(idx); setHoverIdx(idx) }}
-                    onMouseLeave={() => setTooltipIdx(null)}
-                    onTouchStart={() => selectColor(idx)}
-                    onClick={() => selectColor(idx)}
-                    style={{ backgroundColor: color.hex }}
-                    className={[
-                      'block rounded-full border-2 transition-all duration-200',
-                      'h-[18px] w-[18px] sm:h-5 sm:w-5',
-                      isActive
-                        ? 'border-[#C9A84C] scale-125 shadow-[0_0_0_1.5px_rgba(201,168,76,0.55)]'
-                        : 'border-white/80 hover:border-[#C9A84C] hover:scale-110',
-                    ].join(' ')}
-                  />
+                  {isSize ? (
+                    <button
+                      type="button"
+                      aria-label={`Select size ${color.name}`}
+                      onMouseEnter={() => { setTooltipIdx(idx); setHoverIdx(idx) }}
+                      onMouseLeave={() => setTooltipIdx(null)}
+                      onTouchStart={() => selectColor(idx)}
+                      onClick={() => selectColor(idx)}
+                      className={[
+                        'block rounded px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider transition-all duration-200 border',
+                        isActive
+                          ? 'border-[#C9A84C] bg-[#C9A84C] text-[#2A1A1E] shadow-sm scale-105'
+                          : 'border-white/80 bg-black/50 text-white hover:border-[#C9A84C] hover:bg-black/70',
+                      ].join(' ')}
+                    >
+                      {color.name}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label={`Select colour ${color.name}`}
+                      onMouseEnter={() => { setTooltipIdx(idx); setHoverIdx(idx) }}
+                      onMouseLeave={() => setTooltipIdx(null)}
+                      onTouchStart={() => selectColor(idx)}
+                      onClick={() => selectColor(idx)}
+                      style={{ backgroundColor: color.hex }}
+                      className={[
+                        'block rounded-full border-2 transition-all duration-200',
+                        'h-[18px] w-[18px] sm:h-5 sm:w-5',
+                        isActive
+                          ? 'border-[#C9A84C] scale-125 shadow-[0_0_0_1.5px_rgba(201,168,76,0.55)]'
+                          : 'border-white/80 hover:border-[#C9A84C] hover:scale-110',
+                      ].join(' ')}
+                    />
+                  )}
                 </div>
               )
             })}
@@ -193,8 +241,8 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
 
             {/* Active color label — far right */}
             {activeColor && (
-              <span className="ml-auto max-w-[80px] truncate text-[9px] font-semibold text-white/90 drop-shadow">
-                {activeColor.name}
+              <span className="ml-auto max-w-[90px] truncate text-[9px] font-semibold text-white/90 drop-shadow">
+                {activeColor.variantType === 'size' ? `Size: ${activeColor.name}` : activeColor.name}
               </span>
             )}
           </div>
@@ -231,46 +279,71 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
         })()}
 
         {/* Selected Variant Badge (Color / Size) */}
-        {(product.color || product.size || product.variantLabel) ? (
+        {(activeProduct.color || activeProduct.size || activeProduct.variantLabel) ? (
           <div className="mt-1 flex flex-wrap items-center gap-1">
             <span className="rounded border border-[#E8DCC4] bg-[#FAF6EE] px-2 py-0.5 text-[9px] font-bold text-[#6B1A2A]">
-              {[product.color ? `Color: ${product.color}` : '', product.size ? `Size: ${product.size}` : '', product.variantLabel && !product.color && !product.size ? product.variantLabel : ''].filter(Boolean).join(' | ')}
+              {[activeProduct.color ? `Color: ${activeProduct.color}` : '', activeProduct.size ? `Size: ${activeProduct.size}` : '', activeProduct.variantLabel && !activeProduct.color && !activeProduct.size ? activeProduct.variantLabel : ''].filter(Boolean).join(' | ')}
             </span>
           </div>
         ) : null}
 
-        {/* Color count sub-label */}
+        {/* Variant count sub-label */}
         {colors.length > 0 && (
           <div className="mt-1 flex items-center gap-1.5"
             onMouseLeave={() => setHoverIdx(-1)}
           >
-            <div className="flex gap-1">
-              {colors.slice(0, 5).map((c, idx) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  onMouseEnter={() => setHoverIdx(idx)}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setActiveIdx(idx)
-                  }}
-                  className={`inline-block h-3 w-3 rounded-full border transition ${effectiveIdx === idx ? 'border-[#6B1A2A] scale-110 shadow-[0_0_0_1px_rgba(107,26,42,0.5)]' : 'border-[#E8DCC4] hover:scale-110'}`}
-                  style={{ backgroundColor: c.hex }}
-                  aria-label={`Select ${c.name}`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] text-[#7A6065]">
-              {colors.length} colour{colors.length > 1 ? 's' : ''}
-            </span>
+            {hasOnlySizes ? (
+              <div className="flex flex-wrap gap-1">
+                {colors.slice(0, 4).map((c, idx) => (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onMouseEnter={() => setHoverIdx(idx)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setActiveIdx(idx)
+                    }}
+                    className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold border transition ${
+                      effectiveIdx === idx
+                        ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white'
+                        : 'border-[#E8DCC4] bg-[#FAF6EE] text-[#6B1A2A] hover:border-[#6B1A2A]'
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-1">
+                  {colors.slice(0, 5).map((c, idx) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onMouseEnter={() => setHoverIdx(idx)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setActiveIdx(idx)
+                      }}
+                      className={`inline-block h-3 w-3 rounded-full border transition ${effectiveIdx === idx ? 'border-[#6B1A2A] scale-110 shadow-[0_0_0_1px_rgba(107,26,42,0.5)]' : 'border-[#E8DCC4] hover:scale-110'}`}
+                      style={{ backgroundColor: c.hex }}
+                      aria-label={`Select ${c.name}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] text-[#7A6065]">
+                  {colors.length} colour{colors.length > 1 ? 's' : ''}
+                </span>
+              </>
+            )}
           </div>
         )}
 
         {/* Price row */}
         <div className="mt-2.5 flex flex-wrap items-end gap-x-2 gap-y-1">
-          <span className="text-sm md:text-base font-bold text-[#6B1A2A]">{formatPrice(product.price)}</span>
-          {product.oldPrice ? (
-            <span className="text-xs text-[#7A6065] line-through">{formatPrice(product.oldPrice)}</span>
+          <span className="text-sm md:text-base font-bold text-[#6B1A2A]">{formatPrice(activeProduct.price)}</span>
+          {activeProduct.oldPrice ? (
+            <span className="text-xs text-[#7A6065] line-through">{formatPrice(activeProduct.oldPrice)}</span>
           ) : null}
           {discount ? (
             <span className="rounded bg-[#9D3B22] px-1.5 py-0.5 text-[9px] font-bold text-white">
@@ -292,12 +365,13 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
           ) : (
             <button
               type="button"
-              onClick={() => onAddToCart?.(product)}
-              className="flex w-full items-center justify-center gap-1.5 rounded-md bg-[#6B1A2A] px-2 py-2.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#4A0F1C] shadow-sm"
+              onClick={() => onAddToCart?.(activeProduct)}
+              disabled={adding}
+              className="flex w-full items-center justify-center gap-1.5 rounded-md bg-[#6B1A2A] px-2 py-2.5 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#4A0F1C] shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={`Add ${product.name} to cart`}
             >
               <ShoppingBag className="h-3.5 w-3.5" />
-              Add to Cart
+              {adding ? 'Adding...' : 'Add to Cart'}
             </button>
           )}
         </div>

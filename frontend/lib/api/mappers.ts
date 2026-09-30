@@ -6,36 +6,74 @@ export function getDiscount(price: number, originalPrice?: number | null): numbe
   return Math.round(((originalPrice - price) / originalPrice) * 100)
 }
 
-export function mapToProductCardProduct(p: StorefrontProduct): ProductCardProduct {
+type StorefrontVariant = NonNullable<StorefrontProduct['variants']>[number]
+
+function variantImage(v: StorefrontVariant | null | undefined, p: StorefrontProduct): string {
+  return v?.imageUrl || v?.images?.[0]?.imageUrl || p.imageUrl || p.image
+}
+
+export function getPreferredVariant(p: StorefrontProduct, colorName?: string | null): StorefrontVariant | null {
+  if (!p.hasVariants || !p.variants?.length) return null
+  if (colorName) {
+    const colorMatches = p.variants.filter(v => v.colorName === colorName)
+    return colorMatches.find(v => (v.stockQty ?? 0) > 0) || colorMatches[0] || null
+  }
+  return p.variants.find(v => (v.stockQty ?? 0) > 0) || p.variants.find(v => v.isDefault) || p.variants[0] || null
+}
+
+export function mapVariantColors(p: StorefrontProduct): ProductColor[] {
   const colors: ProductColor[] = []
   const seen = new Set<string>()
   ;(p.variants || []).forEach(v => {
-    if (v.colorName && v.colorHex) {
-      const nameKey = v.colorName.trim().toLowerCase()
-      const hexKey = v.colorHex.trim().toLowerCase()
-      if (!seen.has(nameKey) && !seen.has(hexKey)) {
-        seen.add(nameKey)
-        seen.add(hexKey)
-        colors.push({
-          name: v.colorName,
-          hex: v.colorHex,
-          image: v.imageUrl || v.images?.[0]?.imageUrl || p.imageUrl || p.image,
-        })
-      }
+    const isColorVariant = !!v.colorName
+    const isSizeVariant = !v.colorName && (v.variantType === 'size' || v.size)
+
+    if (isColorVariant) {
+      const nameKey = v.colorName!.trim().toLowerCase()
+      if (seen.has(nameKey)) return
+      seen.add(nameKey)
+      const selected = getPreferredVariant(p, v.colorName) || v
+      colors.push({
+        name: v.colorName!,
+        hex: v.colorHex || '#8B1A2B',
+        image: variantImage(selected, p),
+        variantId: selected.id,
+        variantLabel: selected.label,
+        price: selected.price ?? p.price,
+        oldPrice: selected.originalPrice ?? p.originalPrice,
+        stock: selected.stockQty ?? p.stockQty,
+        size: selected.size,
+        variantType: 'color',
+      })
+    } else if (isSizeVariant) {
+      // Size-only / free-size variant — use size as the display key
+      const sizeKey = (v.size || v.label || 'free-size').trim().toLowerCase()
+      if (seen.has('size:' + sizeKey)) return
+      seen.add('size:' + sizeKey)
+      colors.push({
+        name: v.size || v.label || 'Free Size',
+        hex: '#999999', // neutral — not used for color swatch; indicates size-only
+        image: variantImage(v, p),
+        variantId: v.id,
+        variantLabel: v.label || v.size || 'Free Size',
+        price: v.price ?? p.price,
+        oldPrice: v.originalPrice ?? p.originalPrice,
+        stock: v.stockQty ?? p.stockQty,
+        size: v.size,
+        variantType: 'size',
+      })
     }
   })
+  return colors
+}
 
-  const defaultVariant = p.hasVariants && p.variants?.length
-    ? p.variants.find(v => v.isDefault) || p.variants[0]
-    : null
+export function mapToProductCardProduct(p: StorefrontProduct): ProductCardProduct {
+  const colors = mapVariantColors(p)
+  const bestVariant = getPreferredVariant(p)
 
-  const inStockVariant = p.hasVariants && p.variants?.length
-    ? p.variants.find(v => (v.stockQty ?? 0) > 0) || defaultVariant
-    : null
-
-  const bestVariant = inStockVariant || defaultVariant
-
-  const disc = getDiscount(p.price, p.originalPrice)
+  const price = bestVariant?.price ?? p.price
+  const oldPrice = bestVariant?.originalPrice ?? p.originalPrice
+  const disc = getDiscount(price, oldPrice)
 
   return {
     id: p.id,
@@ -43,9 +81,9 @@ export function mapToProductCardProduct(p: StorefrontProduct): ProductCardProduc
     category: p.category || p.type || '',
     fabric: p.type || '',
     occasion: '',
-    image: p.imageUrl || p.image,
-    price: p.price,
-    oldPrice: p.originalPrice ?? null,
+    image: variantImage(bestVariant, p),
+    price,
+    oldPrice: oldPrice ?? null,
     badge: p.isNew ? 'New' : p.isBestSeller ? 'Best Seller' : disc ? `${disc}% OFF` : undefined,
     href: p.slug ? `/products/${p.slug}` : undefined,
     colors: colors.length > 0 ? colors : undefined,

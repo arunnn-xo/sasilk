@@ -90,6 +90,7 @@ export const variantCreateSchema = z.object({
   originalPrice: z.union([z.number().min(0, 'Original price cannot be negative.'), z.null()]).optional(),
   stockQty: z.number().int().min(0, 'Stock cannot be negative.').optional().default(0),
   imageUrl: z.union([z.string().max(255), z.null()]).optional(),
+  variantImages: z.array(z.string().max(255)).optional().default([]),
   isDefault: z.boolean().optional().default(false),
   status: z.enum(['active', 'inactive']).optional().default('active'),
   sortOrder: z.number().int().min(0).optional().default(0),
@@ -231,6 +232,15 @@ export const createProductVariant = async (req: Request, res: Response) => {
       sortOrder: body.sortOrder,
     }, { transaction: t })
 
+    const galleryImages = body.variantImages || []
+    for (let i = 0; i < galleryImages.length; i++) {
+      await VariantImage.create({
+        variantId: variant.getDataValue('id'),
+        imageUrl: galleryImages[i],
+        sortOrder: i,
+      }, { transaction: t })
+    }
+
     await updateProductStock(productId, { transaction: t })
 
     return variant
@@ -295,6 +305,19 @@ export const updateProductVariant = async (req: Request, res: Response) => {
       status: body.status,
       sortOrder: body.sortOrder,
     }, { transaction: t })
+
+    if (body.variantImages && body.variantImages.length > 0) {
+      const existingCount = await VariantImage.count({ where: { variantId }, transaction: t })
+      if (existingCount === 0) {
+        for (let i = 0; i < body.variantImages.length; i++) {
+          await VariantImage.create({
+            variantId,
+            imageUrl: body.variantImages[i],
+            sortOrder: i,
+          }, { transaction: t })
+        }
+      }
+    }
 
     await updateProductStock(productId, { transaction: t })
   })

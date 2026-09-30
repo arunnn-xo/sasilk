@@ -46,6 +46,7 @@ export default function WishlistContent() {
   const cart = useCart()
   const [products, setProducts] = useState<ProductCardProduct[]>([])
   const [toast, setToast] = useState('')
+  const [addingKey, setAddingKey] = useState<string | null>(null)
 
   const isLoggedIn = !!session
 
@@ -65,27 +66,35 @@ export default function WishlistContent() {
     setProducts(serverItems.map(mapServerItemToCard))
   }, [serverItems, wishlistIds, hydrated, isLoggedIn, authLoading])
 
-  function addToCart(product: ProductCardProduct) {
+  async function addToCart(product: ProductCardProduct) {
     const original = serverItems.find(i =>
       String(i.productId) === String(product.id) &&
       (i.variantId ?? null) === (product.variantId ?? null),
     )
     const slug = original?.slug || product.href?.replace('/products/', '') || String(product.id)
-    cart.addItem({
-      id: product.id!,
-      name: product.name,
-      slug,
-      price: product.price,
-      originalPrice: product.oldPrice ?? undefined,
-      image: product.image,
-      color: product.color,
-      size: product.size,
-      variantId: product.variantId,
-      variantLabel: product.variantLabel,
-      stock: original?.stockQty,
-    })
-    cart.setDrawerOpen(true)
-    setToast(`${product.name} added to cart`)
+    const key = `${product.id}-${product.variantId ?? 'base'}`
+    setAddingKey(key)
+    try {
+      await cart.addItem({
+        id: product.id!,
+        name: product.name,
+        slug,
+        price: product.price,
+        originalPrice: product.oldPrice ?? undefined,
+        image: product.image,
+        color: product.color,
+        size: product.size,
+        variantId: product.variantId,
+        variantLabel: product.variantLabel,
+        stock: original?.stockQty,
+      })
+      cart.setDrawerOpen(true)
+      setToast(`${product.name} added to cart`)
+    } catch (err: any) {
+      setToast(err?.message || 'Could not add this item to cart. Please try again.')
+    } finally {
+      setAddingKey(null)
+    }
     setTimeout(() => setToast(''), 2200)
   }
 
@@ -122,6 +131,7 @@ export default function WishlistContent() {
                 if (product.id != null) removeFromWishlist(Number(product.id), product.variantId ?? null, product.name)
               }}
               onAddToCart={addToCart}
+              adding={addingKey === `${product.id}-${product.variantId ?? 'base'}`}
             />
           ))}
         </div>

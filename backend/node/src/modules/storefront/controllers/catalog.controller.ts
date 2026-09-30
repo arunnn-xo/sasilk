@@ -138,7 +138,7 @@ export const getProducts = async (req: Request, res: Response) => {
     include: [{
       model: ProductVariant,
       as: 'variants',
-      attributes: ['id', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'],
+      attributes: ['id', 'variantType', 'label', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'],
       required: false,
     }],
     order: [['sortOrder', 'ASC'], ['id', 'DESC']],
@@ -230,7 +230,7 @@ export const getRelatedProducts = async (req: Request, res: Response) => {
     include: [{
       model: ProductVariant,
       as: 'variants',
-      attributes: ['id', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'],
+      attributes: ['id', 'variantType', 'label', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'],
       required: false,
     }],
     order: [['sortOrder', 'ASC'], ['id', 'DESC']],
@@ -262,7 +262,7 @@ export const search = async (req: Request, res: Response) => {
       where: productWhere,
       order: [['sortOrder', 'ASC']],
       limit: 12,
-      include: [{ model: ProductVariant, as: 'variants', attributes: ['id', 'price', 'originalPrice', 'isDefault', 'stockQty', 'imageUrl', 'size'], required: false }],
+      include: [{ model: ProductVariant, as: 'variants', attributes: ['id', 'variantType', 'label', 'price', 'originalPrice', 'isDefault', 'stockQty', 'imageUrl', 'size', 'colorName', 'colorHex'], required: false }],
     }),
     Category.findAll({ where: categoryWhere, order: [['sortOrder', 'ASC']], limit: 8 }),
   ])
@@ -299,7 +299,7 @@ export const getHome = async (_req: Request, res: Response) => {
       },
       order: [['sortOrder', 'ASC'], ['id', 'DESC']],
       limit: homeConfig.limit,
-      include: [{ model: ProductVariant, as: 'variants', attributes: ['id', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'], required: false }],
+      include: [{ model: ProductVariant, as: 'variants', attributes: ['id', 'variantType', 'label', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'], required: false }],
     }),
     MarqueeMessage.findAll({ where: { active: true }, order: [['sortOrder', 'ASC']] }),
   ])

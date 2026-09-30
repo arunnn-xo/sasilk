@@ -39,7 +39,7 @@ export type CartItem = {
 
 export type CartContextValue = {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, 'qty'> & { qty?: number }) => void
+  addItem: (item: Omit<CartItem, 'qty'> & { qty?: number }) => Promise<CartItem>
   removeItem: (key: string) => void
   updateQty: (key: string, qty: number) => void
   clearCart: () => void
@@ -112,36 +112,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
   /* ─── Actions ─── */
 
   const addItem = useCallback(
-    (incoming: Omit<CartItem, 'qty'> & { qty?: number }) => {
+    async (incoming: Omit<CartItem, 'qty'> & { qty?: number }) => {
       const pid = typeof incoming.id === 'number' ? incoming.id : Number(incoming.id)
-      if (incoming.stock != null && incoming.stock <= 0) return
-      if (!Number.isFinite(pid)) return
+      if (incoming.stock != null && incoming.stock <= 0) {
+        throw new Error('This variant is out of stock.')
+      }
+      if (!Number.isFinite(pid)) {
+        throw new Error('Invalid product selected.')
+      }
 
       const incomingQty = incoming.qty ?? 1
       const clampedQty = incoming.stock != null ? Math.min(incomingQty, incoming.stock) : incomingQty
 
       setSyncing(true)
-      apiAddToCart({
-        productId: pid,
-        variantId: incoming.variantId,
-        quantity: clampedQty,
-      })
-        .then(serverItem => {
-          const mapped = mapServerItem(serverItem)
-          setItems(prev => {
-            const existingIdx = prev.findIndex(
-              e => getItemKey(e) === getItemKey(mapped),
-            )
-            if (existingIdx !== -1) {
-              const updated = [...prev]
-              updated[existingIdx] = mapped
-              return updated
-            }
-            return [...prev, mapped]
-          })
+      try {
+        const serverItem = await apiAddToCart({
+          productId: pid,
+          variantId: incoming.variantId,
+          color: incoming.color ?? null,
+          size: incoming.size ?? null,
+          quantity: clampedQty,
         })
-        .catch(() => {})
-        .finally(() => setSyncing(false))
+        const mapped = mapServerItem(serverItem)
+        setItems(prev => {
+          const existingIdx = prev.findIndex(
+            e => getItemKey(e) === getItemKey(mapped),
+          )
+          if (existingIdx !== -1) {
+            const updated = [...prev]
+            updated[existingIdx] = mapped
+            return updated
+          }
+          return [...prev, mapped]
+        })
+        return mapped
+      } finally {
+        setSyncing(false)
+      }
     },
     [],
   )

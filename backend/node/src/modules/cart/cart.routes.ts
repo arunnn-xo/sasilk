@@ -37,7 +37,7 @@ function mapCartItem(row: any) {
     quantity: item.quantity,
     name: product.name || '',
     slug: product.slug || '',
-    price: variant.price ? Number(variant.price) : Number(product.price) || 0,
+    price: variant.price != null ? Number(variant.price) : Number(product.price) || 0,
     originalPrice: variant.originalPrice != null ? Number(variant.originalPrice) : (product.originalPrice != null ? Number(product.originalPrice) : null),
     image: variant.imageUrl || product.imageUrl || '',
     color: item.color || variant.colorName || null,
@@ -91,13 +91,16 @@ router.post('/', optionalGuestSession, asyncHandler(async (req, res) => {
     throw new AppError(400, parsed.error.errors.map(e => e.message).join('; '))
   }
 
-  const { productId, variantId, quantity, color, size } = parsed.data
+  const { productId, variantId, quantity } = parsed.data
+  let cartColor = parsed.data.color || null
+  let cartSize = parsed.data.size || null
 
   if (variantId) {
-    const variant = await ProductVariant.findByPk(variantId, {
+    const variant = await ProductVariant.findOne({
+      where: { id: variantId, productId },
       include: [{ model: Product, attributes: ['status', 'enableBackInStockNotify'] }],
     })
-    if (!variant) throw new AppError(404, 'Variant not found')
+    if (!variant) throw new AppError(400, 'Variant not found for this product')
     const v = variant.get({ plain: true }) as any
     if (v.status !== 'active' || (v.Product && v.Product.status !== 'active')) {
       throw new AppError(400, 'This variant is no longer available')
@@ -107,6 +110,8 @@ router.post('/', optionalGuestSession, asyncHandler(async (req, res) => {
     if (!enableBackInStockNotify && availableStock < quantity) {
       throw new AppError(400, `Insufficient stock. Only ${availableStock} left.`)
     }
+    cartColor = v.colorName || cartColor
+    cartSize = v.size || cartSize
   } else {
     const product = await Product.findByPk(productId, { attributes: ['status', 'enableBackInStockNotify', 'stockQty'] })
     if (!product) throw new AppError(404, 'Product not found')
@@ -118,8 +123,8 @@ router.post('/', optionalGuestSession, asyncHandler(async (req, res) => {
   const whereClause: any = {
     ...buildWhereClause(identity),
     productId,
-    color: color || null,
-    size: size || null,
+    color: cartColor,
+    size: cartSize,
   }
   if (variantId) {
     whereClause.variantId = variantId
@@ -132,15 +137,15 @@ router.post('/', optionalGuestSession, asyncHandler(async (req, res) => {
   if (existing) {
     const newQty = existing.get('quantity') as number + quantity
     if (variantId) {
-      const v = await ProductVariant.findByPk(variantId, {
+      const v = await ProductVariant.findOne({
+        where: { id: variantId, productId },
         include: [{ model: Product, attributes: ['enableBackInStockNotify'] }],
       })
-      if (v) {
-        const enableBackInStockNotify = (v as any).Product?.enableBackInStockNotify ?? false
-        let availableStock = Number((v as any).stockQty)
-        if (!enableBackInStockNotify && availableStock < newQty) {
-          throw new AppError(400, `Insufficient stock. Only ${availableStock} left.`)
-        }
+      if (!v) throw new AppError(400, 'Variant not found for this product')
+      const enableBackInStockNotify = (v as any).Product?.enableBackInStockNotify ?? false
+      const availableStock = Number((v as any).stockQty)
+      if (!enableBackInStockNotify && availableStock < newQty) {
+        throw new AppError(400, `Insufficient stock. Only ${availableStock} left.`)
       }
     } else {
       const p = await Product.findByPk(productId, { attributes: ['enableBackInStockNotify', 'stockQty'] })
@@ -161,8 +166,8 @@ router.post('/', optionalGuestSession, asyncHandler(async (req, res) => {
     productId,
     variantId: variantId || null,
     quantity,
-    color: color || null,
-    size: size || null,
+    color: cartColor,
+    size: cartSize,
   })
 
   const created = await CartItem.findByPk(item.get('id') as number, { include: includes })

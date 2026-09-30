@@ -25,6 +25,8 @@ export type ServerCartItem = {
 export type AddToCartPayload = {
   productId: number
   variantId?: number
+  color?: string | null
+  size?: string | null
   quantity: number
 }
 

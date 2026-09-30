@@ -134,6 +134,7 @@ export default function ProductFormPage() {
   // ─── First Variant fields (create mode only) ────────────────
   const [variantColorName, setVariantColorName] = useState('')
   const [variantColorHex, setVariantColorHex] = useState('#000000')
+  const [variantType, setVariantType] = useState<'color' | 'size'>('color')
   const [variantSku, setVariantSku] = useState('')
   const [variantPrice, setVariantPrice] = useState('')
   const [variantOriginalPrice, setVariantOriginalPrice] = useState('')
@@ -289,7 +290,7 @@ export default function ProductFormPage() {
     if (!washCare.trim()) errors.washCare = 'Please enter wash care instructions'
 
     if (!isEdit) {
-      if (!variantColorName.trim()) errors.variantColorName = 'Please enter a color name'
+      if (variantType === 'color' && !variantColorName.trim()) errors.variantColorName = 'Please enter a color name'
       if (!variantSku.trim()) errors.variantSku = 'Please enter a SKU code'
       if (!variantPrice || isNaN(Number(variantPrice)) || Number(variantPrice) <= 0) {
         errors.variantPrice = 'Please enter a valid selling price (greater than 0)'
@@ -437,9 +438,9 @@ export default function ProductFormPage() {
       payload.stockQty = parseInt(variantStockQty, 10) || 0
       payload.sortOrder = 0
       payload.hasVariants = true
-      payload.variantType = 'color'
-      payload.colorName = variantColorName.trim() || null
-      payload.colorHex = variantColorName.trim() ? variantColorHex : null
+      payload.variantType = variantType
+      payload.colorName = variantType === 'color' ? (variantColorName.trim() || null) : null
+      payload.colorHex = variantType === 'color' && variantColorName.trim() ? variantColorHex : null
       payload.size = variantSize.trim() || null
       payload.sizes = null
       payload.sizeStock = null
@@ -750,10 +751,48 @@ export default function ProductFormPage() {
                     </p>
                   </div>
 
+                  {/* Variant Type Toggle */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[13px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                      Variant Type <span className="text-red-400">*</span>
+                    </label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setVariantType('color')}
+                        className={`flex-1 rounded-lg border px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                          variantType === 'color'
+                            ? 'border-violet-600 bg-violet-600 text-white'
+                            : 'border-[var(--line)] bg-[#F9FAFB] text-[var(--text)] hover:border-violet-300'
+                        }`}
+                      >
+                        Color Variant
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVariantType('size')}
+                        className={`flex-1 rounded-lg border px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                          variantType === 'size'
+                            ? 'border-violet-600 bg-violet-600 text-white'
+                            : 'border-[var(--line)] bg-[#F9FAFB] text-[var(--text)] hover:border-violet-300'
+                        }`}
+                      >
+                        Free Size / Size Only
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-[var(--muted)]">
+                      {variantType === 'color'
+                        ? 'This variant is identified by color.'
+                        : 'This is a size-only or free-size variant - no color needed.'}
+                    </p>
+                  </div>
+
                   {/* ── Variant Identity ── */}
                   <div className="grid gap-4 sm:grid-cols-2">
 
-                   <div className="space-y-1.5">
+                   {variantType === 'color' && (
+                      <>
+                    <div className="space-y-1.5">
                       <label className="block text-[13px] font-bold uppercase tracking-widest text-[var(--muted)]">
                         Color Name <span className="text-red-400">*</span>
                       </label>
@@ -794,6 +833,8 @@ export default function ProductFormPage() {
                         <p className="mt-1 text-xs font-semibold text-red-600">{allErrors.variantColorHex}</p>
                       )}
                     </div>
+                      </>
+                    )}
 
                     <div className="space-y-2 sm:col-span-2">
                       <label className="block text-[13px] font-bold uppercase tracking-widest text-[var(--muted)]">

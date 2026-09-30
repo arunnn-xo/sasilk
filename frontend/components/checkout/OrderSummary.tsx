@@ -131,7 +131,7 @@ export default function OrderSummary({ isBuyNow }: { isBuyNow?: boolean }) {
       {/* Items List */}
       <div className="mb-5 space-y-4">
         {items.map(item => {
-          const key = `${item.id}__${item.color ?? ''}__${item.size ?? ''}`
+          const key = `${item.id}__v${item.variantId ?? ''}__${item.color ?? ''}__${item.size ?? ''}`
           return (
           <div key={key} className="flex gap-4">
             <div className="relative h-24 w-20 shrink-0">
@@ -144,13 +144,15 @@ export default function OrderSummary({ isBuyNow }: { isBuyNow?: boolean }) {
             </div>
             <div className="flex flex-1 flex-col justify-center">
               <h3 className="line-clamp-2 text-[13px] font-medium leading-tight text-[var(--charcoal)]">{item.name}</h3>
-              {(item.color || item.size) && (
+              {(item.color || item.size) ? (
                 <p className="mt-0.5 text-[11px] text-gray-500">
                   {item.color && <span>Color: {item.color}</span>}
                   {item.color && item.size && <span className="mx-1.5">|</span>}
                   {item.size && <span>Size: {item.size}</span>}
                 </p>
-              )}
+              ) : item.variantLabel ? (
+                <p className="mt-0.5 text-[11px] text-gray-500">Variant: {item.variantLabel}</p>
+              ) : null}
               <div className="mt-0.5 text-[13px] font-semibold text-[var(--charcoal)]">{formatPrice(item.price)}</div>
             </div>
           </div>

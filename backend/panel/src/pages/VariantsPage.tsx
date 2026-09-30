@@ -85,6 +85,7 @@ export default function VariantsPage() {
   const [pendingMainPreview, setPendingMainPreview] = useState('')
   const [pendingGalleryFiles, setPendingGalleryFiles] = useState<File[]>([])
   const [pendingGalleryPreviews, setPendingGalleryPreviews] = useState<string[]>([])
+  const [clonedGalleryUrls, setClonedGalleryUrls] = useState<string[]>([])
   const createMainFileRef = useRef<HTMLInputElement>(null)
   const createGalleryFileRef = useRef<HTMLInputElement>(null)
 
@@ -115,11 +116,55 @@ export default function VariantsPage() {
   const { data: cloneVariantsData } = useQuery({
     queryKey: ['clone-variants', cloneProductId],
     queryFn: () => listAllVariants(1, 50, cloneProductId, ''),
-    enabled: !!cloneProductId && showModal && !editingVariant,
+    enabled: !!cloneProductId && showModal,
   })
-  const cloneVariants = (cloneVariantsData?.items || [])
-    .filter((v: any) => v.colorName)
-    .filter((v: any, idx: number, arr: any[]) => arr.findIndex((x: any) => x.colorName === v.colorName) === idx)
+  const allAvailableVariants = (cloneVariantsData?.items || []).filter((v: any) => v.colorName || v.size || v.label)
+  const sortedVariants = [...allAvailableVariants].sort((a: any, b: any) => (b.images?.length || 0) - (a.images?.length || 0))
+  const cloneVariants = sortedVariants.filter((v: any, idx: number, arr: any[]) => {
+    const key = v.colorName
+      ? `color:${v.colorName.trim().toLowerCase()}`
+      : `size:${(v.size || v.label || v.id).toString().trim().toLowerCase()}`
+    return arr.findIndex((x: any) => {
+      const xKey = x.colorName
+        ? `color:${x.colorName.trim().toLowerCase()}`
+        : `size:${(x.size || x.label || x.id).toString().trim().toLowerCase()}`
+      return xKey === key
+    }) === idx
+  })
+
+  const applyCloneVariant = (v: any) => {
+    const existingColor = v.colorName || ''
+    setForm(f => ({
+      ...f,
+      colorName: existingColor || f.colorName,
+      colorHex: v.colorHex || f.colorHex || '#000000',
+      size: '', // cleared so user selects their new size
+      sku: v.sku ? `${v.sku}-NEW` : f.sku,
+      price: v.price != null ? String(v.price) : f.price,
+      originalPrice: v.originalPrice != null ? String(v.originalPrice) : f.originalPrice,
+      stockQty: String(v.stockQty ?? f.stockQty),
+      lowStockThreshold: String(v.lowStockThreshold ?? f.lowStockThreshold),
+      gstRate: v.gstRate != null ? String(v.gstRate) : f.gstRate,
+      imageUrl: v.imageUrl || f.imageUrl,
+    }))
+
+    let gallery = (v.images || []).map((img: any) => img.imageUrl).filter(Boolean)
+    if (gallery.length === 0 && existingColor) {
+      const sibling: any = (cloneVariantsData?.items || items || []).find(
+        (x: any) => x.colorName && x.colorName.trim().toLowerCase() === existingColor.trim().toLowerCase() && (x.images?.length || 0) > 0
+      )
+      if (sibling?.images?.length) {
+        gallery = sibling.images.map((img: any) => img.imageUrl).filter(Boolean)
+      }
+    }
+    if (gallery.length === 0 && (selectedProduct as any)?.images?.length) {
+      gallery = ((selectedProduct as any).images || []).map((img: any) => img.imageUrl).filter(Boolean)
+    }
+
+    setClonedGalleryUrls(gallery)
+    setPendingMainFile(null)
+    if (v.imageUrl) setPendingMainPreview(resolveImageUrl(v.imageUrl))
+  }
 
   const toggleProduct = (id: number) => {
     setExpanded(prev => {
@@ -194,6 +239,7 @@ export default function VariantsPage() {
         lowStockThreshold: parseInt(form.lowStockThreshold, 10) || 10,
         gstRate: form.gstRate !== '' ? Number(form.gstRate) : 5,
         imageUrl: form.imageUrl || null,
+        variantImages: clonedGalleryUrls,
       }
       // Create variant first to get variantId
       const result = await createVariant(pid, payload)
@@ -230,6 +276,7 @@ export default function VariantsPage() {
       setPendingMainPreview('')
       setPendingGalleryFiles([])
       setPendingGalleryPreviews([])
+      setClonedGalleryUrls([])
       invalidate()
       const warnings = data?.warnings || []
       setUploadWarnings(warnings)
@@ -331,6 +378,7 @@ export default function VariantsPage() {
     setPendingMainPreview('')
     setPendingGalleryFiles([])
     setPendingGalleryPreviews([])
+    setClonedGalleryUrls([])
     setVariantImageUrl('')
     setVariantImages([])
     setImageError('')
@@ -358,6 +406,53 @@ export default function VariantsPage() {
     })
     setVariantImageUrl(v.imageUrl || '')
     setVariantImages(v.images || [])
+    setClonedGalleryUrls([])
+    setFormErrors('')
+    setFormFieldErrors({})
+    setImageError('')
+    setShowClonePicker(false)
+    setShowModal(true)
+  }
+
+  const openClone = (v: any) => {
+    setEditingVariant(null)
+    const existingColor = v.colorName || ''
+    setForm({
+      variantType: v.variantType || (existingColor ? 'color' : 'size'),
+      colorName: existingColor,
+      colorHex: v.colorHex || '#000000',
+      size: '', // cleared so user can pick the new size
+      sku: v.sku ? `${v.sku}-NEW` : '',
+      price: v.price != null ? String(v.price) : '',
+      originalPrice: v.originalPrice != null ? String(v.originalPrice) : '',
+      stockQty: '0',
+      lowStockThreshold: String(v.lowStockThreshold ?? 10),
+      gstRate: v.gstRate != null ? String(Number(v.gstRate)) : '5',
+      productId: String(v.productId || productId || ''),
+      imageUrl: v.imageUrl || '',
+    })
+    setSizeInput('')
+    setVariantImageUrl(v.imageUrl || '')
+    setVariantImages([])
+    setPendingMainFile(null)
+    setPendingMainPreview(v.imageUrl ? resolveImageUrl(v.imageUrl) : '')
+    setPendingGalleryFiles([])
+    setPendingGalleryPreviews([])
+
+    let gallery = (v.images || []).map((img: any) => img.imageUrl).filter(Boolean)
+    if (gallery.length === 0 && existingColor) {
+      const sibling: any = (cloneVariantsData?.items || items || []).find(
+        (x: any) => x.colorName && x.colorName.trim().toLowerCase() === existingColor.trim().toLowerCase() && (x.images?.length || 0) > 0
+      )
+      if (sibling?.images?.length) {
+        gallery = sibling.images.map((img: any) => img.imageUrl).filter(Boolean)
+      }
+    }
+    if (gallery.length === 0 && (selectedProduct as any)?.images?.length) {
+      gallery = ((selectedProduct as any).images || []).map((img: any) => img.imageUrl).filter(Boolean)
+    }
+
+    setClonedGalleryUrls(gallery)
     setFormErrors('')
     setFormFieldErrors({})
     setImageError('')
@@ -367,19 +462,26 @@ export default function VariantsPage() {
 
   const validateForm = (): Record<string, string> | null => {
     const errors: Record<string, string> = {}
-    if (!form.size.trim()) {
-      errors.size = 'Size is required.'
+    const isColorVariant = computedVariantType === 'color'
+
+    if (isColorVariant) {
+      if (!form.colorName.trim()) {
+        errors.colorName = 'Color name is required.'
+      } else if (form.colorName.trim().length < 3) {
+        errors.colorName = 'Color name must be at least 3 characters.'
+      } else if (form.colorName.trim().length > 30) {
+        errors.colorName = 'Color name cannot exceed 30 characters.'
+      }
+      if (!form.colorHex) {
+        errors.colorHex = 'Color hex is required.'
+      }
+    } else {
+      // Size-only variant: size is required
+      if (!form.size.trim()) {
+        errors.size = 'Size is required for a size-only variant.'
+      }
     }
-    if (!form.colorName.trim()) {
-      errors.colorName = 'Color name is required.'
-    } else if (form.colorName.trim().length < 3) {
-      errors.colorName = 'Color name must be at least 3 characters.'
-    } else if (form.colorName.trim().length > 30) {
-      errors.colorName = 'Color name cannot exceed 30 characters.'
-    }
-    if (!form.colorHex) {
-      errors.colorHex = 'Color hex is required.'
-    }
+
     const parsedPrice = form.price ? Number(form.price.replace(/,/g, '')) : null
     if (!parsedPrice || isNaN(parsedPrice) || parsedPrice <= 0) {
       errors.price = 'Selling price must be greater than 0.'
@@ -417,6 +519,7 @@ export default function VariantsPage() {
     setFormFieldErrors(errors)
     return Object.keys(errors).length === 0 ? null : errors
   }
+
 
   return (
     <div className="space-y-6">
@@ -592,8 +695,17 @@ export default function VariantsPage() {
                       <div className="flex gap-2">
                         <button
                           type="button"
+                          onClick={() => openClone(item)}
+                          className="rounded border border-[var(--line)] p-1.5 text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+                          title="Clone / Add size for this variant"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => openEdit(item)}
                           className="rounded border border-[var(--line)] p-1.5 text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+                          title="Edit variant"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                         </button>
@@ -601,6 +713,7 @@ export default function VariantsPage() {
                           type="button"
                           onClick={() => setDeleteTarget(item)}
                           className="rounded border border-red-200 p-1.5 text-red-600 transition-colors hover:bg-red-50"
+                          title="Delete variant"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -681,8 +794,30 @@ export default function VariantsPage() {
                                 </td>
                                 <td className="border border-[var(--line)] px-4 py-2.5">
                                   <div className="flex gap-2">
-                                    <button type="button" onClick={() => openEdit(v)} className="rounded border border-[var(--line)] p-1.5 text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"><Edit3 className="h-3.5 w-3.5" /></button>
-                                    <button type="button" onClick={() => setDeleteTarget(v)} className="rounded border border-red-200 p-1.5 text-red-600 transition-colors hover:bg-red-50"><Trash2 className="h-3.5 w-3.5" /></button>
+                                    <button
+                                      type="button"
+                                      onClick={() => openClone(v)}
+                                      className="rounded border border-[var(--line)] p-1.5 text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+                                      title="Clone / Add size for this variant"
+                                    >
+                                      <Copy className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => openEdit(v)}
+                                      className="rounded border border-[var(--line)] p-1.5 text-[var(--gold)] transition-colors hover:bg-[var(--burgundy-soft)]"
+                                      title="Edit variant"
+                                    >
+                                      <Edit3 className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeleteTarget(v)}
+                                      className="rounded border border-red-200 p-1.5 text-red-600 transition-colors hover:bg-red-50"
+                                      title="Delete variant"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -741,6 +876,62 @@ export default function VariantsPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
+
+            {/* Quick Clone Banner when adding a variant */}
+            {!editingVariant && cloneVariants.length > 0 && (
+              <div className="mb-4 rounded-lg border border-[var(--gold)]/40 bg-[var(--burgundy-soft)]/20 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Copy className="h-4 w-4 text-[var(--gold)]" />
+                    <span className="text-xs font-semibold text-[var(--text)]">Adding another size? Clone from existing variant:</span>
+                  </div>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowClonePicker(o => !o)}
+                      className="inline-flex items-center gap-1.5 rounded border border-[var(--gold)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--burgundy)] shadow-sm hover:bg-[var(--burgundy-soft)]"
+                    >
+                      <span>{clonedGalleryUrls.length > 0 ? `Cloned (${clonedGalleryUrls.length} gallery images)` : 'Select Variant to Clone'}</span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                    {showClonePicker && (
+                      <div ref={cloneRef} className="absolute right-0 top-full z-50 mt-1 max-h-56 w-72 overflow-y-auto rounded-lg border border-[var(--line)] bg-white p-1 shadow-2xl">
+                        {cloneVariants.map((v: any) => {
+                          const imgCount = v.images?.length || 0
+                          return (
+                            <button
+                              type="button"
+                              key={v.id}
+                              onClick={() => {
+                                applyCloneVariant(v)
+                                setShowClonePicker(false)
+                              }}
+                              className="flex w-full items-center gap-2 rounded px-2.5 py-2 text-left text-xs hover:bg-[var(--burgundy-soft)]"
+                            >
+                              {v.colorHex ? (
+                                <span className="h-3.5 w-3.5 shrink-0 rounded-full border border-gray-300" style={{ backgroundColor: v.colorHex }} />
+                              ) : null}
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-medium text-gray-900">{v.colorName || v.size || v.label}</p>
+                                {v.size && <p className="text-[10px] text-gray-400">Size: {v.size}</p>}
+                              </div>
+                              {imgCount > 0 && (
+                                <span className="shrink-0 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700">
+                                  {imgCount} img{imgCount > 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {v.imageUrl && (
+                                <img src={resolveImageUrl(v.imageUrl)} alt="" className="h-7 w-7 shrink-0 rounded object-cover" />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {formErrors && (
               <div className="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -804,6 +995,28 @@ export default function VariantsPage() {
           </button>
         )}
       </div>
+      {!editingVariant && (() => {
+        const match = cloneVariants.find(
+          (v: any) => v.colorName && form.colorName.trim() &&
+          v.colorName.trim().toLowerCase() === form.colorName.trim().toLowerCase()
+        )
+        if (match && clonedGalleryUrls.length === 0) {
+          const count = (match as any).images?.length || 0
+          return (
+            <div className="mt-1 flex items-center justify-between rounded bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 border border-amber-200">
+              <span>"{(match as any).colorName}" already exists on this product ({count} gallery image{count !== 1 ? 's' : ''}).</span>
+              <button
+                type="button"
+                onClick={() => applyCloneVariant(match)}
+                className="font-bold underline text-[var(--burgundy)] hover:text-black ml-2"
+              >
+                Copy Images & Details
+              </button>
+            </div>
+          )
+        }
+        return null
+      })()}
       {showClonePicker && cloneVariants.length > 0 && (
         <div ref={cloneRef} className="rounded border border-[var(--line)] bg-white shadow-lg max-h-48 overflow-y-auto mt-1">
           {cloneVariants.map((v: any) => (
@@ -811,25 +1024,23 @@ export default function VariantsPage() {
               type="button"
               key={v.id}
               onClick={() => {
-                setForm(f => ({
-                  ...f,
-                  colorName: v.colorName || '',
-                  colorHex: v.colorHex || '#000000',
-                  size: v.size || f.size,
-                  sku: v.sku || f.sku,
-                  price: v.price != null ? String(v.price) : f.price,
-                  originalPrice: v.originalPrice != null ? String(v.originalPrice) : f.originalPrice,
-                  stockQty: String(v.stockQty ?? f.stockQty),
-                  lowStockThreshold: String(v.lowStockThreshold ?? f.lowStockThreshold),
-                  gstRate: v.gstRate != null ? String(v.gstRate) : f.gstRate,
-                  imageUrl: v.imageUrl || '',
-                }))
+                applyCloneVariant(v)
                 setShowClonePicker(false)
               }}
               className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-[var(--burgundy-soft)] transition-colors"
             >
-              {v.colorHex && <span className="inline-block h-3 w-3 shrink-0 rounded-full border border-[var(--line)]" style={{ backgroundColor: v.colorHex }} />}
-              <span className="font-medium">{v.colorName}</span>
+              {v.colorHex ? (
+                <span className="inline-block h-3 w-3 shrink-0 rounded-full border border-[var(--line)]" style={{ backgroundColor: v.colorHex }} />
+              ) : (
+                <span className="inline-block px-1 rounded bg-gray-100 text-[10px] font-bold text-gray-700">Size</span>
+              )}
+              <span className="font-medium">{v.colorName || v.size || v.label || `Variant #${v.id}`}</span>
+              {v.size && v.colorName && <span className="text-[10px] text-[var(--muted)]">({v.size})</span>}
+              {v.images?.length > 0 && (
+                <span className="text-[10px] font-semibold text-violet-600 bg-violet-50 px-1 py-0.5 rounded">
+                  {v.images.length} gallery
+                </span>
+              )}
               {v.imageUrl && <img src={resolveImageUrl(v.imageUrl)} alt="" className="h-8 w-8 shrink-0 rounded object-cover ml-auto" />}
               <ChevronDown className="h-3 w-3 text-[var(--muted)]" />
             </button>
@@ -1100,6 +1311,11 @@ export default function VariantsPage() {
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
                         Gallery Images <span className="font-normal text-gray-400">(optional)</span>
+                        {clonedGalleryUrls.length > 0 && (
+                          <span className="ml-2 inline-flex items-center gap-1 rounded bg-purple-100 px-2 py-0.5 text-[11px] font-bold text-purple-700">
+                            <Check className="h-3 w-3" /> {clonedGalleryUrls.length} cloned image{clonedGalleryUrls.length !== 1 ? 's' : ''} ready to save
+                          </span>
+                        )}
                       </label>
                       <button
                         type="button"
@@ -1124,13 +1340,31 @@ export default function VariantsPage() {
                         }}
                       />
                     </div>
-                    {pendingGalleryPreviews.length > 0 ? (
+                    {clonedGalleryUrls.length > 0 || pendingGalleryPreviews.length > 0 ? (
                       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                        {/* Cloned gallery images */}
+                        {clonedGalleryUrls.map((url, idx) => (
+                          <div key={`cloned-${idx}`} className="group relative overflow-hidden rounded border border-[var(--line)] bg-[var(--line)]">
+                            <img src={resolveImageUrl(url)} alt={`Cloned Gallery ${idx + 1}`} className="aspect-auto max-h-48 w-full object-contain" />
+                            <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-2 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              <span className="text-[10px] text-white">Cloned #{idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => setClonedGalleryUrls(prev => prev.filter((_, i) => i !== idx))}
+                                className="text-[10px] font-semibold text-red-400 hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Newly added pending files */}
                         {pendingGalleryPreviews.map((preview, idx) => (
-                          <div key={idx} className="group relative overflow-hidden rounded border border-[var(--line)] bg-[var(--line)]">
+                          <div key={`pending-${idx}`} className="group relative overflow-hidden rounded border border-[var(--line)] bg-[var(--line)]">
                             <img src={preview} alt={`Gallery Preview ${idx + 1}`} className="aspect-auto max-h-48 w-full object-contain" />
                             <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 px-2 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-                              <span className="text-[10px] text-white">#{idx + 1}</span>
+                              <span className="text-[10px] text-white">#{clonedGalleryUrls.length + idx + 1}</span>
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1279,8 +1513,47 @@ export default function VariantsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex h-32 items-center justify-center rounded border border-dashed border-[var(--line)]">
-                        <p className="text-sm text-[var(--muted)]">No gallery images uploaded yet.</p>
+                      <div className="space-y-3">
+                        <div className="flex h-24 items-center justify-center rounded border border-dashed border-[var(--line)]">
+                          <p className="text-sm text-[var(--muted)]">No gallery images uploaded yet.</p>
+                        </div>
+                        {editingVariant && form.colorName && (() => {
+                          const sibling: any = (cloneVariantsData?.items || items || []).find(
+                            (x: any) => x.id !== editingVariant.id &&
+                            x.colorName && x.colorName.trim().toLowerCase() === form.colorName.trim().toLowerCase() &&
+                            (x.images?.length || 0) > 0
+                          )
+                          if (sibling) {
+                            const count = (sibling.images as any[])?.length || 0
+                            return (
+                              <div className="flex items-center justify-between rounded-lg border border-purple-200 bg-purple-50/70 p-3 text-xs text-purple-900">
+                                <div>
+                                  <p className="font-semibold">Found {count} gallery images in "{sibling.colorName} ({sibling.size || 'Base'})".</p>
+                                  <p className="text-[11px] text-purple-700">Want to copy them to this variant?</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const pid = productId ?? Number(form.productId)
+                                    const urls = ((sibling.images as any[]) || []).map((img: any) => img.imageUrl).filter(Boolean)
+                                    try {
+                                      await updateVariant(pid, editingVariant.id, { variantImages: urls })
+                                      invalidate()
+                                      setVariantImages(sibling.images as any[])
+                                      setSuccessMsg(`Copied ${count} gallery images successfully!`)
+                                    } catch (err: any) {
+                                      setImageError(err.message || 'Failed to copy gallery images.')
+                                    }
+                                  }}
+                                  className="rounded bg-purple-700 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-purple-800 transition-colors"
+                                >
+                                  Copy {count} Gallery Images
+                                </button>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     )}
                   </div>
