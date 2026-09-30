@@ -14,6 +14,8 @@ import {
   RotateCcw,
   Sparkles,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Share2,
 } from 'lucide-react'
 import ProductCard, { type ProductCardProduct } from '@/components/product/ProductCard'
@@ -84,6 +86,25 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
       behavior: 'smooth',
     })
     setMobileActiveIdx(idx)
+  }
+
+  // Desktop Thumbnails Vertical Scroll State
+  const desktopThumbnailRef = useRef<HTMLDivElement>(null)
+  const [canScrollUp, setCanScrollUp] = useState(false)
+  const [canScrollDown, setCanScrollDown] = useState(false)
+
+  const checkThumbnailScroll = () => {
+    if (!desktopThumbnailRef.current) return
+    const { scrollTop, scrollHeight, clientHeight } = desktopThumbnailRef.current
+    setCanScrollUp(scrollTop > 5)
+    setCanScrollDown(scrollTop + clientHeight < scrollHeight - 5)
+  }
+
+  const scrollThumbnails = (direction: 'up' | 'down') => {
+    if (!desktopThumbnailRef.current) return
+    const amount = direction === 'up' ? -140 : 140
+    desktopThumbnailRef.current.scrollBy({ top: amount, behavior: 'smooth' })
+    setTimeout(checkThumbnailScroll, 300)
   }
 
   useEffect(() => {
@@ -204,6 +225,10 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
       setMobileActiveIdx(0)
       if (mobileScrollRef.current) {
         mobileScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' })
+      }
+      if (desktopThumbnailRef.current) {
+        desktopThumbnailRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+        setTimeout(checkThumbnailScroll, 100)
       }
     }
   }, [displayImages])
@@ -510,37 +535,82 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
 
             {/* Desktop: Luxury Portrait Viewport + Left Vertical Thumbnail Strip */}
             <div className="hidden lg:flex gap-3 xl:gap-4 items-start justify-center">
-              {/* Vertical Thumbnails List */}
+              {/* Vertical Thumbnails List — strictly bounded to main image height */}
               {displayImages.length > 1 && (
-                <div className="flex flex-col gap-2 shrink-0 w-14 lg:w-16 h-[340px] lg:h-[370px] xl:h-[410px] overflow-y-auto scrollbar-hide py-0.5">
-                  {displayImages.map((image, index) => {
-                    const isActive = (mainImage || displayImages[0]) === image
-                    return (
-                      <button
-                        key={image + index}
-                        type="button"
-                        onClick={() => setMainImage(image)}
-                        onMouseEnter={() => setMainImage(image)}
-                        className={`relative aspect-[3/4] w-full rounded-lg overflow-hidden border-2 transition-all duration-200 bg-[#FAF6EE] group cursor-pointer ${
-                          isActive 
-                            ? 'border-[#6B1A2A] shadow-md ring-1 ring-[#6B1A2A]/25 scale-[1.02]' 
-                            : 'border-[#EFE8DA] hover:border-[#D9B86E] opacity-75 hover:opacity-100'
-                        }`}
-                        aria-label={`View image ${index + 1}`}
-                      >
-                        <img
-                          src={resolveImageUrl(image)}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="w-full h-full object-contain p-0.5 transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </button>
-                    )
-                  })}
+                <div className="flex flex-col items-center justify-between shrink-0 w-14 lg:w-16 h-[340px] lg:h-[370px] xl:h-[410px] relative">
+                  {/* Up Scroll Button (shown when there are many images) */}
+                  {displayImages.length > 4 && (
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails('up')}
+                      disabled={!canScrollUp}
+                      className={`w-full py-0.5 flex items-center justify-center rounded transition-all duration-200 ${
+                        canScrollUp 
+                          ? 'text-[#6B1A2A] hover:bg-[#6B1A2A]/10 cursor-pointer opacity-100' 
+                          : 'text-gray-300 cursor-default opacity-0 pointer-events-none'
+                      }`}
+                      aria-label="Scroll thumbnails up"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {/* Scrollable Thumbnails Container */}
+                  <div
+                    ref={desktopThumbnailRef}
+                    onScroll={checkThumbnailScroll}
+                    className="flex-1 w-full flex flex-col gap-1.5 overflow-y-auto scrollbar-hide py-0.5 scroll-smooth"
+                  >
+                    {displayImages.map((image, index) => {
+                      const isActive = (mainImage || displayImages[0]) === image
+                      return (
+                        <button
+                          key={image + index}
+                          type="button"
+                          onClick={() => {
+                            setMainImage(image)
+                            const el = desktopThumbnailRef.current?.children[index] as HTMLElement | undefined
+                            el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                          }}
+                          onMouseEnter={() => setMainImage(image)}
+                          className={`relative aspect-[3/4] w-full rounded-md overflow-hidden border-2 transition-all duration-200 bg-[#FAF6EE] shrink-0 group cursor-pointer ${
+                            isActive 
+                              ? 'border-[#6B1A2A] shadow-md ring-1 ring-[#6B1A2A]/25 scale-[1.02]' 
+                              : 'border-[#EFE8DA] hover:border-[#D9B86E] opacity-75 hover:opacity-100'
+                          }`}
+                          aria-label={`View image ${index + 1}`}
+                        >
+                          <img
+                            src={resolveImageUrl(image)}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-full object-contain p-0.5 transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Down Scroll Button (shown when there are many images) */}
+                  {displayImages.length > 4 && (
+                    <button
+                      type="button"
+                      onClick={() => scrollThumbnails('down')}
+                      disabled={!canScrollDown}
+                      className={`w-full py-0.5 flex items-center justify-center rounded transition-all duration-200 ${
+                        canScrollDown 
+                          ? 'text-[#6B1A2A] hover:bg-[#6B1A2A]/10 cursor-pointer opacity-100' 
+                          : 'text-gray-300 cursor-default opacity-0 pointer-events-none'
+                      }`}
+                      aria-label="Scroll thumbnails down"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               )}
 
               {/* Main Portrait Viewport */}
-              <div className="relative aspect-[3/4] h-[340px] lg:h-[370px] xl:h-[410px] w-auto rounded-xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_4px_20px_rgba(107,26,42,0.06)] group flex items-center justify-center">
+              <div className="relative aspect-[3/4] h-[340px] lg:h-[370px] xl:h-[410px] w-auto rounded-xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_4px_20px_rgba(107,26,42,0.06)] group flex items-center justify-center shrink-0">
                 <img
                   src={resolveImageUrl(mainImage || displayImages[0])}
                   alt={product.name}
