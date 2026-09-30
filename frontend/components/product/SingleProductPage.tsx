@@ -534,17 +534,17 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
             )}
 
             {/* Desktop: Luxury Portrait Viewport + Left Vertical Thumbnail Strip */}
-            <div className="hidden lg:flex gap-3 xl:gap-4 items-start justify-center">
+            <div className="hidden lg:flex gap-3 xl:gap-4 items-start">
               {/* Vertical Thumbnails List — strictly bounded to main image height */}
               {displayImages.length > 1 && (
-                <div className="flex flex-col items-center justify-between shrink-0 w-14 lg:w-16 h-[340px] lg:h-[370px] xl:h-[410px] relative">
+                <div className="flex flex-col items-center justify-between shrink-0 w-16 lg:w-18 xl:w-20 h-[420px] lg:h-[450px] xl:h-[480px] relative">
                   {/* Up Scroll Button (shown when there are many images) */}
                   {displayImages.length > 4 && (
                     <button
                       type="button"
                       onClick={() => scrollThumbnails('up')}
                       disabled={!canScrollUp}
-                      className={`w-full py-0.5 flex items-center justify-center rounded transition-all duration-200 ${
+                      className={`w-full py-1 flex items-center justify-center rounded transition-all duration-200 ${
                         canScrollUp 
                           ? 'text-[#6B1A2A] hover:bg-[#6B1A2A]/10 cursor-pointer opacity-100' 
                           : 'text-gray-300 cursor-default opacity-0 pointer-events-none'
@@ -559,7 +559,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                   <div
                     ref={desktopThumbnailRef}
                     onScroll={checkThumbnailScroll}
-                    className="flex-1 w-full flex flex-col gap-1.5 overflow-y-auto scrollbar-hide py-0.5 scroll-smooth"
+                    className="flex-1 w-full flex flex-col gap-2 overflow-y-auto scrollbar-hide py-1 scroll-smooth"
                   >
                     {displayImages.map((image, index) => {
                       const isActive = (mainImage || displayImages[0]) === image
@@ -573,7 +573,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                             el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
                           }}
                           onMouseEnter={() => setMainImage(image)}
-                          className={`relative aspect-[3/4] w-full rounded-md overflow-hidden border-2 transition-all duration-200 bg-[#FAF6EE] shrink-0 group cursor-pointer ${
+                          className={`relative aspect-[3/4] w-full rounded-lg overflow-hidden border-2 transition-all duration-200 bg-[#FAF6EE] shrink-0 group cursor-pointer ${
                             isActive 
                               ? 'border-[#6B1A2A] shadow-md ring-1 ring-[#6B1A2A]/25 scale-[1.02]' 
                               : 'border-[#EFE8DA] hover:border-[#D9B86E] opacity-75 hover:opacity-100'
@@ -596,7 +596,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                       type="button"
                       onClick={() => scrollThumbnails('down')}
                       disabled={!canScrollDown}
-                      className={`w-full py-0.5 flex items-center justify-center rounded transition-all duration-200 ${
+                      className={`w-full py-1 flex items-center justify-center rounded transition-all duration-200 ${
                         canScrollDown 
                           ? 'text-[#6B1A2A] hover:bg-[#6B1A2A]/10 cursor-pointer opacity-100' 
                           : 'text-gray-300 cursor-default opacity-0 pointer-events-none'
@@ -609,8 +609,8 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                 </div>
               )}
 
-              {/* Main Portrait Viewport */}
-              <div className="relative aspect-[3/4] h-[340px] lg:h-[370px] xl:h-[410px] w-auto rounded-xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_4px_20px_rgba(107,26,42,0.06)] group flex items-center justify-center shrink-0">
+              {/* Main Portrait Viewport — Fills the section cleanly and properly */}
+              <div className="flex-1 relative aspect-[3/4] h-[420px] lg:h-[450px] xl:h-[480px] max-w-[440px] lg:max-w-[480px] xl:max-w-[520px] rounded-2xl overflow-hidden border border-[#EFE8DA] bg-[#FAF6EE] shadow-[0_4px_25px_rgba(107,26,42,0.06)] group flex items-center justify-center">
                 <img
                   src={resolveImageUrl(mainImage || displayImages[0])}
                   alt={product.name}
