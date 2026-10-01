@@ -156,7 +156,7 @@ export default function Header() {
               src="/logo.png" 
               alt="Soil Goddess" 
               width={260} 
-              height={180} 
+              height={116} 
               unoptimized
               className="object-contain w-auto h-auto max-h-[58px] sm:max-h-[66px]" 
               priority 
@@ -273,7 +273,7 @@ export default function Header() {
 
       {/* Desktop Top row */}
       <div
-        className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[152px]"
+        className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[242px]"
       >
         {/* Search */}
         <div className="flex-1 flex justify-start items-center z-10">
@@ -283,15 +283,21 @@ export default function Header() {
         </div>
 
         {/* Logo — Exact Original Prominent Luxury Dimensions */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-[150] pointer-events-none">
           <Link href="/" className="flex items-center justify-center no-underline flex-shrink-0 pointer-events-auto">
             <Image 
               src="/logo.png" 
               alt="Soil Goddess" 
-              width={600} 
-              height={480} 
+              width={1024} 
+              height={394} 
               unoptimized
-              className="object-contain w-auto h-[115px] xl:h-[128px]" 
+              style={{ 
+                height: '269px', 
+                width: 'auto', 
+                paddingRight: '41px',
+                filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
+              }} 
+              className="object-contain" 
               priority 
             />
           </Link>

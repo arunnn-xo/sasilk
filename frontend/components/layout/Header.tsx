@@ -156,7 +156,7 @@ export default function Header() {
               src="/logo.png" 
               alt="Soil Goddess" 
               width={260} 
-              height={180} 
+              height={116} 
               unoptimized
               className="object-contain w-auto h-auto max-h-[58px] sm:max-h-[66px]" 
               priority 
@@ -288,12 +288,13 @@ export default function Header() {
             <Image 
               src="/logo.png" 
               alt="Soil Goddess" 
-              width={600} 
-              height={480} 
+              width={1024} 
+              height={394} 
               unoptimized
               style={{ 
-                height: '270px', 
+                height: '269px', 
                 width: 'auto', 
+                paddingRight: '41px',
                 filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
               }} 
               className="object-contain" 
