@@ -273,7 +273,7 @@ export default function Header() {
 
       {/* Desktop Top row */}
       <div
-        className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[152px]"
+        className="hidden lg:flex w-full px-6 xl:px-10 items-center justify-between relative h-[242px]"
       >
         {/* Search */}
         <div className="flex-1 flex justify-start items-center z-10">
@@ -283,7 +283,7 @@ export default function Header() {
         </div>
 
         {/* Logo — Exact Original Prominent Luxury Dimensions */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center z-[150] pointer-events-none">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-[150] pointer-events-none">
           <Link href="/" className="flex items-center justify-center no-underline flex-shrink-0 pointer-events-auto">
             <Image 
               src="/logo.png" 
@@ -292,7 +292,7 @@ export default function Header() {
               height={480} 
               unoptimized
               style={{ 
-                height: '173px', 
+                height: '270px', 
                 width: 'auto', 
                 filter: 'drop-shadow(0px 4px 16px rgba(107,26,42,0.18)) contrast(1.08)'
               }} 
