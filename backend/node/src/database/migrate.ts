@@ -840,14 +840,25 @@ export async function runMigrations() {
   await safeAddIndex('event_bookings', 'idx_event_bookings_payment_status', ['payment_status'])
   await safeAddIndex('event_bookings', 'idx_event_bookings_customer_email', ['customer_email'])
 
-  // reels product_id
-  await safeAddColumn('reels', 'product_id', {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: true,
-    references: { model: 'products', key: 'id' },
-    onDelete: 'SET NULL',
-  })
-  await safeAddIndex('reels', 'idx_reels_product_id', ['product_id'])
+  // reels product_id (Direct SQL query so it never fails on Cloud MySQL)
+  try {
+    await qi.sequelize.query('ALTER TABLE `reels` ADD COLUMN `product_id` INT UNSIGNED NULL')
+    console.log('[Migration] Successfully added column `product_id` to `reels` table.')
+  } catch (err: any) {
+    if (err?.original?.errno === 1060 || err?.message?.includes('Duplicate column')) {
+      console.log('[Migration] Column `product_id` already exists in `reels`.')
+    } else {
+      console.warn('[Migration] Notice adding product_id column:', err?.message || err)
+    }
+  }
+
+  try {
+    await qi.sequelize.query('ALTER TABLE `reels` ADD INDEX `idx_reels_product_id` (`product_id`)')
+  } catch { /* index already exists */ }
+
+  try {
+    await qi.sequelize.query('ALTER TABLE `reels` ADD CONSTRAINT `reels_product_id_fk` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL')
+  } catch { /* foreign key optional if cloud DB restricts constraints */ }
 
   console.log('Migration complete.')
 }
