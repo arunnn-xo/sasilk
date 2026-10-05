@@ -545,7 +545,7 @@ export const listResource = async (req: Request, res: Response) => {
             model: Product,
             as: 'product',
             attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
-            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'isPrimary'] }],
+            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'sortOrder'] }],
             required: false,
           }]
         : undefined
@@ -702,7 +702,7 @@ export const getResourceById = async (req: Request, res: Response) => {
             model: Product,
             as: 'product',
             attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
-            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'isPrimary'] }],
+            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'sortOrder'] }],
             required: false,
           }]
         : undefined

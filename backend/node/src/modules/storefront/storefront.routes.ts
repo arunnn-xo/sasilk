@@ -61,27 +61,37 @@ router.get('/intro-video', asyncHandler(catalogController.getIntroVideoConfigura
 /* ── Reels Route ─── */
 router.get('/reels', asyncHandler(async (_req, res) => {
   const { Reel, Product, ProductImage } = await import('../../models/index.js')
-  const reels = await Reel.findAll({
-    where: { active: true },
-    attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder', 'productId'],
-    include: [
-      {
-        model: Product,
-        as: 'product',
-        attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
-        include: [
-          {
-            model: ProductImage,
-            as: 'images',
-            attributes: ['id', 'imageUrl', 'isPrimary', 'sortOrder'],
-          },
-        ],
-        required: false,
-      },
-    ],
-    order: [['sortOrder', 'ASC'], ['id', 'ASC']],
-  })
-  res.json({ reels })
+  try {
+    const reels = await Reel.findAll({
+      where: { active: true },
+      attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder', 'productId'],
+      include: [
+        {
+          model: Product,
+          as: 'product',
+          attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
+          include: [
+            {
+              model: ProductImage,
+              as: 'images',
+              attributes: ['id', 'imageUrl', 'sortOrder'],
+            },
+          ],
+          required: false,
+        },
+      ],
+      order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+    })
+    return res.json({ reels })
+  } catch (err: any) {
+    console.error('[Storefront Reels] Product include query failed, falling back to basic reels:', err?.message)
+    const basicReels = await Reel.findAll({
+      where: { active: true },
+      attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder'],
+      order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+    })
+    return res.json({ reels: basicReels })
+  }
 }))
 
 /* ── Order / Payment / Shipping Routes ─── */
