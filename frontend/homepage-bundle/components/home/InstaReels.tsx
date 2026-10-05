@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperType } from 'swiper'
 import { EffectCoverflow, Pagination, Autoplay, Navigation } from 'swiper/modules'
-import { Play, Pause, Eye, X, ChevronLeft, ChevronRight, Volume2, VolumeX, ShoppingBag } from 'lucide-react'
+import { Play, Eye, X, ChevronLeft, ChevronRight, Volume2, VolumeX, ShoppingBag } from 'lucide-react'
 import { fetchReels } from '@/lib/api/storefront'
 import { resolveImageUrl } from '@/lib/api/client'
 import type { StorefrontReel } from '@/lib/api/types'
@@ -241,14 +241,28 @@ export default function InstaReels() {
 
                     {/* Attached Product Pill or Brand Watermark */}
                     {reel.product ? (
-                      <div className="absolute bottom-3 left-2.5 right-2.5 z-10 pointer-events-none">
-                        <div className="bg-black/75 backdrop-blur-md border border-[#D9B86E]/40 rounded-full px-2.5 py-1 flex items-center gap-1.5 text-white shadow-lg max-w-full">
-                          <ShoppingBag size={11} className="text-[#D9B86E] shrink-0" />
-                          <span className="text-[10px] font-semibold truncate flex-1">{reel.product.name}</span>
+                      <div className="absolute bottom-3 left-2.5 right-2.5 z-10">
+                        <Link
+                          href={`/products/${reel.product.slug || reel.product.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-black/80 hover:bg-black/95 backdrop-blur-md border border-[#D9B86E]/50 hover:border-[#D9B86E] rounded-full px-2.5 py-1.5 flex items-center gap-1.5 text-white shadow-lg max-w-full group/pill transition-all cursor-pointer no-underline"
+                        >
+                          {reel.product.imageUrl || reel.product.images?.[0]?.imageUrl ? (
+                            <img
+                              src={resolveImageUrl(reel.product.imageUrl || reel.product.images?.[0]?.imageUrl || '')}
+                              alt={reel.product.name}
+                              className="w-4 h-4 rounded-full object-cover border border-[#D9B86E]/70 shrink-0"
+                            />
+                          ) : (
+                            <ShoppingBag size={11} className="text-[#D9B86E] shrink-0" />
+                          )}
+                          <span className="text-[10px] font-medium truncate flex-1 group-hover/pill:text-[#D9B86E] transition-colors">
+                            {reel.product.name}
+                          </span>
                           <span className="text-[10px] font-bold text-[#D9B86E] shrink-0">
                             ₹{Number(reel.product.price).toLocaleString('en-IN')}
                           </span>
-                        </div>
+                        </Link>
                       </div>
                     ) : (
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none">
@@ -270,37 +284,37 @@ export default function InstaReels() {
 
       {/* --- 3D COVERFLOW FULLSCREEN MODAL (Infinite Loop & Active Center Video Playback) --- */}
       {activeSlideIndex !== null && (
-        <div className="fixed inset-0 z-[200] bg-[#103042]/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[200] bg-[#103042]/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-300 p-2 sm:p-4">
           {/* Subtle Background Pattern */}
           <div className="absolute inset-0 opacity-[0.05] bg-[url('/borderdesign/flower-motif.png')] bg-repeat bg-[length:150px] pointer-events-none z-0"></div>
 
           {/* Close Button */}
           <button
             onClick={() => setActiveSlideIndex(null)}
-            className="absolute top-6 right-6 md:top-10 md:right-10 z-[250] w-12 h-12 bg-[#D9B86E]/10 hover:bg-[#D9B86E]/20 backdrop-blur-md border border-[#D9B86E]/30 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 cursor-pointer"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-[250] w-10 h-10 sm:w-12 sm:h-12 bg-[#D9B86E]/10 hover:bg-[#D9B86E]/20 backdrop-blur-md border border-[#D9B86E]/30 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 cursor-pointer"
             aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={22} className="sm:w-6 sm:h-6" />
           </button>
 
           {/* Navigation Buttons */}
           <button
             onClick={() => modalSwiperRef.current?.slidePrev()}
-            className="reels-prev absolute left-4 md:left-12 top-1/2 -translate-y-1/2 z-[250] w-12 h-12 md:w-16 md:h-16 bg-[#D9B86E]/10 hover:bg-[#D9B86E]/20 backdrop-blur-md border border-[#D9B86E]/30 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 shadow-lg cursor-pointer"
+            className="reels-prev absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-[250] w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-[#D9B86E]/15 hover:bg-[#D9B86E]/25 backdrop-blur-md border border-[#D9B86E]/40 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 shadow-lg cursor-pointer"
             aria-label="Previous reel"
           >
-            <ChevronLeft size={32} />
+            <ChevronLeft size={26} className="sm:w-8 sm:h-8" />
           </button>
 
           <button
             onClick={() => modalSwiperRef.current?.slideNext()}
-            className="reels-next absolute right-4 md:right-12 top-1/2 -translate-y-1/2 z-[250] w-12 h-12 md:w-16 md:h-16 bg-[#D9B86E]/10 hover:bg-[#D9B86E]/20 backdrop-blur-md border border-[#D9B86E]/30 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 shadow-lg cursor-pointer"
+            className="reels-next absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 z-[250] w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-[#D9B86E]/15 hover:bg-[#D9B86E]/25 backdrop-blur-md border border-[#D9B86E]/40 rounded-full flex items-center justify-center text-[#D9B86E] transition-all hover:scale-110 shadow-lg cursor-pointer"
             aria-label="Next reel"
           >
-            <ChevronRight size={32} />
+            <ChevronRight size={26} className="sm:w-8 sm:h-8" />
           </button>
 
-          <div className="w-full max-w-[1200px] h-[75vh] md:h-[85vh] relative flex items-center justify-center z-10">
+          <div className="w-full max-w-[1200px] h-[75vh] md:h-[82vh] max-h-[680px] min-h-[380px] relative flex items-center justify-center z-10">
             <Swiper
               key={`coverflow-modal-${activeSlideIndex}`}
               effect={'coverflow'}
@@ -314,13 +328,13 @@ export default function InstaReels() {
               coverflowEffect={{
                 rotate: 0,
                 stretch: 0,
-                depth: 200,
+                depth: 180,
                 modifier: 2,
                 slideShadows: true,
               }}
               pagination={{ clickable: true, dynamicBullets: true }}
               modules={[EffectCoverflow, Pagination, Navigation]}
-              className="w-full h-full pt-10 pb-16"
+              className="w-full h-full pt-2 pb-10 sm:pb-12 flex items-center"
               onSwiper={(swiper) => {
                 modalSwiperRef.current = swiper
                 if (activeSlideIndex !== null) {
@@ -343,7 +357,7 @@ export default function InstaReels() {
               {modalSlides.map((reel) => (
                 <SwiperSlide
                   key={reel.uniqueKey}
-                  className="!w-[280px] sm:!w-[340px] md:!w-[420px] !h-[500px] sm:!h-[600px] md:!h-[720px] rounded-2xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] bg-black border border-white/10 relative select-none"
+                  className="group !h-[58vh] sm:!h-[65vh] md:!h-[70vh] max-h-[580px] min-h-[340px] !w-[calc(58vh*9/16)] sm:!w-[calc(65vh*9/16)] md:!w-[calc(70vh*9/16)] max-w-[330px] min-w-[195px] aspect-[9/16] rounded-2xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.7)] bg-black border border-white/15 relative select-none"
                 >
                   <div
                     className="w-full h-full relative block cursor-pointer"
@@ -383,9 +397,15 @@ export default function InstaReels() {
                     )}
 
                     {/* Views Badge (top-left) */}
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/20 pointer-events-none z-20">
-                      <Eye size={15} />
-                      {reel.views}
+                    <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-black/60 backdrop-blur-md text-white text-xs sm:text-sm font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full flex items-center gap-1.5 border border-white/20 pointer-events-none z-20">
+                      <Eye size={14} />
+                      <span>{reel.views}</span>
+                      {reel.product && (
+                        <>
+                          <span className="w-1 h-1 rounded-full bg-[#D9B86E]"></span>
+                          <ShoppingBag size={12} className="text-[#D9B86E]" />
+                        </>
+                      )}
                     </div>
 
                     {/* Audio Mute/Unmute Toggle (top-right) */}
@@ -396,26 +416,26 @@ export default function InstaReels() {
                           e.stopPropagation()
                           toggleMute()
                         }}
-                        className="absolute top-4 right-4 z-30 w-10 h-10 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white rounded-full flex items-center justify-center border border-white/20 transition-transform hover:scale-110 cursor-pointer"
+                        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 w-9 h-9 sm:w-10 sm:h-10 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white rounded-full flex items-center justify-center border border-white/20 transition-transform hover:scale-110 cursor-pointer"
                         aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
                       >
-                        {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                        {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
                       </button>
                     )}
 
                     {/* Attached Product Card or Brand Watermark */}
                     {reel.product ? (
                       <div
-                        className="absolute bottom-4 left-3 right-3 sm:bottom-6 sm:left-4 sm:right-4 z-30"
+                        className="absolute bottom-3 left-2 right-2 sm:bottom-4 sm:left-3 sm:right-3 z-30 transition-all duration-300 pointer-events-none group-[.swiper-slide-active]:pointer-events-auto opacity-75 group-[.swiper-slide-active]:opacity-100"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="bg-black/80 hover:bg-black/90 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-[#D9B86E]/40 shadow-[0_12px_30px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 transition-colors">
+                        <div className="bg-[#103042]/95 hover:bg-[#103042] backdrop-blur-md rounded-xl sm:rounded-2xl p-2 sm:p-2.5 border border-[#D9B86E]/50 hover:border-[#D9B86E] shadow-[0_12px_32px_rgba(0,0,0,0.85)] flex items-center justify-between gap-2 sm:gap-2.5 transition-all">
                           <Link
                             href={`/products/${reel.product.slug || reel.product.id}`}
-                            className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 group/prod no-underline"
+                            className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 group/prod no-underline"
                           >
                             {/* Product Thumbnail */}
-                            <div className="relative h-12 w-10 sm:h-14 sm:w-12 rounded-lg overflow-hidden border border-[#D9B86E]/40 bg-zinc-900 shrink-0">
+                            <div className="relative h-11 w-10 sm:h-13 sm:w-12 rounded-lg overflow-hidden border border-[#D9B86E]/50 bg-black/50 shrink-0">
                               <img
                                 src={resolveImageUrl(reel.product.imageUrl || reel.product.images?.[0]?.imageUrl || '')}
                                 alt={reel.product.name}
@@ -428,19 +448,19 @@ export default function InstaReels() {
 
                             {/* Product Info */}
                             <div className="min-w-0 flex-1 text-left">
-                              <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#D9B86E]">
-                                <ShoppingBag size={11} className="shrink-0" />
+                              <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#D9B86E]">
+                                <ShoppingBag size={10} className="shrink-0" />
                                 <span>Featured Product</span>
                               </div>
-                              <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover/prod:text-[#D9B86E] transition-colors">
+                              <h4 className="text-[11px] sm:text-xs font-bold text-white truncate group-hover/prod:text-[#D9B86E] transition-colors leading-tight">
                                 {reel.product.name}
                               </h4>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-xs sm:text-sm font-extrabold text-[#D9B86E]">
                                   ₹{Number(reel.product.price || 0).toLocaleString('en-IN')}
                                 </span>
-                                {reel.product.originalPrice && (
-                                  <span className="text-[10px] sm:text-xs text-white/50 line-through">
+                                {reel.product.originalPrice && Number(reel.product.originalPrice) > Number(reel.product.price || 0) && (
+                                  <span className="text-[10px] text-white/50 line-through">
                                     ₹{Number(reel.product.originalPrice).toLocaleString('en-IN')}
                                   </span>
                                 )}
@@ -451,16 +471,16 @@ export default function InstaReels() {
                           {/* Action Button */}
                           <Link
                             href={`/products/${reel.product.slug || reel.product.id}`}
-                            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-[#D9B86E] hover:bg-[#c9a75d] text-[#103042] font-extrabold text-[11px] sm:text-xs uppercase tracking-wider transition-transform hover:scale-105 shadow flex items-center gap-1 shrink-0 whitespace-nowrap cursor-pointer no-underline"
+                            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-gradient-to-r from-[#D9B86E] to-[#c9a75d] hover:brightness-110 text-[#103042] font-black text-[10px] sm:text-[11px] uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 shadow flex items-center gap-1 shrink-0 whitespace-nowrap cursor-pointer no-underline"
                           >
                             <span>Shop</span>
-                            <ChevronRight size={14} className="stroke-[2.5]" />
+                            <ChevronRight size={13} className="stroke-[3]" />
                           </Link>
                         </div>
                       </div>
                     ) : (
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none z-10">
-                        <div className="w-8 h-8 mx-auto mb-2 opacity-90">
+                      <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none z-10">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 mx-auto mb-1 opacity-90">
                           <svg
                             viewBox="0 0 24 24"
                             fill="none"
@@ -474,7 +494,7 @@ export default function InstaReels() {
                           </svg>
                         </div>
                         <p
-                          className="text-[var(--gold)] text-lg font-bold tracking-widest uppercase"
+                          className="text-[var(--gold)] text-sm sm:text-base font-bold tracking-widest uppercase"
                           style={{ fontFamily: 'Playfair Display, serif' }}
                         >
                           Soil Goddess
