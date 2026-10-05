@@ -483,6 +483,7 @@ export const Reel = sequelize.define('Reel', {
   videoUrl: { type: DataTypes.STRING(512), allowNull: true, field: 'video_url' },
   title: { type: DataTypes.STRING(180), allowNull: true },
   views: { type: DataTypes.STRING(20), allowNull: false, defaultValue: '0' },
+  productId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, field: 'product_id' },
   sortOrder: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'sort_order' },
   active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 }, { tableName: 'reels' })
@@ -669,4 +670,8 @@ export function initAssociations() {
   EventBooking.belongsTo(Event, { foreignKey: 'event_id', as: 'event' })
   Customer.hasMany(EventBooking, { foreignKey: 'customer_id', as: 'eventBookings' })
   EventBooking.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' })
+
+  // Reel and Product associations
+  Reel.belongsTo(Product, { foreignKey: 'product_id', as: 'product' })
+  Product.hasMany(Reel, { foreignKey: 'product_id', as: 'reels' })
 }

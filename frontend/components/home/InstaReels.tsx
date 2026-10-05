@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperType } from 'swiper'
 import { EffectCoverflow, Pagination, Autoplay, Navigation } from 'swiper/modules'
-import { Play, Pause, Eye, X, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
+import { Play, Pause, Eye, X, ChevronLeft, ChevronRight, Volume2, VolumeX, ShoppingBag } from 'lucide-react'
 import { fetchReels } from '@/lib/api/storefront'
 import { resolveImageUrl } from '@/lib/api/client'
 import type { StorefrontReel } from '@/lib/api/types'
@@ -238,15 +239,27 @@ export default function InstaReels() {
                       </div>
                     )}
 
-                    {/* Brand Watermark */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none">
-                      <p
-                        className="text-[var(--gold)] text-base font-bold tracking-widest uppercase opacity-90"
-                        style={{ fontFamily: 'Playfair Display, serif' }}
-                      >
-                        Soil Goddess
-                      </p>
-                    </div>
+                    {/* Attached Product Pill or Brand Watermark */}
+                    {reel.product ? (
+                      <div className="absolute bottom-3 left-2.5 right-2.5 z-10 pointer-events-none">
+                        <div className="bg-black/75 backdrop-blur-md border border-[#D9B86E]/40 rounded-full px-2.5 py-1 flex items-center gap-1.5 text-white shadow-lg max-w-full">
+                          <ShoppingBag size={11} className="text-[#D9B86E] shrink-0" />
+                          <span className="text-[10px] font-semibold truncate flex-1">{reel.product.name}</span>
+                          <span className="text-[10px] font-bold text-[#D9B86E] shrink-0">
+                            ₹{Number(reel.product.price).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none">
+                        <p
+                          className="text-[var(--gold)] text-base font-bold tracking-widest uppercase opacity-90"
+                          style={{ fontFamily: 'Playfair Display, serif' }}
+                        >
+                          Soil Goddess
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </SwiperSlide>
               )})}
@@ -390,28 +403,84 @@ export default function InstaReels() {
                       </button>
                     )}
 
-                    {/* Brand Footer */}
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none z-10">
-                      <div className="w-8 h-8 mx-auto mb-2 opacity-90">
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-full h-full text-[var(--gold)]"
-                        >
-                          <path
-                            d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </div>
-                      <p
-                        className="text-[var(--gold)] text-lg font-bold tracking-widest uppercase"
-                        style={{ fontFamily: 'Playfair Display, serif' }}
+                    {/* Attached Product Card or Brand Watermark */}
+                    {reel.product ? (
+                      <div
+                        className="absolute bottom-4 left-3 right-3 sm:bottom-6 sm:left-4 sm:right-4 z-30"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        Soil Goddess
-                      </p>
-                    </div>
+                        <div className="bg-black/80 hover:bg-black/90 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-[#D9B86E]/40 shadow-[0_12px_30px_rgba(0,0,0,0.6)] flex items-center justify-between gap-3 transition-colors">
+                          <Link
+                            href={`/products/${reel.product.slug || reel.product.id}`}
+                            className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 group/prod no-underline"
+                          >
+                            {/* Product Thumbnail */}
+                            <div className="relative h-12 w-10 sm:h-14 sm:w-12 rounded-lg overflow-hidden border border-[#D9B86E]/40 bg-zinc-900 shrink-0">
+                              <img
+                                src={resolveImageUrl(reel.product.imageUrl || reel.product.images?.[0]?.imageUrl || '')}
+                                alt={reel.product.name}
+                                className="h-full w-full object-cover group-hover/prod:scale-105 transition-transform"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                              />
+                            </div>
+
+                            {/* Product Info */}
+                            <div className="min-w-0 flex-1 text-left">
+                              <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#D9B86E]">
+                                <ShoppingBag size={11} className="shrink-0" />
+                                <span>Featured Product</span>
+                              </div>
+                              <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover/prod:text-[#D9B86E] transition-colors">
+                                {reel.product.name}
+                              </h4>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs sm:text-sm font-extrabold text-[#D9B86E]">
+                                  ₹{Number(reel.product.price || 0).toLocaleString('en-IN')}
+                                </span>
+                                {reel.product.originalPrice && (
+                                  <span className="text-[10px] sm:text-xs text-white/50 line-through">
+                                    ₹{Number(reel.product.originalPrice).toLocaleString('en-IN')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+
+                          {/* Action Button */}
+                          <Link
+                            href={`/products/${reel.product.slug || reel.product.id}`}
+                            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-[#D9B86E] hover:bg-[#c9a75d] text-[#103042] font-extrabold text-[11px] sm:text-xs uppercase tracking-wider transition-transform hover:scale-105 shadow flex items-center gap-1 shrink-0 whitespace-nowrap cursor-pointer no-underline"
+                          >
+                            <span>Shop</span>
+                            <ChevronRight size={14} className="stroke-[2.5]" />
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none z-10">
+                        <div className="w-8 h-8 mx-auto mb-2 opacity-90">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-full h-full text-[var(--gold)]"
+                          >
+                            <path
+                              d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                        <p
+                          className="text-[var(--gold)] text-lg font-bold tracking-widest uppercase"
+                          style={{ fontFamily: 'Playfair Display, serif' }}
+                        >
+                          Soil Goddess
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </SwiperSlide>
               ))}

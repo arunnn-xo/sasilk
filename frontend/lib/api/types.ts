@@ -145,6 +145,17 @@ export type CustomerAddress = {
   createdAt?: string
 }
 
+export type StorefrontReelProduct = {
+  id: number
+  name: string
+  slug: string
+  price: number | string
+  originalPrice?: number | string | null
+  imageUrl?: string | null
+  stockQty?: number
+  images?: Array<{ id: number; imageUrl: string; isPrimary?: boolean }>
+}
+
 export type StorefrontReel = {
   id: number
   imageUrl?: string | null
@@ -152,6 +163,8 @@ export type StorefrontReel = {
   title?: string | null
   views: string
   sortOrder: number
+  productId?: number | null
+  product?: StorefrontReelProduct | null
 }
 
 export type StorefrontArtWaveItem = {

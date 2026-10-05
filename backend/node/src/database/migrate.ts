@@ -572,6 +572,7 @@ export async function runMigrations() {
     video_url: { type: DataTypes.STRING(512), allowNull: true },
     title: { type: DataTypes.STRING(180), allowNull: true },
     views: { type: DataTypes.STRING(20), allowNull: false, defaultValue: '0' },
+    product_id: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, references: { model: 'products', key: 'id' }, onDelete: 'SET NULL' },
     sort_order: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     ...timestamps,
@@ -838,6 +839,15 @@ export async function runMigrations() {
   await safeAddIndex('event_bookings', 'idx_event_bookings_razorpay_order_id', ['razorpay_order_id'])
   await safeAddIndex('event_bookings', 'idx_event_bookings_payment_status', ['payment_status'])
   await safeAddIndex('event_bookings', 'idx_event_bookings_customer_email', ['customer_email'])
+
+  // reels product_id
+  await safeAddColumn('reels', 'product_id', {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: { model: 'products', key: 'id' },
+    onDelete: 'SET NULL',
+  })
+  await safeAddIndex('reels', 'idx_reels_product_id', ['product_id'])
 
   console.log('Migration complete.')
 }

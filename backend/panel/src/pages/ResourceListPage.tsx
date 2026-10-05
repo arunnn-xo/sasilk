@@ -225,11 +225,18 @@ export default function ResourceListPage({ config }: { config: ResourceConfig })
                 {!config.hideSerialNumber && (
                   <th className="px-5 py-3.5 font-bold">S.No</th>
                 )}
-                {visibleColumns.map(column => (
-                  <th key={column} className="px-5 py-3.5 font-bold">
-                    {column}
-                  </th>
-                ))}
+                {visibleColumns.map(column => {
+                  let headerLabel = column
+                  if (column === 'productId') headerLabel = 'Attached Product'
+                  else if (column === 'videoUrl') headerLabel = 'Video'
+                  else if (column === 'sortOrder') headerLabel = 'Sort Order'
+                  else if (column === 'imageUrl') headerLabel = 'Image'
+                  return (
+                    <th key={column} className="px-5 py-3.5 font-bold">
+                      {headerLabel}
+                    </th>
+                  )
+                })}
                 {!config.hideActions && (
                   <th className="px-5 py-3.5 font-bold text-right">Actions</th>
                 )}

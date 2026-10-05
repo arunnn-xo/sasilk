@@ -29,6 +29,7 @@ import IntroVideoPage from '../pages/IntroVideoPage'
 import EventsPage from '../pages/EventsPage'
 import EventFormPage from '../pages/EventFormPage'
 import EventBookingsPage from '../pages/EventBookingsPage'
+import ReelFormPage from '../pages/ReelFormPage'
 import { getAdminMe } from '../services/api'
 import { resources } from './resources'
 
@@ -76,6 +77,8 @@ export default function App() {
                       ? <AnnouncementFormPage /> 
                       : basePath === 'banners'
                         ? <BannerFormPage />
+                      : basePath === 'reels'
+                        ? <ReelFormPage />
                   : basePath === 'categories'
                     ? <CategoryFormPage />
                     : basePath === 'products'
@@ -92,6 +95,8 @@ export default function App() {
                     ? <AnnouncementFormPage /> 
                     : basePath === 'banners'
                       ? <BannerFormPage />
+                    : basePath === 'reels'
+                      ? <ReelFormPage />
                       : basePath === 'categories'
                         ? <CategoryFormPage />
                         : basePath === 'products'

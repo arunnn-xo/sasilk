@@ -135,7 +135,7 @@ export const resources: ResourceConfig[] = [
     title: 'Reel the Weave',
     eyebrow: 'Homepage Reels Section',
     Icon: Film,
-    columns: ['id', 'videoUrl', 'title', 'views', 'sortOrder', 'active'],
+    columns: ['id', 'videoUrl', 'title', 'productId', 'views', 'sortOrder', 'active'],
     fields: [
       {
         name: 'videoUrl',

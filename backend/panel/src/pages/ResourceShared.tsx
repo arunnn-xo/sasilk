@@ -575,6 +575,48 @@ export function TableCell({ column, item, items }: { column: string; item: Recor
     )
   }
 
+  if (column === 'productId') {
+    const prod = (item.product as any) || (item.Product as any)
+    if (!prod && !value) {
+      return (
+        <td className="border border-[var(--line)] px-5 py-4 text-xs text-[var(--muted)]">
+          <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-[10px] text-slate-400 font-medium">
+            No Product
+          </span>
+        </td>
+      )
+    }
+    const prodName = prod?.name || `Product #${value}`
+    const prodImg = prod?.images?.[0]?.imageUrl || prod?.imageUrl
+    return (
+      <td className="border border-[var(--line)] px-5 py-4">
+        <div className="flex items-center gap-2.5 max-w-[220px]">
+          {prodImg ? (
+            <img
+              src={resolveImageUrl(prodImg)}
+              alt={prodName}
+              className="h-10 w-9 rounded-md object-cover border border-[var(--line)] shrink-0 shadow-sm"
+            />
+          ) : (
+            <div className="h-10 w-9 rounded-md bg-slate-100 border border-[var(--line)] flex items-center justify-center shrink-0 text-xs">
+              🛍️
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-[var(--text)] truncate" title={prodName}>
+              {prodName}
+            </p>
+            {prod?.price != null && (
+              <p className="text-[11px] font-bold text-[#6B1A2A]">
+                ₹{Number(prod.price).toLocaleString('en-IN')}
+              </p>
+            )}
+          </div>
+        </div>
+      </td>
+    )
+  }
+
   if (isImageColumn(column)) {
     const videoSrc = (!value && typeof item.videoUrl === 'string' && item.videoUrl) ? resolveImageUrl(item.videoUrl) : null
     return (

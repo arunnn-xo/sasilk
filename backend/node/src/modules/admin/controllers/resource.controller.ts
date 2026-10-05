@@ -143,6 +143,12 @@ export const reelCreateSchema = z.object({
   videoUrl: z.string().min(1, 'Reel video is required.').max(512, 'Video URL is too long.'),
   title: z.union([z.string().max(180, 'Title is too long.'), z.null()]).optional(),
   views: z.string().min(1, 'Views display text is required.').max(20, 'Views text is too long.'),
+  productId: z.union([
+    z.number().int().positive(),
+    z.string().regex(/^\d+$/).transform(Number),
+    z.null(),
+    z.literal(''),
+  ]).optional().nullable().transform(v => (v ? Number(v) : null)),
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
   active: z.boolean().optional().default(true),
 })
@@ -329,7 +335,7 @@ export const resourceConfig: Record<string, ResourceConfig> = {
   reels: {
     model: Reel,
     entity: 'reel',
-    writable: ['imageUrl', 'videoUrl', 'title', 'views', 'sortOrder', 'active'],
+    writable: ['imageUrl', 'videoUrl', 'title', 'views', 'productId', 'sortOrder', 'active'],
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
     validationSchema: reelCreateSchema,
@@ -337,6 +343,7 @@ export const resourceConfig: Record<string, ResourceConfig> = {
       ...body,
       videoUrl: body.videoUrl || '',
       imageUrl: body.imageUrl || body.videoUrl || '',
+      productId: body.productId ? Number(body.productId) : null,
     }),
   },
   'art-wave': {
@@ -533,7 +540,15 @@ export const listResource = async (req: Request, res: Response) => {
       }]
     : resource === 'coupons'
       ? [{ model: CouponCustomer, as: 'eligibleCustomers', attributes: ['customerId'] }]
-      : undefined
+      : resource === 'reels'
+        ? [{
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
+            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'isPrimary'] }],
+            required: false,
+          }]
+        : undefined
 
   // Auto-deactivate expired coupons every time the coupon list is requested
   if (resource === 'coupons') {
@@ -682,7 +697,15 @@ export const getResourceById = async (req: Request, res: Response) => {
     ? [{ model: Category, as: 'Category', attributes: ['id', 'name', 'active'] }]
     : resource === 'coupons'
       ? [{ model: CouponCustomer, as: 'eligibleCustomers', attributes: ['customerId'] }]
-      : undefined
+      : resource === 'reels'
+        ? [{
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
+            include: [{ model: ProductImage, as: 'images', attributes: ['id', 'imageUrl', 'isPrimary'] }],
+            required: false,
+          }]
+        : undefined
   const row = await config.model.findByPk(id, { paranoid: true, include: includeOptions })
   if (!row) throw new AppError(404, 'Item not found.')
 

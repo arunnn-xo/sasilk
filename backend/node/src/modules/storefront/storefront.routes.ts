@@ -60,10 +60,25 @@ router.get('/intro-video', asyncHandler(catalogController.getIntroVideoConfigura
 
 /* ── Reels Route ─── */
 router.get('/reels', asyncHandler(async (_req, res) => {
-  const { Reel } = await import('../../models/index.js')
+  const { Reel, Product, ProductImage } = await import('../../models/index.js')
   const reels = await Reel.findAll({
     where: { active: true },
-    attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder'],
+    attributes: ['id', 'imageUrl', 'videoUrl', 'title', 'views', 'sortOrder', 'productId'],
+    include: [
+      {
+        model: Product,
+        as: 'product',
+        attributes: ['id', 'name', 'slug', 'price', 'originalPrice', 'imageUrl', 'stockQty'],
+        include: [
+          {
+            model: ProductImage,
+            as: 'images',
+            attributes: ['id', 'imageUrl', 'isPrimary', 'sortOrder'],
+          },
+        ],
+        required: false,
+      },
+    ],
     order: [['sortOrder', 'ASC'], ['id', 'ASC']],
   })
   res.json({ reels })
