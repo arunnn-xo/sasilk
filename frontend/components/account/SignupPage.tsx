@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, Eye, EyeOff, Leaf, LockKeyhole, Mail, MapPin, ShieldCheck, Sparkles, Truck, UserRound } from 'lucide-react'
 import { registerCustomer } from '@/lib/api/auth'
@@ -26,6 +26,17 @@ const initialFields: SignupFields = {
   terms: false,
 }
 
+const SIGNUP_DRAFT_KEY = 'soil-goddess-signup-draft'
+
+const passwordRules = [
+  { label: 'At least 6 characters', test: (value: string) => value.length >= 6 },
+  { label: 'No spaces', test: (value: string) => !/\s/.test(value) },
+  { label: 'One uppercase letter', test: (value: string) => /[A-Z]/.test(value) },
+  { label: 'One lowercase letter', test: (value: string) => /[a-z]/.test(value) },
+  { label: 'One digit', test: (value: string) => /\d/.test(value) },
+  { label: 'One special character', test: (value: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(value) },
+]
+
 function validateSignup(fields: SignupFields) {
   const errors: SignupErrors = {}
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -34,19 +45,12 @@ function validateSignup(fields: SignupFields) {
   if (!fields.email.trim()) errors.email = 'Email address is required.'
   if (fields.email.trim() && !emailPattern.test(fields.email.trim())) errors.email = 'Enter a valid email address.'
   if (!fields.password) {
-    errors.password = 'Password is required.'
-  } else if (fields.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters.'
-  } else if (/\s/.test(fields.password)) {
-    errors.password = 'Password cannot contain spaces.'
-  } else if (!/[A-Z]/.test(fields.password)) {
-    errors.password = 'Password must contain at least one uppercase letter.'
-  } else if (!/[a-z]/.test(fields.password)) {
-    errors.password = 'Password must contain at least one lowercase letter.'
-  } else if (!/\d/.test(fields.password)) {
-    errors.password = 'Password must contain at least one digit.'
-  } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(fields.password)) {
-    errors.password = 'Password must contain at least one special character.'
+    errors.password = 'Password is required. It must include: ' + passwordRules.map(rule => rule.label.toLowerCase()).join(', ') + '.'
+  } else {
+    const missingRules = passwordRules.filter(rule => !rule.test(fields.password)).map(rule => rule.label.toLowerCase())
+    if (missingRules.length > 0) {
+      errors.password = `Password must include: ${missingRules.join(', ')}.`
+    }
   }
   if (!fields.confirmPassword) errors.confirmPassword = 'Confirm your password.'
   if (fields.password && fields.confirmPassword && fields.password !== fields.confirmPassword) errors.confirmPassword = 'Passwords do not match.'
@@ -82,9 +86,31 @@ export default function SignupPage() {
     [],
   )
 
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(SIGNUP_DRAFT_KEY)
+      if (!raw) return
+      const draft = JSON.parse(raw) as Partial<SignupFields>
+      setFields(current => ({ ...current, ...draft, password: '', confirmPassword: '' }))
+      sessionStorage.removeItem(SIGNUP_DRAFT_KEY)
+    } catch {
+      sessionStorage.removeItem(SIGNUP_DRAFT_KEY)
+    }
+  }, [])
+
   function updateField<Key extends keyof SignupFields>(key: Key, value: SignupFields[Key]) {
     setFields(current => ({ ...current, [key]: value }))
     setErrors(current => ({ ...current, [key]: undefined }))
+  }
+
+  function saveDraftBeforeTerms() {
+    const safeDraft = {
+      name: fields.name,
+      email: fields.email,
+      mobile: fields.mobile,
+      terms: fields.terms,
+    }
+    sessionStorage.setItem(SIGNUP_DRAFT_KEY, JSON.stringify(safeDraft))
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -246,6 +272,20 @@ export default function SignupPage() {
             </div>
           </div>
 
+          <div className="rounded-lg border border-[#E8DCC4] bg-[#FAF6EE] p-3">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[#6B1A2A]">Password rules</p>
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              {passwordRules.map(rule => {
+                const passed = fields.password ? rule.test(fields.password) : false
+                return (
+                  <span key={rule.label} className={`text-[11px] font-medium ${passed ? 'text-emerald-700' : 'text-gray-600'}`}>
+                    {passed ? 'OK' : '-'} {rule.label}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="pt-1">
             <label className="flex items-start gap-2.5 cursor-pointer group">
               <input
@@ -255,7 +295,7 @@ export default function SignupPage() {
                 className="mt-1 h-4 w-4 rounded border-gray-300 accent-[#6B1A2A] transition cursor-pointer"
               />
               <span className="text-xs leading-relaxed text-gray-600 group-hover:text-gray-900">
-                I agree to receive order updates and accept the Soil Goddess <a href="/terms-conditions" className="font-semibold text-[#6B1A2A] hover:underline">account terms</a>.
+                I agree to receive order updates and accept the Soil Goddess <Link href="/terms-conditions?returnTo=/register" onClick={saveDraftBeforeTerms} className="font-semibold text-[#6B1A2A] hover:underline">account terms</Link>.
               </span>
             </label>
             <FieldError message={errors.terms} />

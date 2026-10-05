@@ -68,6 +68,7 @@ export function mapProduct(row: unknown) {
     featured: item.featured,
     isNew: item.isNew,
     isBestSeller: item.isBestSeller,
+    tag: item.tag,
     sortOrder: item.sortOrder,
     gstRate: item.gstRate == null ? null : Number(item.gstRate),
     weightKg: item.weightKg == null ? null : Number(item.weightKg),

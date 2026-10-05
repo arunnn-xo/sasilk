@@ -10,7 +10,7 @@ import { useAuth } from '@/components/auth/AuthContext'
 export default function LoginPage() {
   const router = useRouter()
   const { refresh } = useAuth()
-  const [returnTo, setReturnTo] = useState('/account')
+  const [returnTo, setReturnTo] = useState('/')
   const [contact, setContact] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +21,7 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const r = params.get('returnTo')
-    if (r) setReturnTo(r)
+    if (r && r.startsWith('/') && !r.startsWith('//')) setReturnTo(r)
   }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 
 export default function FloatingActions() {
   return (
@@ -13,15 +13,6 @@ export default function FloatingActions() {
       >
         <Star size={16} fill="#FACC15" strokeWidth={0} />
         <span>Reviews</span>
-      </Link>
-
-      <Link
-        href="#newsletter"
-        className="floating-newsletter-tab"
-        aria-label="Click to subscribe to Newsletter"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-        <span>Newsletter</span>
       </Link>
 
       <div className="floating-action-stack" aria-label="Quick actions">

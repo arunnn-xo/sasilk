@@ -115,7 +115,6 @@ export default function ProductFormPage() {
   const [description, setDescription] = useState(editItem ? String(editItem.description || '') : '')
   const [category, setCategory] = useState(editItem ? String(editItem.category || '') : '')
   const [imageUrl, setImageUrl] = useState(editItem ? String(editItem.imageUrl || '') : '')
-  const [featured, setFeatured] = useState(editItem ? Boolean(editItem.featured) : false)
   const [isNew, setIsNew] = useState(editItem ? Boolean(editItem.isNew) : false)
   const [isBestSeller, setIsBestSeller] = useState(editItem ? Boolean(editItem.isBestSeller) : false)
   const [enableBackInStockNotify, setEnableBackInStockNotify] = useState(editItem ? Boolean(editItem.enableBackInStockNotify) : false)
@@ -166,7 +165,6 @@ export default function ProductFormPage() {
       setDescription(String(editItem.description || ''))
       setCategory(String(editItem.category || ''))
       setImageUrl(String(editItem.imageUrl || ''))
-      setFeatured(Boolean(editItem.featured))
       setIsNew(Boolean(editItem.isNew))
       setIsBestSeller(Boolean(editItem.isBestSeller))
       setEnableBackInStockNotify(Boolean(editItem.enableBackInStockNotify))
@@ -418,7 +416,6 @@ export default function ProductFormPage() {
       imageUrl: imageUrl || null,
       gender: audience,
       ageGroup: audience === 'kids' ? 'kids' : 'adult',
-      featured,
       isNew,
       isBestSeller,
       enableBackInStockNotify,
@@ -1285,17 +1282,6 @@ export default function ProductFormPage() {
 
             <SectionCard title="Product Flags" icon={<Sparkles className="h-4 w-4" />}>
               <div className="space-y-4">
-                 <label className="flex items-center justify-between gap-3 rounded-lg border border-[var(--line)] bg-[#F9FAFB] p-4 cursor-pointer transition-colors hover:border-[var(--burgundy-soft)]">
-                   <div>
-                     <span className="block text-[13px] font-bold text-[var(--text)]">Featured Product</span>
-                     <span className="block text-[11px] text-[var(--muted)]">Show in featured sections</span>
-                   </div>
-                   <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors" style={{ backgroundColor: featured ? 'var(--burgundy)' : 'var(--line)' }}>
-                     <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} className="peer sr-only" />
-                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${featured ? 'translate-x-6' : 'translate-x-1'}`} />
-                   </div>
-                 </label>
-
                   <label className="flex items-center justify-between gap-3 rounded-lg border border-[var(--line)] bg-[#F9FAFB] p-4 cursor-pointer transition-colors hover:border-[var(--burgundy-soft)]">
                     <div>
                       <span className="block text-[13px] font-bold text-[var(--text)]">New Arrival</span>

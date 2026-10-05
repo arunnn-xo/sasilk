@@ -42,8 +42,8 @@ export type ProductData = {
   ageGroup: string | null
   hasVariants: boolean
   status: 'draft' | 'active' | 'archived'
-  featured: boolean
   isNew: boolean
+  isBestSeller?: boolean
   sortOrder: number
   gstRate: number
   metadata: Record<string, unknown> | null

@@ -18,6 +18,10 @@ const createReviewSchema = z.object({
   body: z.string().max(5000).optional().default(''),
 })
 
+function mediaTypeFromUrl(url: string): 'image' | 'video' {
+  return /\.(mp4|webm|mov|m4v)$/i.test(url) ? 'video' : 'image'
+}
+
 export const getProductReviews = async (req: Request, res: Response) => {
   const product = await Product.findOne({ where: { slug: req.params.slug } })
   if (!product) throw new AppError(404, 'Product not found')
@@ -49,7 +53,10 @@ export const getProductReviews = async (req: Request, res: Response) => {
       body: plainReview.body,
       customerName: displayName,
       createdAt: plainReview.createdAt,
-      images: plainReview.images || [],
+      images: (plainReview.images || []).map((media: any) => ({
+        ...media,
+        mediaType: mediaTypeFromUrl(media.imageUrl || ''),
+      })),
     }
   })
 
@@ -152,5 +159,14 @@ export const createProductReview = async (req: Request, res: Response) => {
     include: [{ model: ReviewImage, as: 'images', attributes: ['id', 'imageUrl'] }],
   })
 
-  res.status(201).json({ review: created!.get({ plain: true }) })
+  const createdPlain = created!.get({ plain: true }) as any
+  res.status(201).json({
+    review: {
+      ...createdPlain,
+      images: (createdPlain.images || []).map((media: any) => ({
+        ...media,
+        mediaType: mediaTypeFromUrl(media.imageUrl || ''),
+      })),
+    },
+  })
 }

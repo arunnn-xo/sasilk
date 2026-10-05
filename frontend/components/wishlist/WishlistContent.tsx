@@ -6,37 +6,88 @@ import { useAuth } from '@/components/auth/AuthContext'
 import { useCart } from '@/components/cart/CartContext'
 import ProductCard, { type ProductCardProduct } from '@/components/product/ProductCard'
 import { resolveImageUrl as resolveImg } from '@/lib/api/client'
-import { getDiscount } from '@/lib/api/mappers'
+import { getDiscount, mapVariantColors } from '@/lib/api/mappers'
+import type { StorefrontProduct } from '@/lib/api/types'
 import type { ServerWishlistItem } from '@/lib/api/wishlist'
 
 function resolveImageUrl(url: string | null | undefined): string {
   return resolveImg(url) || ''
 }
 
+function stringMeta(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
 function mapServerItemToCard(item: ServerWishlistItem): ProductCardProduct {
   const disc = getDiscount(item.price, item.originalPrice)
   const image = resolveImageUrl(item.image)
   const colorName = item.color || undefined
-  const colors = colorName ? [{ name: colorName, hex: '#8B1A2B', image }] : undefined
+  const productForVariants: StorefrontProduct = {
+    id: item.productId,
+    code: '',
+    name: item.name,
+    slug: item.slug,
+    type: item.type || '',
+    price: item.price,
+    originalPrice: item.originalPrice,
+    isNew: item.isNew,
+    isBestSeller: item.isBestSeller,
+    color: item.color ?? undefined,
+    category: item.category || '',
+    image,
+    imageUrl: item.image,
+    metadata: item.metadata ?? null,
+    stockQty: item.stockQty,
+    averageRating: item.averageRating ?? undefined,
+    hasVariants: item.hasVariants ?? Boolean(item.variants?.length),
+    variants: item.variants ?? [],
+  }
+  const colors = mapVariantColors(productForVariants).map(color => {
+    const matchesSavedColor = colorName && color.name.trim().toLowerCase() === colorName.trim().toLowerCase()
+    const matchesSavedVariant = item.variantId != null && color.variantId === item.variantId
+    if (!matchesSavedColor && !matchesSavedVariant) return color
+
+    return {
+      ...color,
+      image: image || color.image,
+      variantId: item.variantId ?? color.variantId,
+      variantLabel: item.variantLabel ?? color.variantLabel,
+      price: item.price,
+      oldPrice: item.originalPrice,
+      stock: item.stockQty,
+      size: item.size ?? color.size,
+    }
+  }).sort((a, b) => {
+    const aExact = item.variantId != null && a.variantId === item.variantId
+    const bExact = item.variantId != null && b.variantId === item.variantId
+    if (aExact !== bExact) return aExact ? -1 : 1
+    const aColor = colorName && a.name.trim().toLowerCase() === colorName.trim().toLowerCase()
+    const bColor = colorName && b.name.trim().toLowerCase() === colorName.trim().toLowerCase()
+    if (aColor !== bColor) return aColor ? -1 : 1
+    return 0
+  })
+  const fabric = stringMeta(item.metadata?.fabric) || item.type || ''
+  const occasion = stringMeta(item.metadata?.occasion)
 
   return {
     id: item.productId,
     name: item.name,
-    category: item.category,
-    fabric: item.type || item.category,
-    occasion: item.type || item.category,
+    category: item.category || '',
+    fabric,
+    occasion,
     image,
     price: item.price,
     oldPrice: item.originalPrice,
-    badge: item.isNew ? 'New' : disc ? `${disc}% OFF` : undefined,
+    badge: item.tag || (item.isNew ? 'New' : item.isBestSeller ? 'Best Seller' : disc ? `${disc}% OFF` : undefined),
     href: `/products/${item.slug || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-    rating: item.averageRating ?? 0,
+    rating: item.averageRating ?? undefined,
     stock: item.stockQty,
     variantId: item.variantId ?? undefined,
     variantLabel: item.variantLabel ?? undefined,
     color: colorName,
     size: item.size ?? undefined,
-    colors,
+    colors: colors.length > 0 ? colors : undefined,
+    variantCount: item.variants?.length,
   }
 }
 

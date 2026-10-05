@@ -25,13 +25,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime']
     if (allowed.includes(file.mimetype)) {
       cb(null, true)
     } else {
-      cb(new AppError(422, 'Only JPEG, PNG, and WebP images are allowed.'))
+      cb(new AppError(422, 'Only JPEG, PNG, WebP, MP4, WebM, and MOV review media are allowed.'))
     }
   },
 })

@@ -47,7 +47,10 @@ export default function InstaReels() {
     }
   }, [activeSlideIndex])
 
-  const displayData = reelsData
+  const displayData = useMemo(
+    () => reelsData.filter(reel => Boolean(reel.videoUrl || reel.imageUrl)),
+    [reelsData]
+  )
 
   // Ensure sufficient slides for Swiper's Coverflow infinite loop calculation so it never stops at the edge
   const modalSlides = useMemo(() => {
@@ -188,22 +191,37 @@ export default function InstaReels() {
               modules={[Autoplay, Navigation]}
               className="w-full pt-4 pb-12 px-4 md:px-0"
             >
-              {displayData.map((reel, index) => (
+              {displayData.map((reel, index) => {
+                const reelVideoUrl = resolveImageUrl(reel.videoUrl || '', '')
+                const reelImageUrl = resolveImageUrl(reel.imageUrl || '')
+                return (
                 <SwiperSlide
                   key={reel.id}
                   onClick={() => setActiveSlideIndex(index)}
                   className="!w-[180px] sm:!w-[200px] md:!w-[220px] !h-[320px] sm:!h-[355px] md:!h-[390px] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)] bg-white border border-[#D9B86E]/30 group cursor-pointer transition-transform duration-300 hover:-translate-y-2"
                 >
                   <div className="w-full h-full relative block">
-                    {/* Thumbnail */}
-                    <Image
-                      src={resolveImageUrl(reel.imageUrl)}
-                      alt={`Instagram Reel ${reel.id}`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      sizes="(max-width: 768px) 240px, 280px"
-                      priority={reel.id <= 4}
-                    />
+                    {reelVideoUrl ? (
+                      <video
+                        src={reelVideoUrl}
+                        poster={reelImageUrl || undefined}
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    ) : reelImageUrl ? (
+                      <Image
+                        src={reelImageUrl}
+                        alt={`Instagram Reel ${reel.id}`}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        sizes="(max-width: 768px) 240px, 280px"
+                        priority={reel.id <= 4}
+                      />
+                    ) : null}
 
                     {/* Overlay Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/30 opacity-70 group-hover:opacity-60 transition-opacity duration-300 pointer-events-none"></div>
@@ -214,10 +232,11 @@ export default function InstaReels() {
                       {reel.views}
                     </div>
 
-                    {/* Play Button */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 border border-white/40 pointer-events-none shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                      <Play size={24} className="text-white ml-1 fill-white" />
-                    </div>
+                    {!reelVideoUrl && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 border border-white/40 pointer-events-none shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                        <Play size={24} className="text-white ml-1 fill-white" />
+                      </div>
+                    )}
 
                     {/* Brand Watermark */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center w-full pointer-events-none">
@@ -230,7 +249,7 @@ export default function InstaReels() {
                     </div>
                   </div>
                 </SwiperSlide>
-              ))}
+              )})}
             </Swiper>
           </div>
         </div>
@@ -320,7 +339,7 @@ export default function InstaReels() {
                     {reel.videoUrl ? (
                       <video
                         src={resolveImageUrl(reel.videoUrl, '')}
-                        poster={resolveImageUrl(reel.imageUrl)}
+                        poster={reel.imageUrl ? resolveImageUrl(reel.imageUrl) : undefined}
                         muted={isMuted}
                         loop
                         playsInline

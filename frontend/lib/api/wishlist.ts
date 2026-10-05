@@ -1,4 +1,5 @@
 import { apiFetch } from './client'
+import type { StorefrontProduct } from './types'
 
 export type ServerWishlistItem = {
   id: number
@@ -18,7 +19,12 @@ export type ServerWishlistItem = {
   stockQty: number
   status: string
   isNew: boolean
+  isBestSeller?: boolean
+  hasVariants?: boolean
+  tag?: string | null
+  metadata?: Record<string, any> | null
   averageRating: number | null
+  variants?: StorefrontProduct['variants']
   createdAt: string
 }
 

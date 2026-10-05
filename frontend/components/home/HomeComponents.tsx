@@ -885,14 +885,17 @@ export function ProductGrid() {
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
               {products.map(p => {
                 const meta = p.metadata || {}
-                const fabric = (meta.fabric as string) || p.type || 'Pure Silk'
-                const occasion = (meta.occasion as string) || 'Bridal & Festive'
-                const badge = p.tag || (p.isNew ? 'New' : p.originalPrice ? 'Sale' : 'Bestseller')
+                const fabric = typeof meta.fabric === 'string' && meta.fabric.trim() ? meta.fabric.trim() : p.type || ''
+                const occasion = typeof meta.occasion === 'string' ? meta.occasion.trim() : ''
                 const img = resolveImageUrl(p.imageUrl || p.image || p.images?.[0]?.imageUrl) || ''
                 const rawColors = mapVariantColors(p)
                 const bestVariant = getPreferredVariant(p)
                 const basePrice = typeof p.price === 'string' ? parseFloat(p.price) : p.price
                 const baseOldPrice = p.originalPrice ? (typeof p.originalPrice === 'string' ? parseFloat(p.originalPrice) : p.originalPrice) : null
+                const price = bestVariant?.price ?? basePrice
+                const oldPrice = bestVariant?.originalPrice ?? baseOldPrice
+                const discount = oldPrice && oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : null
+                const badge = p.tag || (p.isNew ? 'New' : p.isBestSeller ? 'Best Seller' : discount ? `${discount}% OFF` : undefined)
                 const cardImage = resolveImageUrl(bestVariant?.imageUrl || bestVariant?.images?.[0]?.imageUrl || p.imageUrl || p.image || p.images?.[0]?.imageUrl) || img
 
                 const slug = p.slug || p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -904,23 +907,25 @@ export function ProductGrid() {
                     product={{
                       id: p.id,
                       name: p.name,
-                      category: p.category || 'Kanchipuram Silk',
+                      category: p.category || '',
                       fabric,
                       occasion,
                       image: cardImage,
-                      price: bestVariant?.price ?? basePrice,
-                      oldPrice: bestVariant?.originalPrice ?? baseOldPrice,
+                      price,
+                      oldPrice,
                       badge,
-                      rating: (meta.rating as number) || 4.9,
-                      reviews: (meta.reviews as number) || 18,
+                      rating: p.averageRating ?? undefined,
+                      reviews: typeof meta.reviews === 'number' ? meta.reviews : undefined,
                       href,
                       colors: rawColors.length > 0 ? rawColors : undefined,
+                      variantCount: p.variants?.length,
                       variantId: bestVariant?.id,
                       variantLabel: bestVariant?.label,
                       color: bestVariant?.colorName || p.color,
                       size: bestVariant?.size,
                       stock: bestVariant?.stockQty ?? p.stockQty,
                     }}
+                    hideVariantBadge
                     onAddToCart={(cardProduct) => {
                       if (addingKey) return
                       handleAddToCart(cardProduct)

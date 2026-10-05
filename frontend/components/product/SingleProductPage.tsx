@@ -9,7 +9,6 @@ import {
   Plus,
   ShoppingCart,
   CheckCircle2,
-  Shield,
   Truck,
   RotateCcw,
   Sparkles,
@@ -468,10 +467,12 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
               <div className="absolute left-3.5 top-3.5 flex flex-col gap-1.5 z-10 pointer-events-none">
                 {isOutOfStock ? (
                   <span className="rounded bg-gray-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">Sold Out</span>
-                ) : originalPrice && originalPrice > price ? (
-                  <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
                 ) : product.isNew ? (
                   <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">New Arrival</span>
+                ) : product.isBestSeller ? (
+                  <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">Best Seller</span>
+                ) : originalPrice && originalPrice > price ? (
+                  <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
                 ) : null}
               </div>
 
@@ -581,10 +582,12 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
                 <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10 pointer-events-none">
                   {isOutOfStock ? (
                     <span className="rounded bg-gray-800 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">Sold Out</span>
-                  ) : originalPrice && originalPrice > price ? (
-                    <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
                   ) : product.isNew ? (
                     <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">New Arrival</span>
+                  ) : product.isBestSeller ? (
+                    <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">Best Seller</span>
+                  ) : originalPrice && originalPrice > price ? (
+                    <span className="rounded bg-[#6B1A2A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#FAF6EE] shadow-md">{getDiscount(price, originalPrice)}% OFF</span>
                   ) : null}
                 </div>
 
@@ -610,16 +613,20 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
             <div className="lg:sticky lg:top-24 flex flex-col">
               
               {/* Category Tag & SKU */}
+              {(product.category || sku) ? (
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#BF9A4B]">
-                  {product.category || 'Pure Silk Saree'}
-                </span>
+                {product.category ? (
+                  <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#BF9A4B]">
+                    {product.category}
+                  </span>
+                ) : null}
                 {sku && (
                   <span className="text-[11px] font-medium text-gray-400 tracking-wider">
-                    • SKU: {sku}
+                    SKU: {sku}
                   </span>
                 )}
               </div>
+              ) : null}
 
               {/* Title */}
               <h1 className="font-playfair text-xl sm:text-2xl lg:text-[26px] xl:text-[30px] font-semibold text-[#1A1A1A] leading-snug mb-2 tracking-wide">
@@ -849,17 +856,7 @@ export default function SingleProductPage({ product }: SingleProductPageProps) {
               )}
 
               {/* Luxury Boutique Trust Badges (2x2 Grid) */}
-              <div className="mb-6 rounded-xl border border-[#E8DCC4] bg-[#FAF6EE]/90 p-3.5 sm:p-4 grid grid-cols-2 gap-3 shadow-[0_2px_10px_rgba(107,26,42,0.03)]">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#6B1A2A]/10 text-[#6B1A2A]">
-                    <Shield className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-[#1A1A1A] leading-tight">100% Pure Silk</p>
-                    <p className="text-[10px] text-gray-500 leading-tight">Silk Mark Certified</p>
-                  </div>
-                </div>
-
+              <div className="mb-6 rounded-xl border border-[#E8DCC4] bg-[#FAF6EE]/90 p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 shadow-[0_2px_10px_rgba(107,26,42,0.03)]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#6B1A2A]/10 text-[#6B1A2A]">
                     <Truck className="h-4 w-4" />

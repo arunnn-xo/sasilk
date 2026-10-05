@@ -556,7 +556,7 @@ export default function ProductsListPage() {
               <div className="space-y-4">
                 <div className="rounded-lg border border-[#D9B86E]/40 bg-[#FAF4E8] px-4 py-3 text-xs text-[#8B6B1F] space-y-2">
                   <p>Upload an Excel (.xlsx, .xls) or CSV file. Required column: <strong>name</strong>.
-                                      Optional columns: code, categoryId, subCategoryId, gender, color, price, originalPrice, stockQty, lowStockThreshold, enableBackInStockNotify, description, tag, washCare, gstRate, featured, isNew, isBestSeller, weightKg, lengthCm, breadthCm, heightCm.</p>
+                                      Optional columns: code, categoryId, subCategoryId, gender, color, price, originalPrice, stockQty, lowStockThreshold, enableBackInStockNotify, description, tag, washCare, gstRate, isNew, isBestSeller, weightKg, lengthCm, breadthCm, heightCm.</p>
                   <p>Imported products are added as <strong>Draft</strong> (hidden from the storefront) since they have no images yet — add images and set them Active from the product edit page when ready.</p>
                   <a
                     href={downloadSampleImportUrl()}

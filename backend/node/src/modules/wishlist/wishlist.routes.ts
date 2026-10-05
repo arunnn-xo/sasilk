@@ -26,6 +26,13 @@ const PRODUCT_INCLUDE = {
     include: [avgRatingLiteral],
     exclude: [] as string[],
   },
+  include: [{
+    model: ProductVariant,
+    as: 'variants',
+    attributes: ['id', 'variantType', 'label', 'price', 'originalPrice', 'isDefault', 'stockQty', 'size', 'colorName', 'colorHex', 'imageUrl'],
+    required: false,
+    where: { status: 'active' },
+  }],
 }
 
 const VARIANT_INCLUDE = {
@@ -71,7 +78,17 @@ function mapWishlistItem(row: any) {
     stockQty: (variant?.stockQty ?? product.stockQty) ?? 0,
     status: product.status || 'active',
     isNew: product.isNew ?? false,
+    isBestSeller: product.isBestSeller ?? false,
+    hasVariants: product.hasVariants ?? false,
+    tag: product.tag ?? null,
+    metadata: product.metadata ?? null,
     averageRating: product.averageRating ?? null,
+    variants: (product.variants || []).map((v: any) => ({
+      ...v,
+      price: Number(v.price ?? product.price) || 0,
+      originalPrice: v.originalPrice == null ? null : Number(v.originalPrice),
+      images: v.images || [],
+    })),
     createdAt: item.createdAt,
   }
 }

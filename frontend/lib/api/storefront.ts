@@ -144,13 +144,13 @@ export async function checkCanReview(productId: number): Promise<CanReviewRespon
   }
 }
 
-export async function submitReview(productId: number, data: ReviewSubmission, images?: File[]) {
+export async function submitReview(productId: number, data: ReviewSubmission, media?: File[]) {
   const fd = new FormData()
   fd.append('rating', String(data.rating))
   if (data.subject) fd.append('subject', data.subject)
   if (data.body) fd.append('body', data.body)
-  if (images) {
-    for (const f of images) fd.append('images', f)
+  if (media) {
+    for (const f of media) fd.append('images', f)
   }
   return await apiFetch<{ review: Record<string, unknown> }>(`/storefront/products/${productId}/reviews`, {
     method: 'POST',

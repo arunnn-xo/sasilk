@@ -139,12 +139,40 @@ export const settingsSchema = z.object({
 })
 
 export const reelCreateSchema = z.object({
-  imageUrl: z.string().min(1, 'Reel image is required.').max(255, 'Image URL is too long.'),
-  videoUrl: z.union([z.string().max(512, 'Video URL is too long.'), z.null()]).optional(),
+  imageUrl: z.union([z.string().max(255, 'Image URL is too long.'), z.null()]).optional(),
+  videoUrl: z.string().min(1, 'Reel video is required.').max(512, 'Video URL is too long.'),
   title: z.union([z.string().max(180, 'Title is too long.'), z.null()]).optional(),
   views: z.string().min(1, 'Views display text is required.').max(20, 'Views text is too long.'),
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
   active: z.boolean().optional().default(true),
+})
+
+export const bannerCreateSchema = z.object({
+  placement: z.string().min(1, 'Banner placement is required.').max(80, 'Banner placement is too long.'),
+  title: z.string().trim().min(3, 'Banner title must be at least 3 characters.').max(100, 'Banner title cannot exceed 100 characters.'),
+  subtitle: z.union([z.string().trim().max(500, 'Subtitle cannot exceed 500 characters.'), z.null()]).optional(),
+  imageUrl: z.string().trim().min(1, 'Banner image is required.').max(255, 'Banner image URL is too long.'),
+  ctaLabel: z.union([z.string().trim().max(50, 'CTA label cannot exceed 50 characters.'), z.null()]).optional(),
+  ctaUrl: z.union([z.string().trim().max(255, 'CTA URL is too long.'), z.null()]).optional(),
+  sortOrder: z.number().int('Sort order must be a whole number.').min(1, 'Sort order must be greater than 0.'),
+  active: z.boolean().optional().default(true),
+}).superRefine((data, ctx) => {
+  const hasCtaLabel = typeof data.ctaLabel === 'string' && data.ctaLabel.length > 0
+  const hasCtaUrl = typeof data.ctaUrl === 'string' && data.ctaUrl.length > 0
+
+  if (hasCtaLabel && !hasCtaUrl) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'CTA URL is required when CTA Label is provided.', path: ['ctaUrl'] })
+  }
+  if (hasCtaUrl && !hasCtaLabel) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'CTA Label is required when CTA URL is provided.', path: ['ctaLabel'] })
+  }
+  if (hasCtaUrl && !String(data.ctaUrl).startsWith('/') && !String(data.ctaUrl).startsWith('#')) {
+    try {
+      new URL(String(data.ctaUrl))
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Please enter a valid CTA URL.', path: ['ctaUrl'] })
+    }
+  }
 })
 
 export const artWaveCreateSchema = z.object({
@@ -157,6 +185,13 @@ export const artWaveCreateSchema = z.object({
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
   active: z.boolean().optional().default(true),
 })
+
+function normalizeProductFlags<T extends Record<string, unknown>>(body: T): T {
+  if (body.isNew === true && body.isBestSeller === true) {
+    return { ...body, isBestSeller: false }
+  }
+  return body
+}
 
 export const resourceConfig: Record<string, ResourceConfig> = {
   enquiries: {
@@ -184,6 +219,7 @@ export const resourceConfig: Record<string, ResourceConfig> = {
     writable: ['placement', 'title', 'subtitle', 'imageUrl', 'ctaLabel', 'ctaUrl', 'sortOrder', 'active'],
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
+    validationSchema: bannerCreateSchema,
   },
   categories: {
     model: Category,
@@ -231,11 +267,11 @@ export const resourceConfig: Record<string, ResourceConfig> = {
   products: {
     model: Product,
     entity: 'product',
-    writable: ['code', 'name', 'slug', 'type', 'description', 'categoryId', 'subCategoryId', 'price', 'originalPrice', 'stockQty', 'enableBackInStockNotify', 'imageUrl', 'color', 'gender', 'ageGroup', 'hasVariants', 'status', 'featured', 'isNew', 'isBestSeller', 'sortOrder', 'gstRate', 'weightKg', 'lengthCm', 'breadthCm', 'heightCm', 'metaTitle', 'metaDescription', 'metadata'],
+    writable: ['code', 'name', 'slug', 'type', 'description', 'categoryId', 'subCategoryId', 'price', 'originalPrice', 'stockQty', 'enableBackInStockNotify', 'imageUrl', 'color', 'gender', 'ageGroup', 'hasVariants', 'status', 'isNew', 'isBestSeller', 'sortOrder', 'gstRate', 'weightKg', 'lengthCm', 'breadthCm', 'heightCm', 'metaTitle', 'metaDescription', 'metadata'],
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'DESC']],
     validationSchema: productCreateSchema,
-    beforeSave: async body => ({
+    beforeSave: async body => normalizeProductFlags({
       ...body,
       slug: body.slug || slugify(String(body.name ?? 'product')),
       status: body.status === 'inactive' ? 'archived' : body.status,
@@ -297,6 +333,11 @@ export const resourceConfig: Record<string, ResourceConfig> = {
     imageFields: ['imageUrl'],
     defaultOrder: [['sortOrder', 'ASC'], ['id', 'ASC']],
     validationSchema: reelCreateSchema,
+    beforeSave: body => ({
+      ...body,
+      videoUrl: body.videoUrl || '',
+      imageUrl: body.imageUrl || body.videoUrl || '',
+    }),
   },
   'art-wave': {
     model: ArtWaveItem,

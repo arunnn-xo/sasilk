@@ -37,6 +37,10 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   )
 }
 
+function isVideoMedia(url: string, mediaType?: 'image' | 'video') {
+  return mediaType === 'video' || /\.(mp4|webm|mov|m4v)$/i.test(url)
+}
+
 function ReviewCard({ review }: { review: Review }) {
   const dateStr = review.createdAt
     ? new Date(review.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -55,14 +59,25 @@ function ReviewCard({ review }: { review: Review }) {
       ) : null}
       {review.images && review.images.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          {review.images.map(img => (
-            <img
-              key={img.id}
-              src={resolveImageUrl(img.imageUrl)}
-              alt="Review image"
-              className="h-20 w-20 rounded-lg border border-gray-200 object-cover"
-            />
-          ))}
+          {review.images.map(media => {
+            const src = resolveImageUrl(media.imageUrl)
+            return isVideoMedia(media.imageUrl, media.mediaType) ? (
+              <video
+                key={media.id}
+                src={src}
+                controls
+                playsInline
+                className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+              />
+            ) : (
+              <img
+                key={media.id}
+                src={src}
+                alt="Review image"
+                className="h-20 w-20 rounded-lg border border-gray-200 object-cover"
+              />
+            )
+          })}
         </div>
       ) : null}
       <div className="mt-3 flex items-center gap-2">
@@ -270,10 +285,10 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Images (optional, max 5)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Photos or videos (optional, max 5)</label>
                   <input
                     type="file"
-                    accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                    accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
                     multiple
                     onChange={e => {
                       const files = Array.from(e.target.files || [])
@@ -285,11 +300,20 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
                     <div className="mt-2 flex flex-wrap gap-2">
                       {formImages.map((f, i) => (
                         <div key={i} className="relative">
-                          <img
-                            src={URL.createObjectURL(f)}
-                            alt=""
-                            className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
-                          />
+                          {f.type.startsWith('video/') ? (
+                            <video
+                              src={URL.createObjectURL(f)}
+                              className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
+                              muted
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={URL.createObjectURL(f)}
+                              alt=""
+                              className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
+                            />
+                          )}
                           <button
                             type="button"
                             onClick={() => setFormImages(prev => prev.filter((_, j) => j !== i))}

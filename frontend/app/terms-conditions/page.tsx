@@ -1,11 +1,14 @@
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import Link from 'next/link'
 
 export const metadata = {
   title: 'Terms & Conditions | Soil Goddess',
 }
 
-export default function TermsConditionsPage() {
+export default function TermsConditionsPage({ searchParams }: { searchParams?: { returnTo?: string } }) {
+  const requestedReturnTo = searchParams?.returnTo
+  const returnTo = requestedReturnTo?.startsWith('/') && !requestedReturnTo.startsWith('//') ? requestedReturnTo : '/'
   return (
     <>
       <Header />
@@ -43,6 +46,14 @@ export default function TermsConditionsPage() {
             <p className="font-medium pt-4 sm:pt-6 border-t border-[var(--ivory-dark)] mt-6">
               By continuing to use our website, you accept these terms.
             </p>
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href={returnTo}
+              className="inline-flex items-center justify-center rounded-md bg-[var(--burgundy)] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[var(--burgundy-dark)]"
+            >
+              Back
+            </Link>
           </div>
         </div>
       </main>

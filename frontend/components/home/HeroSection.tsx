@@ -43,8 +43,8 @@ export default function HeroSection() {
 
   return (
     <div
-      className="relative w-full overflow-hidden group"
-      style={{ height: 'clamp(420px, 37.5vw, 1200px)' }}
+      className="relative w-full overflow-hidden group bg-[#0a0a0a]"
+      style={{ height: 'clamp(220px, 31.25vw, 560px)' }}
     >
       {/* Slide track */}
       <div className="relative w-full h-full bg-[#0a0a0a]">
@@ -61,8 +61,11 @@ export default function HeroSection() {
               }}
             >
               <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${resolveImageUrl(banner.imageUrl)})` }}
+                className="absolute inset-0 bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: `url(${resolveImageUrl(banner.imageUrl)})`,
+                  backgroundSize: 'contain',
+                }}
               />
               {(banner.title || banner.subtitle) && (
                 <div className="absolute inset-0 flex items-center justify-start px-6 md:px-16">

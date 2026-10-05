@@ -15,6 +15,7 @@ export type ProductColor = {
   oldPrice?: number | null
   stock?: number
   size?: string
+  sizeOptions?: string[]
   variantType?: 'color' | 'size'
 }
 
@@ -22,8 +23,8 @@ export type ProductCardProduct = {
   id?: number | string
   name: string
   category: string
-  fabric: string
-  occasion: string
+  fabric?: string
+  occasion?: string
   image: string
   price: number
   oldPrice?: number | null
@@ -32,10 +33,12 @@ export type ProductCardProduct = {
   reviews?: number
   href?: string
   colors?: ProductColor[]
+  variantCount?: number
   variantId?: number
   variantLabel?: string
   color?: string
   size?: string
+  sizeOptions?: string[]
   stock?: number
   enableBackInStockNotify?: boolean
 }
@@ -46,6 +49,7 @@ type ProductCardProps = {
   onToggleWishlist?: () => void
   onAddToCart?: (product: ProductCardProduct) => void
   adding?: boolean
+  hideVariantBadge?: boolean
 }
 
 function formatPrice(value: number) {
@@ -54,7 +58,7 @@ function formatPrice(value: number) {
 
 const MAX_VISIBLE = 4
 
-export default function ProductCard({ product, wished, onToggleWishlist, onAddToCart, adding = false }: ProductCardProps) {
+export default function ProductCard({ product, wished, onToggleWishlist, onAddToCart, adding = false, hideVariantBadge = false }: ProductCardProps) {
   const { toggleWishlist: ctxToggleWishlist, isWished: ctxIsWished } = useWishlist()
   const [activeIdx, setActiveIdx] = useState(0)
   const [hoverIdx, setHoverIdx] = useState(-1)
@@ -87,6 +91,9 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
 
   const visibleColors = colors.slice(0, MAX_VISIBLE)
   const extraCount = Math.max(0, colors.length - MAX_VISIBLE)
+  const category = product.category?.trim()
+  const variantCount = product.variantCount ?? colors.length
+  const showRating = typeof product.rating === 'number' && product.rating > 0
 
   const activeColor = colors[effectiveIdx]
   const activeProduct = activeColor ? {
@@ -99,6 +106,7 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
     variantLabel: activeColor.variantLabel ?? product.variantLabel,
     color: activeColor.variantType === 'size' ? product.color : activeColor.name,
     size: activeColor.size || (activeColor.variantType === 'size' ? activeColor.name : product.size),
+    sizeOptions: activeColor.sizeOptions ?? product.sizeOptions,
   } : product
 
   const isWished = wished ?? ctxIsWished(Number(product.id), activeProduct.variantId ?? null)
@@ -156,10 +164,12 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
         </button>
 
         {/* Rating badge */}
-        <div className="absolute left-2.5 top-2.5 z-20 flex items-center gap-1 rounded bg-black/75 px-1.5 py-0.5">
-          <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
-          <span className="text-[10px] font-semibold text-white">{product.rating ?? 0}</span>
-        </div>
+        {showRating ? (
+          <div className="absolute left-2.5 top-2.5 z-20 flex items-center gap-1 rounded bg-black/75 px-1.5 py-0.5">
+            <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+            <span className="text-[10px] font-semibold text-white">{product.rating}</span>
+          </div>
+        ) : null}
 
         {/* Stock badge */}
         {product.stock != null && product.stock <= 0 && (
@@ -252,40 +262,41 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
       {/* ── Info area ── */}
       <div className="flex flex-1 flex-col p-3 text-left">
 
-        {/* Category pill + Rating */}
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 overflow-hidden">
-            {product.badge ? (
-              <span className="shrink-0 rounded bg-[#6B1A2A] px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold uppercase tracking-[0.14em] text-white">
-                {product.badge}
-              </span>
-            ) : null}
-            <span className="min-w-0 truncate rounded-full bg-[#F5EDD6] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#6B1A2A]">
-              {product.category}
-            </span>
+        {(product.badge || category) ? (
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              {product.badge ? (
+                <span className="shrink-0 rounded bg-[#6B1A2A] px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+                  {product.badge}
+                </span>
+              ) : null}
+              {category ? (
+                <span className="min-w-0 truncate rounded-full bg-[#F5EDD6] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-[#6B1A2A]">
+                  {category}
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <h3 className="min-w-0 line-clamp-2 text-sm font-semibold leading-snug text-[#2A1A1E] break-words" title={product.name}>
           {product.name}
         </h3>
-        {(() => {
-          const details = [product.fabric, product.occasion].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i)
-          return details.length > 0 ? (
-            <p className="mt-0.5 truncate text-[11px] text-[#7A6065]">
-              {details.join(' / ')}
-            </p>
-          ) : null
-        })()}
-
         {/* Selected Variant Badge (Color / Size) */}
-        {(activeProduct.color || activeProduct.size || activeProduct.variantLabel) ? (
+        {!hideVariantBadge && (activeProduct.color || activeProduct.size || activeProduct.sizeOptions?.length || activeProduct.variantLabel) ? (
           <div className="mt-1 flex flex-wrap items-center gap-1">
             <span className="rounded border border-[#E8DCC4] bg-[#FAF6EE] px-2 py-0.5 text-[9px] font-bold text-[#6B1A2A]">
-              {[activeProduct.color ? `Color: ${activeProduct.color}` : '', activeProduct.size ? `Size: ${activeProduct.size}` : '', activeProduct.variantLabel && !activeProduct.color && !activeProduct.size ? activeProduct.variantLabel : ''].filter(Boolean).join(' | ')}
+              {[
+                activeProduct.color ? `Color: ${activeProduct.color}` : '',
+                activeProduct.sizeOptions && activeProduct.sizeOptions.length > 1
+                  ? `Sizes: ${activeProduct.sizeOptions.join(' / ')}`
+                  : activeProduct.size ? `Size: ${activeProduct.size}` : '',
+                activeProduct.variantLabel && !activeProduct.color && !activeProduct.size && !activeProduct.sizeOptions?.length ? activeProduct.variantLabel : '',
+              ].filter(Boolean).join(' | ')}
             </span>
           </div>
         ) : null}
+
 
         {/* Variant count sub-label */}
         {colors.length > 0 && (
@@ -293,26 +304,31 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
             onMouseLeave={() => setHoverIdx(-1)}
           >
             {hasOnlySizes ? (
-              <div className="flex flex-wrap gap-1">
-                {colors.slice(0, 4).map((c, idx) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onMouseEnter={() => setHoverIdx(idx)}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setActiveIdx(idx)
-                    }}
-                    className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold border transition ${
-                      effectiveIdx === idx
-                        ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white'
-                        : 'border-[#E8DCC4] bg-[#FAF6EE] text-[#6B1A2A] hover:border-[#6B1A2A]'
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="flex flex-wrap gap-1">
+                  {colors.slice(0, 4).map((c, idx) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onMouseEnter={() => setHoverIdx(idx)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setActiveIdx(idx)
+                      }}
+                      className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold border transition ${
+                        effectiveIdx === idx
+                          ? 'border-[#6B1A2A] bg-[#6B1A2A] text-white'
+                          : 'border-[#E8DCC4] bg-[#FAF6EE] text-[#6B1A2A] hover:border-[#6B1A2A]'
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-[#7A6065]">
+                  {variantCount} variant{variantCount > 1 ? 's' : ''}
+                </span>
+              </>
             ) : (
               <>
                 <div className="flex gap-1">
@@ -333,6 +349,7 @@ export default function ProductCard({ product, wished, onToggleWishlist, onAddTo
                 </div>
                 <span className="text-[10px] text-[#7A6065]">
                   {colors.length} colour{colors.length > 1 ? 's' : ''}
+                  {variantCount !== colors.length ? ` / ${variantCount} variants` : ''}
                 </span>
               </>
             )}

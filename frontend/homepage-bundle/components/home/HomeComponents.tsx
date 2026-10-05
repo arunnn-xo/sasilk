@@ -875,6 +875,7 @@ export function ProductGrid() {
                       variantId: p.variants?.[0]?.id,
                       stock: p.stockQty,
                     }}
+                    hideVariantBadge
                   />
                 )
               })}

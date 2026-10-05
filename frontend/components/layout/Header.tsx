@@ -176,6 +176,8 @@ export default function Header() {
           </a>
           <Link
             href="/events"
+            title="Book Events"
+            aria-label="Book Events"
             className={`group relative flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 no-underline ${
               activeEventsCount > 0
                 ? 'border-[#D9B86E] luxury-event-shimmer text-[#FAF6EE] shadow-[0_2px_8px_rgba(107,26,42,0.3)]'
@@ -187,7 +189,7 @@ export default function Header() {
               className={`${activeEventsCount > 0 ? 'text-[#FAF6EE]' : 'text-gold'}`}
               strokeWidth={2}
             />
-            <span className="hidden xs:inline sm:inline">Book Now</span>
+            <span className="hidden xs:inline sm:inline">Events</span>
             {activeEventsCount > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-[#FAF6EE]/20 px-1.5 py-0.5 text-[7.5px] font-extrabold uppercase tracking-wider text-[#E8C87A] border border-[#D9B86E]/60">
                 <span className="relative flex h-1.5 w-1.5 items-center justify-center">
@@ -329,12 +331,12 @@ export default function Header() {
           {/* Divider */}
           <div className="h-6 xl:h-7 w-[1px] bg-gradient-to-b from-transparent via-[#D9B86E]/45 to-transparent flex-shrink-0" aria-hidden="true" />
 
-          {/* Book Now */}
+          {/* Events */}
           <div className="relative group/event flex items-center h-full">
             <Link
               href="/events"
               className="action-item flex flex-col items-center gap-1 px-1.5 xl:px-2 py-1 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative no-underline"
-              title={featuredEvent ? `✨ Live Event: ${featuredEvent.name} — Click to Book Spot` : 'Book Events'}
+              title="Book Events"
             >
               <div className="relative flex items-center justify-center">
                 {/* Subtle warm gold ambient aura when live */}
@@ -375,7 +377,7 @@ export default function Header() {
                   fontWeight: activeEventsCount > 0 ? 600 : 500,
                 }}
               >
-                Book Now
+                Events
               </span>
 
               {(pathname === '/events' || pathname?.startsWith('/events/')) && (
@@ -443,7 +445,7 @@ export default function Header() {
                       href={`/events/${featuredEvent.slug || ''}`}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--burgundy)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#E8C87A] shadow-sm transition-all hover:bg-[#6E1220] no-underline"
                     >
-                      <span>Book Now</span>
+                      <span>Events</span>
                       <ArrowRight size={11} />
                     </Link>
                   </div>

@@ -25,6 +25,7 @@ export type StorefrontProduct = {
   gstRate?: number | null
   isNew?: boolean
   isBestSeller?: boolean
+  tag?: string | null
   featured?: boolean
   color?: string
   category: string
@@ -108,7 +109,7 @@ export type Review = {
   body: string | null
   customerName: string
   createdAt: string
-  images: Array<{ id: number; imageUrl: string }>
+  images: Array<{ id: number; imageUrl: string; mediaType?: 'image' | 'video' }>
 }
 
 export type ReviewSummary = {
@@ -146,7 +147,7 @@ export type CustomerAddress = {
 
 export type StorefrontReel = {
   id: number
-  imageUrl: string
+  imageUrl?: string | null
   videoUrl?: string | null
   title?: string | null
   views: string

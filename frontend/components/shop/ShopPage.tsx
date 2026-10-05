@@ -79,7 +79,7 @@ function ShopCatalogCard({
   const targetStock = cartColor?.stock ?? defaultVariant?.stockQty ?? product.stockQty
   const isOutOfStock = !!(targetStock != null && targetStock <= 0)
   const disc = getDiscount(activePrice, activeOriginalPrice)
-  const badge = product.isNew ? 'New' : disc ? `${disc}% OFF` : null
+  const badge = product.isNew ? 'New' : product.isBestSeller ? 'Best Seller' : disc ? `${disc}% OFF` : null
   const displayImage = resolveImageUrl(
     activeColor?.image || defaultVariant?.imageUrl || defaultVariant?.images?.[0]?.imageUrl || product.imageUrl || product.image,
   )
@@ -103,10 +103,12 @@ function ShopCatalogCard({
           </span>
         )}
 
-        <div className={`absolute left-3 ${badge ? 'top-11' : 'top-3'} z-30 flex items-center gap-1 rounded-md bg-black/75 backdrop-blur-sm px-2 py-0.5 shadow-sm`}>
-          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-          <span className="text-[10.5px] font-bold text-white">{product.averageRating ?? 4.8}</span>
-        </div>
+        {typeof product.averageRating === 'number' && product.averageRating > 0 ? (
+          <div className={`absolute left-3 ${badge ? 'top-11' : 'top-3'} z-30 flex items-center gap-1 rounded-md bg-black/75 backdrop-blur-sm px-2 py-0.5 shadow-sm`}>
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            <span className="text-[10.5px] font-bold text-white">{product.averageRating}</span>
+          </div>
+        ) : null}
 
         {activeStock != null && activeStock <= 0 && (
           <div className="absolute left-3 z-30 flex items-center rounded-md bg-rose-900/90 px-2 py-0.5 shadow-sm"
@@ -173,33 +175,9 @@ function ShopCatalogCard({
       </div>
 
       <div className="relative flex flex-1 flex-col border-t border-[rgba(201,168,76,0.75)] px-3 py-3.5 md:px-4 md:py-4 bg-gradient-to-b from-[#FAF6EE] to-[#F7F0E3]">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <p className="min-w-0 truncate text-[9px] md:text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#B8860B]">
-            {product.type || product.category}
-          </p>
-          <p className="shrink-0 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] text-[#6B1A2A]">
-            {product.category}
-          </p>
-        </div>
-
         <h3 className="truncate text-[14px] md:text-[17px] font-bold leading-snug text-[#300D14] transition-colors group-hover:text-[#6B1A2A]" style={{ fontFamily: 'Playfair Display, serif' }}>
           {product.name}
         </h3>
-
-        {/* Selected Variant / Size display chip */}
-        {(() => {
-          const displayVariant = activeColor || defaultVariant
-          const sizeText = activeColor?.variantType === 'size' ? (activeColor.size || activeColor.name) : (displayVariant?.size || '')
-          const colorText = activeColor && activeColor.variantType !== 'size' ? activeColor.name : (product.color || '')
-          if (!sizeText && !colorText) return null
-          return (
-            <div className="mt-1 flex flex-wrap items-center gap-1">
-              <span className="rounded border border-[rgba(201,168,76,0.5)] bg-[#FAF6EE] px-2 py-0.5 text-[9px] font-bold text-[#6B1A2A]">
-                {[colorText ? `Color: ${colorText}` : '', sizeText ? `Size: ${sizeText}` : ''].filter(Boolean).join(' | ')}
-              </span>
-            </div>
-          )
-        })()}
 
         <div className="mt-3 flex flex-col md:flex-row md:items-end justify-between gap-2">
           <div className="min-w-0">
@@ -519,20 +497,20 @@ export default function ShopPage({
         />
       )}
 
-      {/* Luxury Hero Banner */}
-      <section className="relative overflow-hidden border-b border-[rgba(201,168,76,0.6)] bg-gradient-to-r from-[#20050A] via-[#420A12] to-[#20050A] py-10 md:py-16 lg:py-20 text-white shadow-xl">
+      {/* Category Hero Banner */}
+      <section className="relative overflow-hidden border-b border-[rgba(201,168,76,0.45)] bg-[#260911] text-white shadow-sm">
         <div
-          className="pointer-events-none absolute inset-0 z-0 opacity-70"
+          className="pointer-events-none absolute inset-0 z-0 opacity-80"
           style={{
             backgroundImage: "url('/shop_heading_bg.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-[#230710]/90 via-[#230710]/62 to-[#230710]/18" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-[#230710]/65 via-transparent to-[#230710]/20" />
 
-        <div className="relative z-10 mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1500px] items-end px-4 py-8 sm:px-6 md:min-h-[320px] md:py-12 lg:px-8">
           <div className="max-w-3xl">
             {/* Eyebrow Badge & Breadcrumb */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -547,7 +525,7 @@ export default function ShopPage({
               </nav>
             </div>
 
-            <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-wide leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-[#E8C97E] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+            <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-wide leading-tight text-white drop-shadow-[0_4px_14px_rgba(0,0,0,0.5)]">
               {title}
             </h1>
 
@@ -558,7 +536,7 @@ export default function ShopPage({
               <div className="h-0.5 w-32 bg-gradient-to-r from-[#E8C97E] to-transparent opacity-60" />
             </div>
 
-            <p className="font-sans text-sm sm:text-base font-medium leading-relaxed text-slate-100/90 max-w-2xl drop-shadow-sm">
+            <p className="font-sans text-sm sm:text-base font-medium leading-relaxed text-white/90 max-w-2xl drop-shadow-sm">
               {description}
             </p>
           </div>

@@ -55,7 +55,6 @@ export const productCreateSchema = z.object({
   ageGroup: z.union([z.string().max(20), z.null()]).optional(),
   hasVariants: z.boolean().optional().default(false),
   status: z.enum(['draft', 'active', 'archived', 'inactive'], { message: 'Status must be draft, active, archived, or inactive.' }).optional().default('active'),
-  featured: z.boolean().optional().default(false),
   isNew: z.boolean().optional().default(false),
   isBestSeller: z.boolean().optional().default(false),
   sortOrder: z.number().int().min(0, 'Sort order must be 0 or greater.').optional().default(0),
@@ -78,6 +77,13 @@ export const productCreateSchema = z.object({
   variantImageUrl: z.union([z.string().max(255), z.null()]).optional(),
   variantImages: z.array(z.string().max(255)).optional().default([]),
 })
+
+function normalizeProductFlags<T extends { isNew?: boolean; isBestSeller?: boolean }>(body: T): T {
+  if (body.isNew && body.isBestSeller) {
+    return { ...body, isBestSeller: false }
+  }
+  return body
+}
 
 export const variantCreateSchema = z.object({
   variantType: z.enum(['color', 'size']).optional().default('color'),
@@ -762,7 +768,7 @@ export const reorderProductImages = async (req: Request, res: Response) => {
 }
 
 export const createProduct = async (req: Request, res: Response) => {
-  const body = productCreateSchema.parse(req.body)
+  const body = normalizeProductFlags(productCreateSchema.parse(req.body))
 
   const result = await sequelize.transaction(async (t) => {
     const product = await Product.create(body, { transaction: t })
@@ -850,7 +856,6 @@ interface ImportRow {
   lengthCm?: number
   breadthCm?: number
   heightCm?: number
-  featured?: boolean
   isNew?: boolean
   isBestSeller?: boolean
   code?: string
@@ -1060,7 +1065,6 @@ export const importProducts = async (req: Request, res: Response) => {
         lengthCm,
         breadthCm,
         heightCm,
-        featured: parseImportBool(r.featured),
         isNew: isNewFlag,
         isBestSeller: isBestSellerFlag,
         hasVariants: false,
@@ -1110,7 +1114,6 @@ export const downloadSampleImport = async (_req: Request, res: Response) => {
     { header: 'tag', key: 'tag', width: 16 },
     { header: 'washCare', key: 'washCare', width: 30 },
     { header: 'gstRate', key: 'gstRate', width: 10 },
-    { header: 'featured', key: 'featured', width: 10 },
     { header: 'isNew', key: 'isNew', width: 10 },
     { header: 'isBestSeller', key: 'isBestSeller', width: 12 },
     { header: 'weightKg', key: 'weightKg', width: 10 },
@@ -1142,7 +1145,6 @@ export const downloadSampleImport = async (_req: Request, res: Response) => {
     tag: 'New Arrival',
     washCare: 'Dry clean only',
     gstRate: 5,
-    featured: 'yes',
     isNew: 'yes',
     isBestSeller: 'no',
     weightKg: 0.5,

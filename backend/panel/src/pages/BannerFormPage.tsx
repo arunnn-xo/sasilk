@@ -77,10 +77,9 @@ export default function BannerFormPage() {
     if (!placement) errors.placement = 'Please select a banner placement.'
 
     const trimmedTitle = title.trim()
-    if (trimmedTitle) {
-      if (trimmedTitle.length < 3) errors.title = 'Title must be at least 3 characters long.'
-      else if (trimmedTitle.length > 100) errors.title = 'Title cannot exceed 100 characters.'
-    }
+    if (!trimmedTitle) errors.title = 'Banner title is required.'
+    else if (trimmedTitle.length < 3) errors.title = 'Title must be at least 3 characters long.'
+    else if (trimmedTitle.length > 100) errors.title = 'Title cannot exceed 100 characters.'
 
     const trimmedSubtitle = subtitle.trim()
     if (trimmedSubtitle.length > 500) errors.subtitle = 'Subtitle cannot exceed 500 characters.'
@@ -264,7 +263,7 @@ export default function BannerFormPage() {
             <div className="md:col-span-2 space-y-2">
               <div className="flex justify-between items-end">
                 <label className="block text-[14px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Title
+                  Title <span className="text-red-400">*</span>
                 </label>
                 <span className={`text-[10px] font-semibold ${title.length > 100 ? 'text-red-500' : 'text-[var(--muted)]'}`}>
                   {title.length}/100
@@ -276,6 +275,7 @@ export default function BannerFormPage() {
                 onChange={e => setTitle(e.target.value)}
                 onBlur={() => handleBlur('title')}
                 placeholder="Enter banner title"
+                required
                 className={getInputClass('title')}
               />
               {touched.title && errors.title && (
