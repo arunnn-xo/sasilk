@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Heart, Truck, Search, Smartphone, User, X, Home, CalendarCheck, Sparkles, CalendarDays, MapPin, Video, ArrowRight, ChevronDown } from 'lucide-react'
 import SearchBar from '@/components/ui/SearchBar'
 import LoginDropdown from '@/components/ui/LoginDropdown'
 import AnnouncementBar from '@/components/layout/AnnouncementBar'
@@ -563,46 +563,87 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main nav — Glassy Blue Luxury Categories Header */}
+      {/* Main nav — Impressive Ultra-Glassy Blue Luxury Categories Header */}
       {navMenu.length > 0 && (
         <nav
-          className="hidden lg:block relative border-t border-b border-[#D9B86E]/35 backdrop-blur-md transition-all duration-300"
+          className="hidden lg:block relative border-t border-b transition-all duration-300"
           style={{
-            background: 'linear-gradient(180deg, rgba(16, 48, 66, 0.96) 0%, rgba(11, 33, 46, 0.94) 100%)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: '0 4px 20px rgba(16, 48, 66, 0.25)',
+            background: 'linear-gradient(135deg, rgba(8, 30, 48, 0.90) 0%, rgba(14, 48, 76, 0.85) 40%, rgba(18, 60, 92, 0.80) 70%, rgba(7, 24, 38, 0.94) 100%)',
+            backdropFilter: 'blur(20px) saturate(200%) brightness(105%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(200%) brightness(105%)',
+            borderColor: 'rgba(217, 184, 110, 0.38)',
+            boxShadow: '0 8px 32px 0 rgba(4, 18, 30, 0.42), inset 0 1px 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 1px 0 rgba(217, 184, 110, 0.32)',
           }}
         >
-        <div className="w-full px-4 lg:px-6 flex items-center justify-start">
-          {navMenu.map(cat => (
-            <div 
-              key={cat.label}
-              className="group/mainnav h-full flex-shrink-0"
-              onMouseEnter={() => {
-                if (cat.subCategories && cat.subCategories.length > 0 && !activeSubcats[cat.label]) {
-                  setActiveSubcats(prev => ({ ...prev, [cat.label]: cat.subCategories![0].name }));
-                }
-              }}
-            >
-              <div className="h-full">
-                <Link
-                  href={cat.href}
-                  className={`${
-                    cat.isSale
-                      ? 'text-[#FF6B6B] font-extrabold hover:text-[#ff9494]'
-                      : cat.isHighlighted
-                      ? 'text-[#E8C87A] font-extrabold animate-theme-text-blink hover:text-[#FAF6EE]'
-                      : 'text-[#FAF6EE] hover:text-[#D9B86E]'
-                  } px-2.5 xl:px-3.5 py-3 text-[12px] xl:text-[13px] tracking-[0.08em] uppercase font-bold no-underline inline-block transition-all duration-200 hover:bg-white/[0.08] rounded-sm`}
-                >
-                  {cat.label}
-                </Link>
-              </div>
+          {/* Subtle Crystalline Specular Ambient Sheen */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_70%_40%_at_50%_0%,rgba(160,210,255,0.22)_0%,transparent_75%)]"
+            aria-hidden="true"
+          />
 
-              {/* Mega Menu Dropdown */}
-              {cat.subCategories && (
-                <div className="absolute top-full left-0 w-full bg-white shadow-[0_20px_40px_rgba(0,0,0,0.08)] border-t-2 border-[var(--gold)] z-[200] opacity-0 invisible translate-y-3 pointer-events-none group-hover/mainnav:opacity-100 group-hover/mainnav:visible group-hover/mainnav:translate-y-0 group-hover/mainnav:pointer-events-auto transition-all duration-300 overflow-hidden before:absolute before:inset-0 before:pointer-events-none before:bg-[url('/borderdesign/flower-motif.png')] before:bg-[length:500px] before:bg-[position:110%_120%] before:bg-no-repeat before:opacity-[0.03] transform-gpu">
+          <div className="w-full px-4 lg:px-8 flex items-stretch justify-start">
+            {navMenu.map((cat, index) => (
+              <div 
+                key={cat.label}
+                className="group/mainnav flex-shrink-0 flex items-stretch"
+                onMouseEnter={() => {
+                  if (cat.subCategories && cat.subCategories.length > 0 && !activeSubcats[cat.label]) {
+                    setActiveSubcats(prev => ({ ...prev, [cat.label]: cat.subCategories![0].name }));
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <Link
+                    href={cat.href}
+                    className={`relative group/link flex items-center gap-1.5 px-3 lg:px-4 py-3.5 text-[12px] xl:text-[13px] tracking-[0.12em] uppercase font-bold no-underline whitespace-nowrap rounded-md transition-all duration-300 ${
+                      cat.isSale
+                        ? 'text-[#FF8A8A] bg-gradient-to-r from-red-600/30 via-rose-500/25 to-red-600/30 border border-rose-400/50 shadow-[0_0_14px_rgba(244,63,94,0.35)] hover:text-white hover:border-rose-300/80 hover:shadow-[0_0_20px_rgba(244,63,94,0.55)]'
+                        : cat.isHighlighted
+                        ? 'text-[#FAF6EE] hover:text-[#FFF4D0] hover:bg-white/[0.14] hover:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.25)] border border-transparent hover:border-white/20'
+                        : 'text-[#FAF6EE] hover:text-[#F6E2A0] hover:bg-white/[0.12] hover:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-transparent hover:border-white/15'
+                    }`}
+                  >
+                    {/* Inner Text with luxury accents */}
+                    {cat.isHighlighted ? (
+                      <span className="bg-gradient-to-r from-[#FFF4D0] via-[#E8C87A] to-[#F6E2A0] bg-clip-text text-transparent font-extrabold drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] flex items-center gap-1">
+                        <span className="text-[#E8C87A] text-[10px] animate-pulse">✦</span>
+                        {cat.label}
+                      </span>
+                    ) : cat.isSale ? (
+                      <span className="flex items-center gap-1 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+                        <span className="text-[11px] animate-pulse">🔥</span>
+                        {cat.label}
+                      </span>
+                    ) : (
+                      <span className="transition-all duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)] group-hover/link:drop-shadow-[0_0_10px_rgba(246,226,160,0.6)]">
+                        {cat.label}
+                      </span>
+                    )}
+
+                    {/* Subcategory Indicator Arrow */}
+                    {cat.subCategories && cat.subCategories.length > 0 && (
+                      <ChevronDown
+                        size={12}
+                        className="text-[#D9B86E]/75 transition-transform duration-300 group-hover/mainnav:rotate-180 group-hover/mainnav:text-[#F6E2A0] flex-shrink-0"
+                      />
+                    )}
+
+                    {/* Glowing golden light beam on hover */}
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-[2px] w-0 bg-gradient-to-r from-transparent via-[#E8C87A] to-transparent rounded-full transition-all duration-300 ease-out group-hover/link:w-3/4 shadow-[0_0_8px_#E8C87A]" />
+                  </Link>
+                </div>
+
+                {/* Vertical Hairline Divider between categories (on desktop) */}
+                {index < navMenu.length - 1 && (
+                  <div
+                    className="h-4 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent mx-0.5 hidden xl:block self-center flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
+
+                {/* Mega Menu Dropdown with invisible top hover bridge */}
+                {cat.subCategories && (
+                  <div className="absolute top-full left-0 w-full bg-white shadow-[0_20px_40px_rgba(0,0,0,0.12)] border-t-2 border-[var(--gold)] z-[250] opacity-0 invisible pointer-events-none group-hover/mainnav:opacity-100 group-hover/mainnav:visible group-hover/mainnav:pointer-events-auto transition-opacity duration-200 overflow-hidden before:absolute before:-top-4 before:left-0 before:w-full before:h-4 before:content-['']">
                   <div className="w-full px-8 xl:px-12 flex h-[480px] relative z-10">
                     
                     {/* Left Column: Subcategories */}
@@ -631,12 +672,13 @@ export default function Header() {
                           const currentActive = activeSubcats[cat.label] || cat.subCategories![0].name;
                           const subImg = resolveImageUrl(sub.imageUrl || '')
                           return (
-                          <div
+                          <Link
                             key={sub.name}
+                            href={sub.href || filteredCollectionHref(cat.href, sub.name)}
                             onMouseEnter={() => setActiveSubcats(prev => ({ ...prev, [cat.label]: sub.name }))}
-                            className={`px-6 py-3 cursor-pointer transition-all duration-300 flex justify-between items-center border-b border-[#D9B86E]/50 last:border-0 ${
+                            className={`px-6 py-3 cursor-pointer transition-all duration-200 flex justify-between items-center border-b border-[#D9B86E]/40 last:border-0 no-underline ${
                               currentActive === sub.name 
-                                ? 'bg-white text-[var(--burgundy)] shadow-[inset_4px_0_0_var(--gold)]' 
+                                ? 'bg-white text-[var(--burgundy)] font-bold shadow-[inset_4px_0_0_var(--gold)]' 
                                 : 'text-[#444444] hover:text-[var(--burgundy)] hover:bg-white/60'
                             }`}
                           >
@@ -644,16 +686,16 @@ export default function Header() {
                               {subImg ? (
                                 <img src={subImg} alt="" className="w-9 h-11 object-cover rounded border border-[#D9B86E]/40 flex-shrink-0" loading="lazy" />
                               ) : null}
-                              <span className={`text-[14px] uppercase truncate ${currentActive === sub.name ? 'font-bold' : 'font-bold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
+                              <span className={`text-[14px] uppercase truncate ${currentActive === sub.name ? 'font-bold text-[var(--burgundy)]' : 'font-semibold opacity-90'}`} style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.06em' }}>
                                 {sub.name}
                               </span>
                             </span>
                             {sub.directLink ? (
                                <span className="text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold flex-shrink-0">View</span>
                             ) : (
-                               <span className={`text-[18px] font-bold transition-transform duration-300 flex-shrink-0 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
+                               <span className={`text-[18px] font-bold transition-transform duration-200 flex-shrink-0 ${currentActive === sub.name ? 'text-[var(--gold)] translate-x-1' : 'text-[#888]'}`}>›</span>
                             )}
-                          </div>
+                          </Link>
                         )})}
                       </div>
                     </div>
