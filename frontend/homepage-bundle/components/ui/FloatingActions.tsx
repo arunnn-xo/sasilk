@@ -1,44 +1,25 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 
 export default function FloatingActions() {
   return (
     <>
       <Link
         href="/reviews"
-        className="floating-review-tab"
-        aria-label="Click to open Judge.me floating reviews"
+        className="floating-review-tab group"
+        aria-label="View Customer Reviews and Ratings"
       >
-        <Star size={16} fill="#FACC15" strokeWidth={0} />
-        <span>Reviews</span>
-      </Link>
-
-      <Link
-        href="#newsletter"
-        className="floating-newsletter-tab"
-        aria-label="Click to subscribe to Newsletter"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-        <span>Newsletter</span>
+        <Star
+          size={16}
+          className="text-[#D9B86E] fill-[#D9B86E] transition-transform duration-300 group-hover:scale-125 drop-shadow-[0_0_6px_rgba(217,184,110,0.85)]"
+          strokeWidth={0}
+        />
+        <span className="group-hover:text-[#D9B86E] transition-colors duration-200">Reviews</span>
       </Link>
 
       <div className="floating-action-stack" aria-label="Quick actions">
-        {/* <Link
-          href="/cart"
-          className="floating-bag-btn"
-          aria-label="Open shopping bag"
-        >
-          <ShoppingBag size={22} strokeWidth={2.2} />
-          <Star
-            className="floating-bag-star"
-            size={12}
-            fill="currentColor"
-            strokeWidth={1.6}
-          />
-        </Link> */}
-
         <a
           href="https://wa.me/"
           className="floating-whatsapp-btn"

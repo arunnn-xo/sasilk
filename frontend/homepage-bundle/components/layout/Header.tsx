@@ -561,11 +561,16 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main nav */}
+      {/* Main nav — Glassy Blue Luxury Categories Header */}
       {navMenu.length > 0 && (
         <nav
-          className="hidden lg:block relative border-t border-b border-[#D9B86E]/40"
-          style={{ backgroundColor: '#edb651' }}
+          className="hidden lg:block relative border-t border-b border-[#D9B86E]/35 backdrop-blur-md transition-all duration-300"
+          style={{
+            background: 'linear-gradient(180deg, rgba(16, 48, 66, 0.96) 0%, rgba(11, 33, 46, 0.94) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 20px rgba(16, 48, 66, 0.25)',
+          }}
         >
         <div className="w-full px-4 lg:px-6 flex items-center justify-start">
           {navMenu.map(cat => (
@@ -582,8 +587,12 @@ export default function Header() {
                 <Link
                   href={cat.href}
                   className={`${
-                    cat.isSale ? 'text-[#9C1A21] font-extrabold' : cat.isHighlighted ? 'text-[var(--burgundy)] animate-theme-text-blink' : 'text-[#300D14]'
-                  } px-2 xl:px-3 py-3 text-[12px] xl:text-[13px] tracking-[0.08em] uppercase font-bold no-underline inline-block transition-colors hover:text-[#9C1A21]`}
+                    cat.isSale
+                      ? 'text-[#FF6B6B] font-extrabold hover:text-[#ff9494]'
+                      : cat.isHighlighted
+                      ? 'text-[#E8C87A] font-extrabold animate-theme-text-blink hover:text-[#FAF6EE]'
+                      : 'text-[#FAF6EE] hover:text-[#D9B86E]'
+                  } px-2.5 xl:px-3.5 py-3 text-[12px] xl:text-[13px] tracking-[0.08em] uppercase font-bold no-underline inline-block transition-all duration-200 hover:bg-white/[0.08] rounded-sm`}
                 >
                   {cat.label}
                 </Link>
