@@ -582,7 +582,9 @@ export default function Header() {
           />
 
           <div className="w-full px-4 lg:px-8 flex items-stretch justify-start">
-            {navMenu.map((cat, index) => (
+            {navMenu.map((cat, index) => {
+              const displayLabel = cat.label.replace(/_/g, ' ')
+              return (
               <div 
                 key={cat.label}
                 className="group/mainnav flex-shrink-0 flex items-stretch"
@@ -599,24 +601,24 @@ export default function Header() {
                       cat.isSale
                         ? 'text-[#FF8A8A] bg-gradient-to-r from-red-600/30 via-rose-500/25 to-red-600/30 border border-rose-400/50 shadow-[0_0_14px_rgba(244,63,94,0.35)] hover:text-white hover:border-rose-300/80 hover:shadow-[0_0_20px_rgba(244,63,94,0.55)]'
                         : cat.isHighlighted
-                        ? 'text-[#FAF6EE] hover:text-[#FFF4D0] hover:bg-white/[0.14] hover:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.25)] border border-transparent hover:border-white/20'
+                        ? 'text-[#FFF2B2] bg-gradient-to-r from-[#D9B86E]/25 via-[#F6E2A0]/20 to-[#D9B86E]/25 border border-[#D9B86E]/60 shadow-[0_0_14px_rgba(217,184,110,0.30)] hover:text-white hover:border-[#FFF4D0] hover:shadow-[0_0_22px_rgba(246,226,160,0.55)]'
                         : 'text-[#FAF6EE] hover:text-[#F6E2A0] hover:bg-white/[0.12] hover:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] border border-transparent hover:border-white/15'
                     }`}
                   >
                     {/* Inner Text with luxury accents */}
                     {cat.isHighlighted ? (
-                      <span className="bg-gradient-to-r from-[#FFF4D0] via-[#E8C87A] to-[#F6E2A0] bg-clip-text text-transparent font-extrabold drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] flex items-center gap-1">
-                        <span className="text-[#E8C87A] text-[10px] animate-pulse">✦</span>
-                        {cat.label}
+                      <span className="flex items-center gap-1.5 font-extrabold tracking-[0.14em] text-[#FFF4D0] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                        <span className="text-[#F6E2A0] text-[11px] animate-pulse">✦</span>
+                        <span>{displayLabel}</span>
                       </span>
                     ) : cat.isSale ? (
-                      <span className="flex items-center gap-1 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+                      <span className="flex items-center gap-1.5 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
                         <span className="text-[11px] animate-pulse">🔥</span>
-                        {cat.label}
+                        <span>{displayLabel}</span>
                       </span>
                     ) : (
                       <span className="transition-all duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)] group-hover/link:drop-shadow-[0_0_10px_rgba(246,226,160,0.6)]">
-                        {cat.label}
+                        {displayLabel}
                       </span>
                     )}
 
@@ -624,7 +626,13 @@ export default function Header() {
                     {cat.subCategories && cat.subCategories.length > 0 && (
                       <ChevronDown
                         size={12}
-                        className="text-[#D9B86E]/75 transition-transform duration-300 group-hover/mainnav:rotate-180 group-hover/mainnav:text-[#F6E2A0] flex-shrink-0"
+                        className={`transition-transform duration-300 group-hover/mainnav:rotate-180 flex-shrink-0 ${
+                          cat.isHighlighted
+                            ? 'text-[#F6E2A0] group-hover/mainnav:text-white'
+                            : cat.isSale
+                            ? 'text-rose-300 group-hover/mainnav:text-white'
+                            : 'text-[#D9B86E]/80 group-hover/mainnav:text-[#F6E2A0]'
+                        }`}
                       />
                     )}
 
@@ -652,7 +660,7 @@ export default function Header() {
                         <div className="relative h-[86px] overflow-hidden border-b border-[#D9B86E]/40 flex-shrink-0">
                           <img
                             src={resolveImageUrl(cat.imageUrl)}
-                            alt={cat.label}
+                            alt={displayLabel}
                             onError={(e) => {
                               if (e.currentTarget.src !== '/saree1.png') {
                                 e.currentTarget.src = '/saree1.png'
@@ -663,7 +671,7 @@ export default function Header() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#5A1827]/85 via-[#5A1827]/25 to-transparent"></div>
                           <span className="absolute bottom-2 left-6 right-2 text-[13px] font-bold uppercase tracking-[0.14em] text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                            {cat.label}
+                            {displayLabel}
                           </span>
                         </div>
                       )}
@@ -829,7 +837,7 @@ export default function Header() {
                 </div>
               )}
             </div>
-          ))}
+          )})}
         </div>
         </nav>
       )}

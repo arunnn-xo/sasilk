@@ -137,6 +137,7 @@ export default function MobileNavDrawer({ isOpen, onClose, menuData, position = 
         <nav className="flex-1 overflow-y-auto overscroll-contain" aria-label="Categories">
           <ul className="py-2">
             {filtered.map(cat => {
+              const displayLabel = cat.label.replace(/_/g, ' ')
               const isExpanded = expandedCat === cat.label
               const hasSubs = cat.subCategories && cat.subCategories.length > 0
 
@@ -146,15 +147,22 @@ export default function MobileNavDrawer({ isOpen, onClose, menuData, position = 
                     <Link
                       href={cat.href}
                       onClick={onClose}
-                      className={`flex-1 px-5 py-3.5 no-underline transition-colors relative ${
+                      className={`flex-1 px-5 py-3.5 no-underline transition-colors relative flex items-center ${
                         cat.isHighlighted
-                          ? 'animate-theme-text-blink font-extrabold tracking-widest !text-[16px]'
+                          ? 'font-extrabold tracking-wider !text-[15px] text-[#851322] bg-[#FAF3E0]/70'
                           : cat.isSale
                             ? 'text-[var(--gold)] font-bold text-[14px]'
                             : 'text-[var(--charcoal)] font-semibold text-[14px]'
                       } hover:bg-[#F6EAD2]/50`}
                     >
-                      {cat.label}
+                      {cat.isHighlighted ? (
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-[#C29B57] text-[11px] animate-pulse">✦</span>
+                          <span>{displayLabel}</span>
+                        </span>
+                      ) : (
+                        <span>{displayLabel}</span>
+                      )}
                       {cat.isSale && (
                         <span className="ml-2 inline-flex items-center rounded-full bg-[#C29B57]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#C29B57]">
                           Sale
