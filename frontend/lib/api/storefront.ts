@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import type { CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontArtWaveItem, StorefrontBanner, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
+import type { ApprovedReview, CanReviewResponse, MarqueeMessageData, NavigationResponse, Review, ReviewSubmission, ReviewSummary, StorefrontArtWaveItem, StorefrontBanner, StorefrontCategory, StorefrontHomeData, StorefrontProduct, StorefrontReel } from './types'
 
 export async function fetchAnnouncementMessages() {
   try {
@@ -133,6 +133,21 @@ export async function fetchProductReviews(slug: string, page = 1, perPage = 10) 
     return data
   } catch {
     return { reviews: [], summary: { total: 0, average: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }, page: 1, perPage: 10, totalPages: 0 }
+  }
+}
+
+export async function fetchApprovedReviews(page = 1, perPage = 24) {
+  try {
+    const data = await apiFetch<{
+      reviews: ApprovedReview[]
+      summary: { total: number; average: number }
+      page: number
+      perPage: number
+      totalPages: number
+    }>(`/storefront/reviews?page=${page}&perPage=${perPage}`)
+    return data
+  } catch {
+    return { reviews: [], summary: { total: 0, average: 0 }, page: 1, perPage, totalPages: 0 }
   }
 }
 

@@ -107,6 +107,70 @@ function serializeReviewMedia(media: any) {
   }
 }
 
+function displayCustomerName(customerName: string) {
+  const nameParts = customerName.split(' ')
+  return nameParts[0] + (nameParts.length > 1 ? ' ' + nameParts[1][0] + '.' : '')
+}
+
+function serializeApprovedReview(review: any) {
+  const plainReview = review.get({ plain: true }) as any
+  const customerName = plainReview.Customer?.name || 'Anonymous'
+  const product = plainReview.Product || {}
+  return {
+    id: plainReview.id,
+    rating: plainReview.rating,
+    subject: plainReview.subject,
+    body: plainReview.body,
+    customerName: displayCustomerName(customerName),
+    createdAt: plainReview.createdAt,
+    product: {
+      id: product.id,
+      name: product.name || '',
+      slug: product.slug || '',
+      category: product.category || '',
+      imageUrl: product.imageUrl || null,
+    },
+    images: (plainReview.images || []).map(serializeReviewMedia),
+  }
+}
+
+export const getApprovedReviews = async (req: Request, res: Response) => {
+  const page = Math.max(1, parseInt(String(req.query.page)) || 1)
+  const perPage = Math.min(48, Math.max(1, parseInt(String(req.query.perPage)) || 24))
+
+  const { rows, count } = await Review.findAndCountAll({
+    where: { status: 'approved' },
+    include: [
+      { model: Customer, attributes: ['name'] },
+      { model: Product, attributes: ['id', 'name', 'slug', 'category', 'imageUrl'], required: true },
+      { model: ReviewImage, as: 'images', attributes: REVIEW_MEDIA_ATTRIBUTES },
+    ],
+    order: [['createdAt', 'DESC']],
+    offset: (page - 1) * perPage,
+    limit: perPage,
+  })
+
+  const summary = await Review.findAll({
+    where: { status: 'approved' },
+    attributes: [
+      [sequelize.fn('COUNT', sequelize.col('id')), 'total'],
+      [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.col('rating')), 1), 'average'],
+    ],
+    raw: true,
+  }) as any[]
+
+  res.json({
+    reviews: rows.map(serializeApprovedReview),
+    summary: {
+      total: count,
+      average: Number(summary[0]?.average) || 0,
+    },
+    page,
+    perPage,
+    totalPages: Math.ceil(count / perPage),
+  })
+}
+
 export const getProductReviews = async (req: Request, res: Response) => {
   const product = await Product.findOne({ where: { slug: req.params.slug } })
   if (!product) throw new AppError(404, 'Product not found')
@@ -129,14 +193,12 @@ export const getProductReviews = async (req: Request, res: Response) => {
   const reviews = rows.map(r => {
     const plainReview = r.get({ plain: true }) as any
     const customerName = plainReview.Customer?.name || 'Anonymous'
-    const nameParts = customerName.split(' ')
-    const displayName = nameParts[0] + (nameParts.length > 1 ? ' ' + nameParts[1][0] + '.' : '')
     return {
       id: plainReview.id,
       rating: plainReview.rating,
       subject: plainReview.subject,
       body: plainReview.body,
-      customerName: displayName,
+      customerName: displayCustomerName(customerName),
       createdAt: plainReview.createdAt,
       images: (plainReview.images || []).map(serializeReviewMedia),
     }

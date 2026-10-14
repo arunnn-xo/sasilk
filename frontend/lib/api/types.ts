@@ -112,6 +112,16 @@ export type Review = {
   images: Array<{ id: number; imageUrl: string; mediaType?: 'image' | 'video'; durationSeconds?: number | null }>
 }
 
+export type ApprovedReview = Review & {
+  product: {
+    id: number
+    name: string
+    slug: string
+    category?: string | null
+    imageUrl?: string | null
+  }
+}
+
 export type ReviewSummary = {
   total: number
   average: number

@@ -149,6 +149,7 @@ router.post('/orders/verify-payment', optionalCustomerAuth, asyncHandler(orderCo
 router.post('/orders/:id/confirm-cod', optionalCustomerAuth, asyncHandler(orderController.confirmCodOrder))
 
 /* ── Review Routes ─── */
+router.get('/reviews', asyncHandler(reviewController.getApprovedReviews))
 router.get('/products/:slug/reviews', asyncHandler(reviewController.getProductReviews))
 router.get('/products/:productId/can-review', requireCustomerAuth, asyncHandler(reviewController.canReviewProduct))
 router.post('/products/:productId/reviews', requireCustomerAuth, upload.array('images', 5), asyncHandler(reviewController.createProductReview))
