@@ -109,7 +109,7 @@ export type Review = {
   body: string | null
   customerName: string
   createdAt: string
-  images: Array<{ id: number; imageUrl: string; mediaType?: 'image' | 'video' }>
+  images: Array<{ id: number; imageUrl: string; mediaType?: 'image' | 'video'; durationSeconds?: number | null }>
 }
 
 export type ReviewSummary = {

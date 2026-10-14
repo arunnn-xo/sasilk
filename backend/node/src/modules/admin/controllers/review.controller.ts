@@ -48,7 +48,7 @@ export const getReviews = async (req: Request, res: Response) => {
       include: [
         { model: Product, attributes: ['id', 'name', 'code', 'imageUrl'], where: Object.keys(productWhere).length ? productWhere : undefined, required: !!search },
         { model: Customer, attributes: ['id', 'name', 'email'] },
-        { model: ReviewImage, as: 'images', attributes: ['id', 'imageUrl'] },
+        { model: ReviewImage, as: 'images', attributes: ['id', 'imageUrl', 'mediaType', 'durationSeconds'] },
       ],
       order: [['createdAt', 'DESC']],
       offset: (page - 1) * perPage,

@@ -418,6 +418,8 @@ export async function runMigrations() {
       onDelete: 'CASCADE'
     },
     image_url: { type: DataTypes.STRING(255), allowNull: false },
+    media_type: { type: DataTypes.ENUM('image', 'video'), allowNull: false, defaultValue: 'image' },
+    duration_seconds: { type: DataTypes.DECIMAL(6, 2), allowNull: true },
     ...timestamps,
   })
 
@@ -664,6 +666,20 @@ export async function runMigrations() {
     onDelete: 'SET NULL',
   })
   await safeAddColumn('reviews', 'moderated_at', { type: DataTypes.DATE, allowNull: true })
+
+  // review_images
+  await safeAddColumn('review_images', 'media_type', { type: DataTypes.ENUM('image', 'video'), allowNull: false, defaultValue: 'image' })
+  await safeAddColumn('review_images', 'duration_seconds', { type: DataTypes.DECIMAL(6, 2), allowNull: true })
+  try {
+    await qi.sequelize.query(`
+      UPDATE review_images
+      SET media_type = 'video'
+      WHERE LOWER(image_url) LIKE '%.mp4'
+         OR LOWER(image_url) LIKE '%.webm'
+         OR LOWER(image_url) LIKE '%.mov'
+         OR LOWER(image_url) LIKE '%.m4v'
+    `)
+  } catch { /* media backfill already done or table unavailable */ }
 
   // email_campaigns
   await safeAddColumn('email_campaigns', 'image_url', { type: DataTypes.STRING(255), allowNull: true })

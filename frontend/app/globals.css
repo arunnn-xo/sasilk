@@ -832,10 +832,11 @@ body {
 }
 
 .floating-whatsapp-btn {
-  width: 44.8px;
-  height: 45px;
-  border-radius: 8px;
-  background: #119c4b;
+  width: 52px;
+  height: 52px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  background: linear-gradient(145deg, #25d366, #128c54);
   color: #ffffff;
 }
 
@@ -859,8 +860,8 @@ body {
   }
 
   .floating-whatsapp-btn {
-    width: 44.8px;
-    height: 45px;
+    width: 52px;
+    height: 52px;
   }
 }
 

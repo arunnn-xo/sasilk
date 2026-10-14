@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Loader2,
   MessageSquare,
+  PlayCircle,
   Search,
   Star,
   ThumbsDown,
@@ -32,6 +33,22 @@ const statusBadgeClass: Record<string, string> = {
   rejected: 'admin-badge admin-badge-muted',
 }
 
+type ReviewMediaPreview = {
+  url: string
+  mediaType: 'image' | 'video'
+}
+
+function isVideoReviewMedia(media: any) {
+  return media?.mediaType === 'video' || /\.(mp4|webm|mov|m4v)$/i.test(media?.imageUrl || '')
+}
+
+function toReviewMediaPreview(media: any): ReviewMediaPreview {
+  return {
+    url: resolveImageUrl(media.imageUrl),
+    mediaType: isVideoReviewMedia(media) ? 'video' : 'image',
+  }
+}
+
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
@@ -53,9 +70,9 @@ export default function ReviewsPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<Record<string, unknown> | null>(null)
   const [successMsg, setSuccessMsg] = useState('')
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [imageList, setImageList] = useState<string[]>([])
-  const [imageIndex, setImageIndex] = useState(0)
+  const [selectedMedia, setSelectedMedia] = useState<ReviewMediaPreview | null>(null)
+  const [mediaList, setMediaList] = useState<ReviewMediaPreview[]>([])
+  const [mediaIndex, setMediaIndex] = useState(0)
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['reviews', currentPage, search, statusFilter],
@@ -186,7 +203,7 @@ export default function ReviewsPage() {
                 <th className="px-5 py-3.5 font-bold">Customer</th>
                 <th className="px-5 py-3.5 font-bold">Rating</th>
                 <th className="px-5 py-3.5 font-bold">Review</th>
-                <th className="px-5 py-3.5 font-bold">Images</th>
+                <th className="px-5 py-3.5 font-bold">Media</th>
                 <th className="px-5 py-3.5 font-bold">Status</th>
                 <th className="px-5 py-3.5 font-bold">Date</th>
                 <th className="px-5 py-3.5 font-bold">Actions</th>
@@ -243,22 +260,39 @@ export default function ReviewsPage() {
                       {item.images && item.images.length > 0 ? (
                         <div className="flex gap-1">
                           {item.images.map((img: any, imgIdx: number) => {
-                            const url = resolveImageUrl(img.imageUrl)
+                            const preview = toReviewMediaPreview(img)
                             return (
                               <button
                                 key={img.id}
                                 type="button"
                                 onClick={() => {
-                                  setImageList(item.images.map((i: any) => resolveImageUrl(i.imageUrl)))
-                                  setImageIndex(imgIdx)
-                                  setSelectedImage(url)
+                                  const previews = item.images.map(toReviewMediaPreview)
+                                  setMediaList(previews)
+                                  setMediaIndex(imgIdx)
+                                  setSelectedMedia(preview)
                                 }}
+                                className="relative"
                               >
-                                <img
-                                  src={url}
-                                  alt=""
-                                  className="h-10 w-10 rounded border border-[var(--line)] object-cover cursor-pointer transition-opacity hover:opacity-80"
-                                />
+                                {preview.mediaType === 'video' ? (
+                                  <>
+                                    <video
+                                      src={preview.url}
+                                      className="h-10 w-10 rounded border border-[var(--line)] object-cover cursor-pointer transition-opacity hover:opacity-80"
+                                      muted
+                                      playsInline
+                                      preload="metadata"
+                                    />
+                                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded bg-black/25 text-[10px] font-bold text-white">
+                                      <PlayCircle className="h-4 w-4 fill-white/20" />
+                                    </span>
+                                  </>
+                                ) : (
+                                  <img
+                                    src={preview.url}
+                                    alt=""
+                                    className="h-10 w-10 rounded border border-[var(--line)] object-cover cursor-pointer transition-opacity hover:opacity-80"
+                                  />
+                                )}
                               </button>
                             )
                           })}
@@ -368,29 +402,29 @@ export default function ReviewsPage() {
         ) : null}
       </section>
 
-      {/* Image Lightbox */}
-      {selectedImage ? (
+      {/* Media Lightbox */}
+      {selectedMedia ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedMedia(null)}
         >
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setSelectedImage(null) }}
+            onClick={(e) => { e.stopPropagation(); setSelectedMedia(null) }}
             className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
           >
             <X className="h-6 w-6" />
           </button>
 
-          {imageList.length > 1 ? (
+          {mediaList.length > 1 ? (
             <>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  const next = (imageIndex - 1 + imageList.length) % imageList.length
-                  setImageIndex(next)
-                  setSelectedImage(imageList[next])
+                  const next = (mediaIndex - 1 + mediaList.length) % mediaList.length
+                  setMediaIndex(next)
+                  setSelectedMedia(mediaList[next])
                 }}
                 className="absolute left-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
               >
@@ -400,9 +434,9 @@ export default function ReviewsPage() {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  const next = (imageIndex + 1) % imageList.length
-                  setImageIndex(next)
-                  setSelectedImage(imageList[next])
+                  const next = (mediaIndex + 1) % mediaList.length
+                  setMediaIndex(next)
+                  setSelectedMedia(mediaList[next])
                 }}
                 className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
               >
@@ -411,15 +445,26 @@ export default function ReviewsPage() {
             </>
           ) : null}
 
-          <img
-            src={selectedImage}
-            alt="Review image"
-            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-          {imageList.length > 1 ? (
+          {selectedMedia.mediaType === 'video' ? (
+            <video
+              src={selectedMedia.url}
+              controls
+              autoPlay
+              playsInline
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={selectedMedia.url}
+              alt="Review media"
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          {mediaList.length > 1 ? (
             <p className="absolute bottom-6 rounded-full bg-black/50 px-4 py-1.5 text-sm font-semibold text-white">
-              {imageIndex + 1} / {imageList.length}
+              {mediaIndex + 1} / {mediaList.length}
             </p>
           ) : null}
         </div>

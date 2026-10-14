@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Loader2, Star, StarHalf, ThumbsUp } from 'lucide-react'
 import { checkCanReview, fetchProductReviews, submitReview } from '@/lib/api/storefront'
 import { useAuth } from '@/components/auth/AuthContext'
@@ -39,6 +39,34 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
 
 function isVideoMedia(url: string, mediaType?: 'image' | 'video') {
   return mediaType === 'video' || /\.(mp4|webm|mov|m4v)$/i.test(url)
+}
+
+const MAX_REVIEW_MEDIA_FILES = 5
+const MAX_REVIEW_VIDEO_SECONDS = 10
+const REVIEW_MEDIA_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+])
+
+function readVideoDuration(file: File) {
+  return new Promise<number>((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url)
+      resolve(video.duration)
+    }
+    video.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Could not read video duration. Please choose a different video.'))
+    }
+    video.src = url
+  })
 }
 
 function ReviewCard({ review }: { review: Review }) {
@@ -113,9 +141,11 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
   const [formSubject, setFormSubject] = useState('')
   const [formBody, setFormBody] = useState('')
   const [formImages, setFormImages] = useState<File[]>([])
+  const [mediaPreviews, setMediaPreviews] = useState<Array<{ file: File; url: string; isVideo: boolean }>>([])
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const mediaInputRef = useRef<HTMLInputElement | null>(null)
 
   async function loadReviews(page: number) {
     setLoading(true)
@@ -150,6 +180,51 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
     }
   }, [session, productId])
 
+  useEffect(() => {
+    const previews = formImages.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      isVideo: file.type.startsWith('video/'),
+    }))
+    setMediaPreviews(previews)
+    return () => {
+      previews.forEach(preview => URL.revokeObjectURL(preview.url))
+    }
+  }, [formImages])
+
+  async function handleMediaChange(files: File[]) {
+    setSubmitError('')
+    if (!files.length) {
+      setFormImages([])
+      return
+    }
+    if (files.length > MAX_REVIEW_MEDIA_FILES) {
+      setFormImages([])
+      if (mediaInputRef.current) mediaInputRef.current.value = ''
+      setSubmitError(`You can upload up to ${MAX_REVIEW_MEDIA_FILES} photos or videos.`)
+      return
+    }
+
+    try {
+      for (const file of files) {
+        if (!REVIEW_MEDIA_MIME_TYPES.has(file.type)) {
+          throw new Error('Only JPEG, PNG, WebP, MP4, WebM, or MOV review media is allowed.')
+        }
+        if (file.type.startsWith('video/')) {
+          const duration = await readVideoDuration(file)
+          if (!Number.isFinite(duration) || duration > MAX_REVIEW_VIDEO_SECONDS) {
+            throw new Error(`Review videos must be ${MAX_REVIEW_VIDEO_SECONDS} seconds or shorter.`)
+          }
+        }
+      }
+      setFormImages(files)
+    } catch (err) {
+      setFormImages([])
+      if (mediaInputRef.current) mediaInputRef.current.value = ''
+      setSubmitError((err as Error).message || 'Please choose valid review media.')
+    }
+  }
+
   async function handleSubmitReview() {
     if (formRating === 0) {
       setSubmitError('Please select a rating')
@@ -165,6 +240,7 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
       setFormSubject('')
       setFormBody('')
       setFormImages([])
+      if (mediaInputRef.current) mediaInputRef.current.value = ''
       setCanReview(false)
       setHasReviewed(true)
       loadReviews(1)
@@ -201,7 +277,7 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
             {canReview && !showForm ? (
               <button
                 type="button"
-                onClick={() => setShowForm(true)}
+                onClick={() => { setShowForm(true); setSubmitSuccess(false); setSubmitError('') }}
                 className="rounded-full bg-black px-8 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
               >
                 Write a review
@@ -223,6 +299,13 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
             ) : null}
           </div>
         </div>
+
+        {submitSuccess ? (
+          <div className="mb-6 flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            <ThumbsUp className="h-4 w-4" />
+            Your review has been submitted and is pending moderation. Thank you!
+          </div>
+        ) : null}
 
         {/* Rating Distribution */}
         {summary.total > 0 ? (
@@ -285,31 +368,29 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Photos or videos (optional, max 5)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Photos or videos (optional, max 5; videos up to 10 seconds)</label>
                   <input
+                    ref={mediaInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
                     multiple
-                    onChange={e => {
-                      const files = Array.from(e.target.files || [])
-                      setFormImages(files.slice(0, 5))
-                    }}
+                    onChange={e => handleMediaChange(Array.from(e.target.files || []))}
                     className="w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#A34336] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:opacity-90"
                   />
-                  {formImages.length > 0 ? (
+                  {mediaPreviews.length > 0 ? (
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {formImages.map((f, i) => (
+                      {mediaPreviews.map((preview, i) => (
                         <div key={i} className="relative">
-                          {f.type.startsWith('video/') ? (
+                          {preview.isVideo ? (
                             <video
-                              src={URL.createObjectURL(f)}
+                              src={preview.url}
                               className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
                               muted
                               playsInline
                             />
                           ) : (
                             <img
-                              src={URL.createObjectURL(f)}
+                              src={preview.url}
                               alt=""
                               className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
                             />
@@ -318,6 +399,7 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
                             type="button"
                             onClick={() => setFormImages(prev => prev.filter((_, j) => j !== i))}
                             className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white"
+                            aria-label={`Remove ${preview.file.name}`}
                           >
                             ×
                           </button>
@@ -341,7 +423,7 @@ export default function ReviewSection({ productId, slug }: ReviewSectionProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setShowForm(false); setSubmitError(''); setFormRating(0); setFormSubject(''); setFormBody('') }}
+                    onClick={() => { setShowForm(false); setSubmitError(''); setFormRating(0); setFormSubject(''); setFormBody(''); setFormImages([]); if (mediaInputRef.current) mediaInputRef.current.value = '' }}
                     disabled={submitting}
                     className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
                   >

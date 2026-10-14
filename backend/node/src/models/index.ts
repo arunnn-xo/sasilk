@@ -389,6 +389,8 @@ export const ReviewImage = sequelize.define('ReviewImage', {
   id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
   reviewId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, field: 'review_id' },
   imageUrl: { type: DataTypes.STRING(255), allowNull: false, field: 'image_url' },
+  mediaType: { type: DataTypes.ENUM('image', 'video'), allowNull: false, defaultValue: 'image', field: 'media_type' },
+  durationSeconds: { type: DataTypes.DECIMAL(6, 2), allowNull: true, field: 'duration_seconds' },
 }, { tableName: 'review_images' })
 
 export const CouponUsage = sequelize.define('CouponUsage', {
